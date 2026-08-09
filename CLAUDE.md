@@ -1,0 +1,43 @@
+# CLAUDE.md — «Президент» (political satire sim, Plague Inc.-like)
+
+Solo developer project. Stack: React 18 + TypeScript (strict) + Vite + Zustand + Tailwind + Vitest + Capacitor (Android first).
+Full design: see GDD.md. Full architecture: see ARCHITECTURE.md. Read both before large tasks.
+
+## Game in one paragraph
+
+Player rules a fictional country (Absurdistan). 6 stats (0-100): Economy, Treasury, Approval, Elite Loyalty, Stability, Development. A Governance Vector scale (0-100: democracy → totalitarianism) shifts as a consequence of player choices and changes game rules per zone. Real-time, Plague Inc. style: time auto-advances (1 tick = 1 game month; normal 20s / fast 10s per month, plus pause) and the player buys reforms / answers events while the clock runs — no "next turn" button. Events and the open reforms panel auto-pause the clock (manual pause wins). Each tick → stats interact → win/lose checks. The clock lives in the store; `core` stays pure and turn-based. 4 defeats: coup, revolution, default, lost elections (democratic zone only). Tone: ironic satire, no real politicians/countries.
+
+## Architecture invariants (never violate)
+
+1. **`src/core/` is pure.** No imports from ui/store/data, no React, no DOM, no side effects, no `Math.random()`, no `Date.now()`. Randomness only via the seeded `rng` parameter. If a core change needs something from outside — pass it as a parameter.
+2. **Dependency direction:** `ui → store → core`. Content from `data/` is injected into core as the `GameContent` parameter, never imported by core directly.
+3. **`GameState` is a plain serializable object.** No classes, functions, Dates, Maps inside state.
+4. **Determinism:** same seed + same actions = identical outcome. There is a test for this; keep it green.
+5. **All balance coefficients live in `data/balance.ts`**, each with a comment. No magic numbers in core formulas.
+6. **Content is declarative data** (effects as `{ target, delta }` arrays). Game logic never hardcodes specific reforms/events.
+
+## Code rules
+
+- TypeScript strict; no `any`, no `as` casts to silence errors. Prefer discriminated unions for events/actions.
+- Named exports only. File names: camelCase for modules, PascalCase for components.
+- UI components contain zero game logic — no stat math in JSX or hooks; they render store state and dispatch store actions.
+- Tailwind for styling; no UI kit libraries (no Ant Design/MUI). Custom components only.
+- Do not add dependencies without asking. The intended full list: zustand, @capacitor/core, @capacitor/preferences. Dev: vitest, typescript, vite, tailwind.
+- Comments and code identifiers in English; user-facing game text in Russian (content files in `data/`).
+
+## Testing rules
+
+- Every core function gets unit tests in the same PR/commit as the function.
+- After touching `tick`, `effects`, `conditions`, `vector`, or `balance.ts`: run the full test suite including `autoplayer.test.ts` and report the outcome stats (defeat share, avg game length) in your summary.
+- Never weaken or delete the determinism test.
+
+## Workflow
+
+- Work in small increments; after each task run `yarn typecheck` and `yarn test` before declaring done.
+- When implementing from GDD, follow it exactly; if the GDD is ambiguous or seems wrong — stop and ask, do not invent mechanics silently.
+- When changing balance: change only `data/balance.ts` or content files, then re-run the autoplayer and show before/after stats.
+- Keep GDD.md/ARCHITECTURE.md updated when the user approves a design change; note the change in the file's version line.
+
+## Out of scope for MVP (do not build even if it seems easy)
+
+World map, multiple countries, multiplayer/networking, diplomacy simulation, war system, achievements, monetization, iOS build, localization, sound.

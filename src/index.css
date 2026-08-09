@@ -1,0 +1,92 @@
+@import 'tailwindcss';
+
+/* ─── Design tokens: state-dossier satire ───
+   Dark "cabinet" backdrop, aged-paper panels, one loud element: the red stamp. */
+:root {
+  --ink: #191f27;
+  --ink-soft: #232b36;
+  --paper: #eae0c8;
+  --paper-dim: #ded2b4;
+  --paper-line: #c8b995;
+  --text-ink: #23201a;
+  --text-faint: #6f6753;
+  --stamp: #a8352c;
+  --gold: #b98f3e;
+  --ok: #4c7a4c;
+}
+
+html,
+body {
+  background: var(--ink);
+  color: var(--paper);
+  font-family: Georgia, 'Times New Roman', serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* All interactive controls get a pointer cursor; disabled ones show not-allowed. */
+button,
+select {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: not-allowed;
+}
+
+.eyebrow {
+  font-size: 0.65rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.panel {
+  background: var(--paper);
+  color: var(--text-ink);
+  border: 1px solid var(--paper-line);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+  font-family: 'Courier New', ui-monospace, monospace;
+  font-weight: 700;
+}
+
+.stamp {
+  display: inline-block;
+  padding: 0.15rem 0.6rem;
+  border: 3px double var(--stamp);
+  color: var(--stamp);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transform: rotate(-3deg);
+  user-select: none;
+}
+
+.btn {
+  border: 1px solid var(--paper-line);
+  background: var(--paper);
+  color: var(--text-ink);
+  padding: 0.6rem 1rem;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: center;
+}
+.btn:active { transform: translateY(1px); }
+.btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+.btn-primary { background: var(--stamp); color: var(--paper); border-color: transparent; font-weight: 700; letter-spacing: 0.06em; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.dotted-leader {
+  overflow: hidden;
+}
+.dotted-leader::after {
+  content: ' ······································';
+  color: var(--text-faint);
+  letter-spacing: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}

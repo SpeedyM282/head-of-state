@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(yarn typecheck *)",
+      "Bash(npm run *)",
+      "Bash(echo \"typecheck exit: $?\")",
+      "Bash(npx vitest *)",
+      "Bash(echo \"typecheck: $?\")"
+    ]
+  }
+}
