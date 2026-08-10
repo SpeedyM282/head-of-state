@@ -20,12 +20,17 @@ export function tick(state: GameState, content: GameContent): TickResult {
 
   let s: GameState = { ...state, turn: state.turn + 1, stats: { ...state.stats } };
 
-  // 1. Income: treasury from economy + resources, minus state upkeep.
-  const income =
+  // 1. Income: treasury from economy + resources, plus a prosperity bonus once economy
+  // clears a threshold (rich economies compound), all skimmed by corruption before it
+  // reaches the treasury — upkeep is a state expense, not part of the skimmed revenue.
+  const prosperityBonus = Math.max(0, s.stats.economy - b.prosperityThreshold) * b.prosperityFactor;
+  const grossRevenue =
     b.incomeBase +
     s.stats.economy * b.incomeEconomyFactor +
-    content.country.resources * b.incomeResourceFactor -
-    b.upkeep;
+    content.country.resources * b.incomeResourceFactor +
+    prosperityBonus;
+  const corruptionSkim = s.stats.corruption * b.corruptionSkimFactor;
+  const income = grossRevenue * (1 - corruptionSkim) - b.upkeep;
   s.stats.treasury = clampStat(s.stats.treasury + income);
 
   // Influence points for the new turn.
@@ -56,6 +61,17 @@ export function tick(state: GameState, content: GameContent): TickResult {
   // Elites get restless when the treasury cannot pay them (path to coup).
   if (s.stats.treasury < b.eliteUnpaidTreasuryThreshold) {
     s.stats.eliteLoyalty = clampStat(s.stats.eliteLoyalty - b.eliteUnpaidDrift);
+  }
+
+  // Corruption drifts upward on its own — faster under totalitarianism, where unchecked
+  // power breeds theft — drags down development, and once it's severe enough it buys elite
+  // goodwill (they profit from the graft, which is why fighting it costs their loyalty).
+  const corruptionGrowth =
+    b.corruptionGrowth * (zone === 'totalitarian' ? b.corruptionGrowthTotalitarianMultiplier : 1);
+  s.stats.corruption = clampStat(s.stats.corruption + corruptionGrowth);
+  s.stats.development = clampStat(s.stats.development - s.stats.corruption * b.corruptionDevelopmentDrag);
+  if (s.stats.corruption > b.corruptionEliteBondThreshold) {
+    s.stats.eliteLoyalty = clampStat(s.stats.eliteLoyalty + b.corruptionEliteBondBonus);
   }
 
   // 3. Zone effects (GDD §5).

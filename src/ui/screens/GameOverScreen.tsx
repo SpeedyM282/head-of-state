@@ -1,5 +1,6 @@
 import { vectorZone } from '../../core';
 import { victoryRankKey } from '../../i18n';
+import { averageGoodness } from '../../data/statMeta';
 import { useUi } from '../../store/langStore';
 import { useGameStore } from '../../store/gameStore';
 
@@ -9,8 +10,7 @@ export function GameOverScreen() {
   if (!state?.outcome || !content) return null;
   const o = state.outcome;
 
-  const avg =
-    Object.values(state.stats).reduce((a, b) => a + b, 0) / Object.values(state.stats).length;
+  const avg = averageGoodness(state.stats);
   const copy =
     o.result === 'victory'
       ? ui.victory[victoryRankKey(avg, vectorZone(state.vector))]

@@ -6,9 +6,13 @@ export type StatKey =
   | 'approval'
   | 'eliteLoyalty'
   | 'stability'
-  | 'development';
+  | 'development'
+  | 'corruption';
 
 export type Stats = Record<StatKey, number>; // all 0-100
+// NOTE: 'corruption' is the one INVERTED stat — higher is worse. Core formulas that treat
+// it directionally (skim, growth, drag) must say so explicitly; nothing here assumes every
+// StatKey is "higher is better". See data/statMeta.ts for the ui-facing polarity map.
 
 /** Supported UI languages. Default is 'en' (see langStore). */
 export type Lang = 'en' | 'ru' | 'uz';
@@ -176,6 +180,22 @@ export interface Balance {
   electionsEveryTurns: number;
   electionsApprovalToWin: number;
   revolutionStabilityCeiling: number;
+
+  // --- Prosperity & corruption: the economy → treasury feedback loop ---
+  /** Economy above this earns bonus income on top of the linear incomeEconomyFactor term. */
+  prosperityThreshold: number;
+  prosperityFactor: number;
+  /** Fraction of gross income skimmed per corruption point (corruption is 0-100, higher-is-worse). */
+  corruptionSkimFactor: number;
+  /** Passive corruption growth per month. */
+  corruptionGrowth: number;
+  /** Multiplies corruptionGrowth while in the totalitarian zone. */
+  corruptionGrowthTotalitarianMultiplier: number;
+  /** Development lost per month per corruption point. */
+  corruptionDevelopmentDrag: number;
+  /** Above this corruption level, elites quietly profit from the graft. */
+  corruptionEliteBondThreshold: number;
+  corruptionEliteBondBonus: number;
 }
 
 export interface PlayerAction {

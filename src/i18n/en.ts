@@ -44,6 +44,7 @@ export const en: Ui = {
     eliteLoyalty: 'Elite loyalty',
     stability: 'Stability',
     development: 'Development',
+    corruption: 'Corruption',
   },
   branches: {
     economy: 'Economy',

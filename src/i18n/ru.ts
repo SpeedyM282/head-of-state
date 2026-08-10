@@ -44,6 +44,7 @@ export const ru: Ui = {
     eliteLoyalty: 'Лояльность элит',
     stability: 'Стабильность',
     development: 'Развитие',
+    corruption: 'Коррупция',
   },
   branches: {
     economy: 'Экономика',

@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import type { StatKey } from '../../core/types';
 import { gameDate, loc } from '../../i18n';
+import { isDangerous } from '../../data/statMeta';
 import { useLang, useUi } from '../../store/langStore';
 import { useGameStore } from '../../store/gameStore';
 import { StatRow } from '../components/StatRow';
@@ -9,7 +10,7 @@ import { EventModal } from '../components/EventModal';
 import { ReformsPanel } from '../components/ReformsPanel';
 import { SpeedControls } from '../components/SpeedControls';
 
-const STAT_ORDER: StatKey[] = ['economy', 'treasury', 'approval', 'eliteLoyalty', 'stability', 'development'];
+const STAT_ORDER: StatKey[] = ['economy', 'treasury', 'approval', 'eliteLoyalty', 'stability', 'development', 'corruption'];
 
 export function MainScreen() {
   const { state, content, prevStats, reformsOpen, openReforms, closeReforms, startClock, stopClock, toMenu } =
@@ -26,7 +27,7 @@ export function MainScreen() {
   if (!state || !content) return null;
 
   const { month, year } = gameDate(state.turn, ui);
-  const danger = content.difficulty.defeatThreshold + 10;
+  const dangerThreshold = content.difficulty.defeatThreshold + 10;
   const termProgress = Math.min(1, state.turn / content.difficulty.turnsToWin);
 
   return (
@@ -60,14 +61,14 @@ export function MainScreen() {
 
         <p className="min-w-0 text-right text-sm">
           <span className="eyebrow block">{ui.main.influence}</span>
-          <span className="num text-xl text-[var(--gold)]">{Math.floor(state.influence)}</span>
+          <span className="num text-xl text-(--gold)">{Math.floor(state.influence)}</span>
         </p>
       </header>
 
       {/* Subtle progress toward the end of the term. */}
-      <div className="h-0.5 w-full bg-[var(--ink-soft)]" aria-hidden>
+      <div className="h-0.5 w-full bg-(--ink-soft)" aria-hidden>
         <div
-          className="h-full bg-[var(--gold)] opacity-60"
+          className="h-full bg-(--gold) opacity-60"
           style={{ width: `${termProgress * 100}%`, transition: 'width 300ms' }}
         />
       </div>
@@ -80,7 +81,7 @@ export function MainScreen() {
             statKey={k}
             value={state.stats[k]}
             prev={prevStats ? prevStats[k] : null}
-            danger={state.stats[k] < danger}
+            danger={isDangerous(k, state.stats[k], dangerThreshold)}
           />
         ))}
       </div>

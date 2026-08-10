@@ -174,4 +174,25 @@ export const triggeredEvents: GameEvent[] = [
       { text: { en: 'Stay modest', ru: 'Остаться скромным', uz: 'Kamtar qolish' }, effects: [{ target: 'stability', delta: 3 }, { target: 'vector', delta: -2 }] },
     ],
   },
+  {
+    id: 'trg-corruption-crisis',
+    kind: 'triggered',
+    trigger: (s) => s.stats.corruption > 70,
+    cooldown: 5,
+    title: {
+      en: 'Corruption off the charts',
+      ru: 'Коррупция зашкаливает',
+      uz: 'Korrupsiya chegaradan chiqdi',
+    },
+    text: {
+      en: 'The international corruption-perception index ranked your country alongside states that barely exist on the map. Investors are asking if this is a joke.',
+      ru: 'Международный индекс восприятия коррупции поставил вашу страну в один ряд со странами, которых как бы не существует. Инвесторы уточняют, шутка ли это.',
+      uz: 'Xalqaro korrupsiya idroki indeksi mamlakatingizni deyarli mavjud bo‘lmagan davlatlar qatoriga qo‘ydi. Investorlar bu hazilmi, deb so‘ramoqda.',
+    },
+    options: [
+      { text: { en: 'A loud purge', ru: 'Громкая чистка рядов', uz: 'Baland ovozli tozalash' }, effects: [{ target: 'corruption', delta: -15 }, { target: 'eliteLoyalty', delta: -12 }, { target: 'stability', delta: -4 }, { target: 'vector', delta: 6 }] },
+      { text: { en: 'A pretty report for investors', ru: 'Красивый отчёт для инвесторов', uz: 'Investorlar uchun chiroyli hisobot' }, effects: [{ target: 'corruption', delta: 5 }, { target: 'economy', delta: 3 }, { target: 'approval', delta: -3 }] },
+      { text: { en: 'Change nothing — at least it’s stable', ru: 'Ничего не менять, зато стабильно', uz: 'Hech narsani o‘zgartirmaslik — hech bo‘lmasa barqaror' }, effects: [{ target: 'stability', delta: 2 }, { target: 'corruption', delta: 3 }, { target: 'development', delta: -2 }] },
+    ],
+  },
 ];

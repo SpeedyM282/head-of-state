@@ -7,6 +7,10 @@ import type { Balance } from '../core/types';
  * Term rescale (v0.5): every difficulty is a single 4-year term = 48 ticks. Per-tick flows
  * (income, drifts, decays, influence) are ~2.5x the previous 120-tick values so a shorter
  * game still swings meaningfully and feels dense.
+ *
+ * Corruption (v0.6): a 7th, INVERTED stat (higher is worse). It skims treasury income,
+ * drags development, grows on its own (faster under totalitarianism), and once severe
+ * buys elite loyalty — elites profit from graft, so fighting it costs their support.
  */
 export const balance: Balance = {
   // --- Treasury income per turn: base + economy*k + resources*k - upkeep ---
@@ -43,4 +47,22 @@ export const balance: Balance = {
 
   // --- Revolution needs both low approval AND stability below this ---
   revolutionStabilityCeiling: 50,
+
+  // --- Prosperity bonus: economy above the threshold compounds treasury income.
+  // At economy=100 (threshold 70, factor 0.05) this adds +1.5 income/month — roughly
+  // 1.47x the plain linear formula's income at economy=100, before any corruption skim. ---
+  prosperityThreshold: 70,
+  prosperityFactor: 0.05,
+
+  // --- Corruption: the counterweight to prosperity. 0-100, HIGHER IS WORSE. ---
+  // Skims gross revenue before upkeep; at corruption=100 the state loses 40% of income.
+  // Low economies (hard) rarely clear the prosperity threshold, so they get the skim
+  // downside without much of the bonus upside — kept at the low end of the 40-50% target
+  // range so hard stays hard without being crushed by a mechanic it barely benefits from.
+  corruptionSkimFactor: 0.004,
+  corruptionGrowth: 0.15, // passive drift per month
+  corruptionGrowthTotalitarianMultiplier: 2, // unchecked power breeds theft
+  corruptionDevelopmentDrag: 0.007, // development lost per month per corruption point
+  corruptionEliteBondThreshold: 50, // above this, elites are profiting from the graft
+  corruptionEliteBondBonus: 0.3, // ...and quietly reward you with a little loyalty for it
 };

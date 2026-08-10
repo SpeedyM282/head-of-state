@@ -44,6 +44,7 @@ export const uz: Ui = {
     eliteLoyalty: 'Elita sadoqati',
     stability: 'Barqarorlik',
     development: 'Rivojlanish',
+    corruption: 'Korrupsiya',
   },
   branches: {
     economy: 'Iqtisodiyot',

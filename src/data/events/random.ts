@@ -451,4 +451,63 @@ export const randomEvents: GameEvent[] = [
       { text: { en: 'Keep the old one', ru: 'Оставить старый', uz: 'Eskisini qoldirish' }, effects: [{ target: 'stability', delta: 1 }, { target: 'vector', delta: -2 }] },
     ],
   },
+
+  // ─── Corruption (3) ───
+  {
+    id: 'rnd-corruption-list',
+    kind: 'random',
+    title: {
+      en: 'Leaked declarations',
+      ru: 'Утечка деклараций',
+      uz: 'Deklaratsiyalar sizib chiqishi',
+    },
+    text: {
+      en: 'Officials’ income declarations leaked online. The culture minister turns out to own three yachts and one painting — the one he supposedly “rescued from an auction”.',
+      ru: 'В сеть слили декларации о доходах чиновников. У министра культуры оказалось три яхты и одна картина — та, что он якобы «спас от аукциона».',
+      uz: 'Amaldorlarning daromad deklaratsiyalari internetga sizib chiqdi. Madaniyat vaziri uchta yaxtaga va bitta rasmga ega ekan — «auksiondan qutqargan» rasmga.',
+    },
+    options: [
+      { text: { en: 'Fire the minister', ru: 'Уволить министра', uz: 'Vazirni ishdan bo‘shatish' }, effects: [{ target: 'eliteLoyalty', delta: -6 }, { target: 'corruption', delta: -8 }, { target: 'approval', delta: 5 }] },
+      { text: { en: 'Call it fake news', ru: 'Назвать это фейком', uz: 'Buni soxta xabar deb atash' }, effects: [{ target: 'approval', delta: -4 }, { target: 'corruption', delta: 4 }, { target: 'vector', delta: 4 }] },
+      { text: { en: 'Require the yachts to be declared officially', ru: 'Обязать задекларировать яхты официально', uz: 'Yaxtalarni rasmiy deklaratsiya qilishni majburiy qilish' }, effects: [{ target: 'corruption', delta: -3 }, { target: 'eliteLoyalty', delta: -2 }, { target: 'treasury', delta: 3 }] },
+    ],
+  },
+  {
+    id: 'rnd-corruption-tender',
+    kind: 'random',
+    title: {
+      en: 'A tender for one pocket',
+      ru: 'Тендер на один карман',
+      uz: 'Bir cho‘ntak uchun tender',
+    },
+    text: {
+      en: 'The road-building contract was won by a company registered a week ago — at the transport minister’s nephew’s address.',
+      ru: 'Госконтракт на строительство дороги выиграла фирма, зарегистрированная неделю назад по адресу племянника министра транспорта.',
+      uz: 'Yo‘l qurilishi bo‘yicha davlat shartnomasini bir hafta oldin transport vaziri jiyanining manzilida ro‘yxatdan o‘tgan firma yutib oldi.',
+    },
+    options: [
+      { text: { en: 'Cancel the tender', ru: 'Аннулировать тендер', uz: 'Tenderni bekor qilish' }, effects: [{ target: 'corruption', delta: -10 }, { target: 'eliteLoyalty', delta: -8 }, { target: 'treasury', delta: -4 }] },
+      { text: { en: 'Leave it — the road is needed anyway', ru: 'Оставить как есть — дорога всё равно нужна', uz: 'Shundayligicha qoldirish — yo‘l baribir kerak' }, effects: [{ target: 'corruption', delta: 6 }, { target: 'development', delta: -3 }] },
+      { text: { en: 'Re-run the tender “for show”', ru: 'Провести повторный тендер «для вида»', uz: 'Tenderni «ko‘rinish uchun» qayta o‘tkazish' }, effects: [{ target: 'corruption', delta: 3 }, { target: 'approval', delta: -3 }, { target: 'eliteLoyalty', delta: 2 }] },
+    ],
+  },
+  {
+    id: 'rnd-corruption-envelope',
+    kind: 'random',
+    title: {
+      en: 'An envelope under the table',
+      ru: 'Конверт под столом',
+      uz: 'Stol ostidagi konvert',
+    },
+    text: {
+      en: 'Journalists filmed an official taking an envelope on hidden camera. He insists it was his salary — in cash, off the books, from an unknown employer.',
+      ru: 'Журналисты сняли скрытой камерой, как чиновник берёт конверт. Чиновник утверждает, что это была зарплата — наличными, без ведомости, от неизвестного работодателя.',
+      uz: 'Jurnalistlar yashirin kamerada amaldorning konvert olayotganini suratga olishdi. Amaldor bu uning maoshi ekanligini — naqd, hujjatsiz, noma’lum ish beruvchidan — da’vo qilmoqda.',
+    },
+    options: [
+      { text: { en: 'A show trial', ru: 'Показательный суд', uz: 'Ibratli sud' }, effects: [{ target: 'corruption', delta: -9 }, { target: 'eliteLoyalty', delta: -9 }, { target: 'approval', delta: 7 }, { target: 'vector', delta: 3 }] },
+      { text: { en: 'Quietly retire him', ru: 'Тихо отправить на пенсию', uz: 'Jimgina nafaqaga chiqarish' }, effects: [{ target: 'corruption', delta: 2 }, { target: 'eliteLoyalty', delta: 3 }, { target: 'approval', delta: -3 }] },
+      { text: { en: 'Reward his resourcefulness', ru: 'Наградить за находчивость', uz: 'Uning topqirligini mukofotlash' }, effects: [{ target: 'corruption', delta: 8 }, { target: 'eliteLoyalty', delta: 5 }, { target: 'approval', delta: -8 }, { target: 'vector', delta: 5 }] },
+    ],
+  },
 ];

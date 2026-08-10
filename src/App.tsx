@@ -7,7 +7,7 @@ import { LangSwitcher } from './ui/components/LangSwitcher';
 export function App() {
   const phase = useGameStore((s) => s.phase);
   return (
-    <div className="relative mx-auto min-h-dvh max-w-[600px] px-3 py-4">
+    <div className="relative mx-auto min-h-dvh max-w-150 px-3 py-4">
       {phase === 'menu' && <MenuScreen />}
       {phase === 'playing' && <MainScreen />}
       {phase === 'over' && <GameOverScreen />}

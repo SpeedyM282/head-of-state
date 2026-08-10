@@ -118,6 +118,25 @@ export const reforms: Reform[] = [
     instant: [{ target: 'treasury', delta: 15 }, { target: 'economy', delta: 10 }, { target: 'vector', delta: -2 }],
     perTurn: [{ target: 'treasury', delta: 1.2 }],
   },
+  {
+    id: 'eco-audit',
+    branch: 'economy',
+    tier: 6,
+    title: {
+      en: 'Financial audit',
+      ru: 'Финансовый аудит',
+      uz: 'Moliyaviy audit',
+    },
+    description: {
+      en: 'Mandatory audits for state procurement are now in force. Half the officials are on sudden medical leave. So is the other half.',
+      ru: 'Ввели обязательный аудит госзакупок. Половина чиновников в отпуске по состоянию здоровья, вторая половина — тоже.',
+      uz: 'Davlat xaridlari uchun majburiy audit joriy etildi. Amaldorlarning yarmi to‘satdan kasallik ta’tiliga chiqdi. Qolgan yarmi ham.',
+    },
+    costInfluence: 10,
+    costTreasury: 30,
+    instant: [{ target: 'corruption', delta: -18 }, { target: 'eliteLoyalty', delta: -10 }, { target: 'vector', delta: -3 }],
+    perTurn: [{ target: 'corruption', delta: -0.3 }],
+  },
 
   // ─── Security bloc (vector: +4…+12) ───
   {
@@ -235,6 +254,25 @@ export const reforms: Reform[] = [
     instant: [{ target: 'eliteLoyalty', delta: 10 }, { target: 'stability', delta: 8 }, { target: 'approval', delta: -3 }, { target: 'vector', delta: 12 }],
     perTurn: [{ target: 'development', delta: -0.5 }],
   },
+  {
+    id: 'force-anticorruption',
+    branch: 'force',
+    tier: 6,
+    title: {
+      en: 'Anti-corruption bureau',
+      ru: 'Антикоррупционное управление',
+      uz: 'Korrupsiyaga qarshi kurash boshqarmasi',
+    },
+    description: {
+      en: 'A special anti-corruption bureau was created. It is headed by the one official nobody has found anything on — yet.',
+      ru: 'Создано специальное управление по борьбе с коррупцией. Возглавил его человек, которого пока не за что сажать.',
+      uz: 'Korrupsiyaga qarshi maxsus boshqarma tuzildi. Uni hali hech narsada ayblab bo‘lmagan amaldor boshqaradi.',
+    },
+    costInfluence: 12,
+    costTreasury: 32,
+    instant: [{ target: 'corruption', delta: -16 }, { target: 'eliteLoyalty', delta: -12 }, { target: 'stability', delta: 3 }, { target: 'vector', delta: 4 }],
+    perTurn: [{ target: 'corruption', delta: -0.25 }],
+  },
 
   // ─── Social policy (vector: −2…−6) ───
   {
@@ -351,6 +389,25 @@ export const reforms: Reform[] = [
     costTreasury: 45,
     instant: [{ target: 'approval', delta: 14 }, { target: 'development', delta: 6 }, { target: 'economy', delta: -3 }, { target: 'vector', delta: -6 }],
     perTurn: [{ target: 'approval', delta: 0.5 }, { target: 'treasury', delta: -0.75 }],
+  },
+  {
+    id: 'social-watchdogs',
+    branch: 'social',
+    tier: 6,
+    title: {
+      en: 'Civic oversight',
+      ru: 'Общественный контроль',
+      uz: 'Fuqarolik nazorati',
+    },
+    description: {
+      en: 'Citizens are now allowed to file complaints about officials. The complaints are processed by officials.',
+      ru: 'Гражданам разрешили жаловаться на чиновников. Жалобы принимают чиновники.',
+      uz: 'Fuqarolarga amaldorlar haqida shikoyat qilish ruxsat etildi. Shikoyatlarni amaldorlar qabul qiladi.',
+    },
+    costInfluence: 9,
+    costTreasury: 26,
+    instant: [{ target: 'corruption', delta: -12 }, { target: 'eliteLoyalty', delta: -7 }, { target: 'approval', delta: 6 }, { target: 'vector', delta: -5 }],
+    perTurn: [{ target: 'corruption', delta: -0.2 }, { target: 'approval', delta: 0.1 }],
   },
 
   // ─── Propaganda (vector: +6…+10) ───
