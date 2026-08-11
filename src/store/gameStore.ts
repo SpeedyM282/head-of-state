@@ -5,7 +5,7 @@ import { buildContent } from '../data';
 import { GameClock, type Speed } from './clock';
 import { clearSave, loadGame, saveGame } from './persistence';
 
-type Phase = 'menu' | 'playing' | 'over';
+type Phase = 'menu' | 'playing' | 'over' | 'interTerm';
 
 interface GameStore {
   phase: Phase;
@@ -22,6 +22,8 @@ interface GameStore {
   continueGame: () => void;
   buyReform: (reformId: string) => void;
   answerEvent: (optionIndex: number) => void;
+  /** Dismiss the inter-term inauguration screen and resume play in the new term. */
+  inaugurate: () => void;
   setSpeed: (speed: Speed) => void;
   openReforms: () => void;
   closeReforms: () => void;
@@ -36,14 +38,16 @@ export const useGameStore = create<GameStore>((set, get) => {
   const clock = new GameClock({
     onTick: () => {
       const { state, content } = get();
-      if (!state || !content || state.pendingEventId || state.outcome) return;
+      if (!state || !content || state.pendingEventId || state.outcome || state.awaitingInauguration) return;
       const prevStats = state.stats;
       const next = tick(state, content).state;
       saveGame({ state: next, difficulty: content.difficulty.id });
-      // An event auto-pauses time until the player answers; a result stops the clock.
+      // An event auto-pauses time until the player answers; a result or a won election
+      // (the inter-term inauguration) stops the clock until the player continues.
       if (next.pendingEventId) clock.setAutoPaused('event', true);
-      if (next.outcome) clock.stop();
-      set({ state: next, prevStats, phase: next.outcome ? 'over' : 'playing', hasSave: true });
+      if (next.outcome || next.awaitingInauguration) clock.stop();
+      const phase = next.outcome ? 'over' : next.awaitingInauguration ? 'interTerm' : 'playing';
+      set({ state: next, prevStats, phase, hasSave: true });
     },
   });
 
@@ -73,14 +77,8 @@ export const useGameStore = create<GameStore>((set, get) => {
       clock.setUserSpeed('normal');
       clock.setAutoPaused('reforms', false);
       clock.setAutoPaused('event', !!save.state.pendingEventId);
-      set({
-        phase: save.state.outcome ? 'over' : 'playing',
-        content,
-        state: save.state,
-        prevStats: null,
-        speed: 'normal',
-        reformsOpen: false,
-      });
+      const phase = save.state.outcome ? 'over' : save.state.awaitingInauguration ? 'interTerm' : 'playing';
+      set({ phase, content, state: save.state, prevStats: null, speed: 'normal', reformsOpen: false });
     },
 
     buyReform: (reformId) => {
@@ -99,6 +97,15 @@ export const useGameStore = create<GameStore>((set, get) => {
       clock.setAutoPaused('event', false);
       saveGame({ state: next, difficulty: content.difficulty.id });
       set({ state: next });
+    },
+
+    inaugurate: () => {
+      const { state, content } = get();
+      if (!state || !content || !state.awaitingInauguration) return;
+      const next = { ...state, awaitingInauguration: false };
+      saveGame({ state: next, difficulty: content.difficulty.id });
+      // prevStats reset so the new term's trends start clean; the clock restarts on MainScreen mount.
+      set({ state: next, prevStats: null, phase: 'playing' });
     },
 
     setSpeed: (speed) => {

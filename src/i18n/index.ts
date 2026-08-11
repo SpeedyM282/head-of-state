@@ -49,11 +49,14 @@ export function gameDate(turn: number, ui: Ui): { month: string; year: number } 
 }
 
 /**
- * Resolve which victory rank a run earned (GDD §9). Pure presentation selector:
- * the copy for the returned key lives in uiStrings[lang].victory.
+ * Resolve which victory rank a run earned (GDD §9). Pure presentation selector: the copy
+ * for the returned key lives in uiStrings[lang].victory. Every victory is now a voluntary
+ * step-down — the rank reflects how thriving the country was when you left. Stepping down
+ * with an excellent country is the canonical top ending, «Ушёл непобеждённым».
  */
 export function victoryRankKey(avgStats: number, zone: VectorZone): VictoryRankKey {
-  if (avgStats >= 70) {
+  if (avgStats >= 75) return 'steppedDown';
+  if (avgStats >= 60) {
     if (zone === 'democratic') return 'fatherDemocracy';
     if (zone === 'totalitarian') return 'fatherNation';
     return 'manager';

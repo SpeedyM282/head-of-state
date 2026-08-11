@@ -28,7 +28,8 @@ src/
     tick.ts           # tick(state, content, rng) → state: взаимовлияние показателей
     eventEngine.ts    # выбор события хода: триггерные > по зоне вектора > случайные
     vector.ts         # зона вектора правления, модификаторы зон
-    conditions.ts     # проверка 4 поражений и победы
+    conditions.ts     # grace-поражения: переворот / революция / дефолт
+    elections.ts      # выборы в конце срока (по зоне), лимит сроков, победа-уходом
     init.ts           # initGame(profile, difficulty, seed) → GameState
     index.ts          # публичный API ядра
   data/
@@ -78,8 +79,8 @@ tick(state: GameState, content: GameContent, rng: Rng): TickResult
 1. `MainScreen` монтируется → `store.startClock()` (интервал живёт, пока экран смонтирован; на unmount — `stopClock()`).
 2. `GameClock` копит прогресс месяца как долю [0,1); скорость (normal 20 c / fast 10 c на месяц) меняет только шаг, не прогресс — смена скорости в середине месяца не пропускает и не дублирует tick.
 3. Каждый месяц clock зовёт `onTick` → стор вызывает `tick(state, content)` и сохраняет снапшот.
-4. `tick`: пересчёт показателей → выбор события (eventEngine) → проверка условий (conditions).
-5. Событие (`pendingEventId`) → clock авто-пауза; ответ игрока снимает её и восстанавливает прежнюю скорость. Открытая панель реформ — тоже авто-пауза. **Ручная пауза имеет приоритет.** Исход (`outcome`) — `clock.stop()`.
+4. `tick`: пересчёт показателей → отложенные эффекты → grace-поражения (conditions) → в конце срока выборы (elections) → иначе выбор события (eventEngine).
+5. Событие (`pendingEventId`) → clock авто-пауза; ответ игрока снимает её. Открытая панель реформ — тоже авто-пауза. **Ручная пауза имеет приоритет.** Победа на выборах (`awaitingInauguration`) → экран «Инаугурация» (фаза `interTerm`), затем `store.inaugurate()` продолжает игру. Исход (`outcome`) — `clock.stop()`.
 6. UI между тиками: `buyReform` / `answerEvent` валидируются через core; `persistence` сохраняет снапшот после каждого действия и тика.
 
 ## 5. Правила для контента (data)

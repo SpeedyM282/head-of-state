@@ -62,6 +62,16 @@ export function applyPlayerActions(
       const option = event?.options[action.optionIndex];
       if (!option) continue;
       s = applyEffects({ ...s, pendingEventId: null }, option.effects);
+      if (option.flags?.amendConstitution) {
+        s = { ...s, constitutionAmended: true };
+      }
+      if (option.delayedEffects && option.delayedEffects.length > 0) {
+        const scheduled = option.delayedEffects.map((d) => ({
+          applyOnTurn: s.turn + d.afterTurns,
+          effects: d.effects,
+        }));
+        s = { ...s, scheduledEffects: [...s.scheduledEffects, ...scheduled] };
+      }
     }
   }
   return s;

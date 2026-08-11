@@ -11,6 +11,10 @@ export function initGame(content: GameContent, seed: number): GameState {
     stats,
     vector: 50, // start in the middle of the authoritarian zone — player's choices push it
     influence: content.balance.startingInfluence,
+    term: 1,
+    constitutionAmended: false,
+    awaitingInauguration: false,
+    scheduledEffects: [],
     ownedReforms: [],
     pendingEventId: null,
     eventHistory: {},

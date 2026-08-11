@@ -10,6 +10,10 @@ import { buildContent } from '../src/data';
  * Autoplayer: plays full games with a random strategy.
  * Purpose: (1) the simulation always terminates, (2) outcome distribution is sane,
  * (3) determinism holds. Run after every balance change and compare the printed stats.
+ *
+ * Games span multiple 48-month terms now (elections at the end of each term; open-ended
+ * after a constitution amendment), so the hard-stop covers ~6 terms. Per-term escalation
+ * must force termination well within that.
  */
 
 interface RunStats {
@@ -23,7 +27,7 @@ function playGame(difficulty: Difficulty, seed: number): { outcome: Outcome; tur
   // Separate rng for the "player brain" so it never touches simulation determinism assertions
   let brain = seed ^ 0x9e3779b9;
 
-  const maxTurns = content.difficulty.turnsToWin + 10; // hard stop: game MUST end before this
+  const maxTurns = content.difficulty.turnsToWin * 6 + 20; // ~6 terms: game MUST end before this
   while (!s.outcome && s.turn < maxTurns) {
     // Answer a pending event randomly.
     if (s.pendingEventId) {
@@ -41,6 +45,8 @@ function playGame(difficulty: Difficulty, seed: number): { outcome: Outcome; tur
       s = applyPlayerActions(s, [{ type: 'buyReform', reformId: content.reforms[ri].id }], content);
     }
     s = tick(s, content).state;
+    // The inter-term inauguration is a ui pause; the sim just continues into the new term.
+    if (s.awaitingInauguration) s = { ...s, awaitingInauguration: false };
   }
   if (!s.outcome) throw new Error(`game did not terminate (difficulty=${difficulty}, seed=${seed})`);
   return { outcome: s.outcome, turns: s.turn };
@@ -75,8 +81,8 @@ describe('autoplayer', () => {
     expect(defeats / 300).toBeGreaterThan(0.6);
   });
 
-  it('random play is survivable sometimes on easy', () => {
-    const stats = runMany('easy', 300);
+  it('the step-down victory is reachable — some easy games end by voluntarily leaving power', () => {
+    const stats = runMany('easy', 500);
     expect(stats.outcomes['victory'] ?? 0).toBeGreaterThan(0);
   });
 
@@ -86,12 +92,16 @@ describe('autoplayer', () => {
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
   });
 
-  it('all four defeat kinds are reachable across seeds', () => {
-    const stats = runMany('hard', 500);
-    const merged = { ...stats.outcomes, ...runMany('easy', 300).outcomes };
-    // coup/revolution/default must appear on hard; elections may need democratic play — check leniently
-    expect(stats.outcomes['coup'] ?? merged['coup'] ?? 0).toBeGreaterThan(0);
-    expect((stats.outcomes['revolution'] ?? 0) + (merged['revolution'] ?? 0)).toBeGreaterThan(0);
-    expect((stats.outcomes['default'] ?? 0) + (merged['default'] ?? 0)).toBeGreaterThan(0);
+  it('all four defeat kinds AND the step-down victory are reachable across seeds', () => {
+    const hard = runMany('hard', 500).outcomes;
+    const easy = runMany('easy', 500).outcomes;
+    const merged: Record<string, number> = {};
+    for (const src of [hard, easy]) for (const [k, v] of Object.entries(src)) merged[k] = (merged[k] ?? 0) + v;
+
+    for (const kind of ['coup', 'revolution', 'default', 'elections'] as const) {
+      expect(merged[kind] ?? 0, `${kind} should be reachable`).toBeGreaterThan(0);
+    }
+    // Step-down victory (the good ending) must be reachable too.
+    expect(merged['victory'] ?? 0, 'step-down victory should be reachable').toBeGreaterThan(0);
   });
 });

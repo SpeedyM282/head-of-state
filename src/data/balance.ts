@@ -41,12 +41,22 @@ export const balance: Balance = {
   totalitarianDevelopmentDecay: 0.75, // totalitarian zone: brain drain
   totalitarianApprovalCrashFactor: 1.5, // reserved: crisis events hit approval harder (used by content)
 
-  // --- Elections (democratic zone only): one mid-term election at month 24 ---
-  electionsEveryTurns: 24,
-  electionsApprovalToWin: 45,
-
   // --- Revolution needs both low approval AND stability below this ---
   revolutionStabilityCeiling: 50,
+
+  // --- Elections (end of each 48-month term) & term limits ---
+  electionsApprovalToWin: 45, // democratic re-election bar
+  authoritarianElectionMargin: 15, // «админресурс»: authoritarian wins at 45-15 = 30
+  totalitarianElectionWinChance: 0.997, // a formality — but not quite 100%
+  totalitarianElectionVectorShift: 8, // each sham "win" shoves the vector further
+  totalitarianElectionEconomyHit: 6, // ...and the world docks reputation
+  totalitarianElectionDevelopmentHit: 4,
+  termLimit: 2, // constitution allows 2 terms before amend-or-step-down
+
+  // --- Per-term escalation: open-ended play must decay so every game terminates ---
+  escalationPerTerm: 1.3, // external pressure & corruption growth ×this per term after the first
+  escalationPressurePerTerm: 1.0, // (term-1)*this economy+stability drain/month, all difficulties
+  electionApprovalRisePerTerm: 3, // re-election bar creeps up each term
 
   // --- Prosperity bonus: economy above the threshold compounds treasury income.
   // At economy=100 (threshold 70, factor 0.05) this adds +1.5 income/month — roughly

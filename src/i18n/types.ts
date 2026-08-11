@@ -9,8 +9,10 @@ export interface RankText {
 /** Reform branch keys (mirror of Reform['branch']). */
 export type BranchKey = 'economy' | 'force' | 'social' | 'propaganda';
 
-/** Victory rank keys resolved from average stats + zone (see victoryRankKey). */
+/** Victory rank keys resolved from average stats + zone (see victoryRankKey).
+ * 'steppedDown' is the canonical good ending — voluntarily leaving power, undefeated. */
 export type VictoryRankKey =
+  | 'steppedDown'
   | 'fatherDemocracy'
   | 'fatherNation'
   | 'manager'
@@ -36,8 +38,20 @@ export interface Ui {
     brief: string;
     reforms: string;
     autosave: string;
+    /** «Срок» — the term counter shown in the header. */
+    term: string;
+    /** «до выборов» — months remaining until the next election. */
+    untilElection: string;
+    /** Short month unit, e.g. «мес.». */
+    monthsShort: string;
     /** Aria labels for the real-time clock controls. */
     speed: { pause: string; normal: string; fast: string };
+  };
+  /** Inter-term inauguration summary shown after winning re-election. */
+  interTerm: {
+    stamp: string;
+    flavor: string;
+    continue: string;
   };
   /** Month names, index 0 = January … 11 = December. */
   months: string[];

@@ -18,7 +18,15 @@ export const uz: Ui = {
     brief: 'Mamlakat bo‘yicha ma’lumot',
     reforms: 'Islohotlar',
     autosave: 'Avtomatik saqlanadi. Voqelik bilan har qanday o‘xshashlik tasodifiy.',
+    term: 'Muddat',
+    untilElection: 'saylovgacha',
+    monthsShort: 'oy',
     speed: { pause: 'Pauza', normal: 'O‘ynash', fast: 'Tezlashtirish' },
+  },
+  interTerm: {
+    stamp: 'Inauguratsiya',
+    flavor: 'Siz yana hokimiyatdasiz. Orkestr tanish bir kuy chalmoqda. Xalq ham, chamasi, kuyni taniydi.',
+    continue: 'Qasamyod qilish',
   },
   months: [
     'Yanvar', 'Fevral', 'Mart', 'Aprel', 'May', 'Iyun',
@@ -101,6 +109,10 @@ export const uz: Ui = {
     },
   },
   victory: {
+    steppedDown: {
+      title: 'Mag‘lub bo‘lmay ketdi',
+      text: 'Vakolatlaringizni o‘zingiz topshirdingiz — butun, o‘z vaqtida va o‘z ixtiyoringiz bilan. Bu mamlakatda hali hech kim bunday qilmagan. Darsliklar dovdirab qoladi.',
+    },
     fatherDemocracy: {
       title: 'Demokratiya otasi',
       text: 'Siz haqingizda darsliklarda yozishadi. Yaxshi boblarida.',

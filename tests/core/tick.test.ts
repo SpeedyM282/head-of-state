@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { tick } from '../../src/core/tick';
+import { applyPlayerActions } from '../../src/core/actions';
 import { initGame } from '../../src/core/init';
 import { buildContent } from '../../src/data';
 import type { GameContent, GameState, Stats } from '../../src/core/types';
@@ -135,5 +136,59 @@ describe('corruption side effects', () => {
     const content = quietContent();
     const s = stateAt(content, { corruption: 100 }, 50);
     expect(tick(s, content).state.outcome).toBeNull();
+  });
+});
+
+describe('delayed event effects', () => {
+  it('answering an option with delayedEffects schedules them for later, applies the immediate part now', () => {
+    const content = buildContent('normal'); // full pool so trg-dizzy-success exists
+    const base = initGame(content, 1);
+    const answered = applyPlayerActions(
+      { ...base, pendingEventId: 'trg-dizzy-success' },
+      [{ type: 'answerEvent', optionIndex: 0 }], // "believe the advisers": +3 influence now, −10 approval later
+      content,
+    );
+    expect(answered.pendingEventId).toBeNull();
+    expect(answered.influence).toBe(base.influence + 3);
+    expect(answered.scheduledEffects).toHaveLength(1);
+    expect(answered.scheduledEffects[0].applyOnTurn).toBe(base.turn + 6);
+    expect(answered.scheduledEffects[0].effects).toContainEqual({ target: 'approval', delta: -10 });
+  });
+
+  it('tick applies a scheduled effect exactly when it comes due, then drops it', () => {
+    const content = quietContent();
+    const s0: GameState = {
+      ...stateAt(content, { approval: 80 }),
+      turn: 10,
+      scheduledEffects: [{ applyOnTurn: 11, effects: [{ target: 'approval', delta: -10 }] }],
+    };
+    const withDelay = tick(s0, content).state;
+    const control = tick({ ...s0, scheduledEffects: [] }, content).state;
+    expect(withDelay.scheduledEffects).toHaveLength(0);
+    // The only difference between the two runs is the −10 approval that came due.
+    expect(control.stats.approval - withDelay.stats.approval).toBeCloseTo(10, 5);
+  });
+});
+
+describe('per-term escalation', () => {
+  it('external pressure and corruption growth bite harder in later terms', () => {
+    const content = quietContent();
+    const base = stateAt(content, { corruption: 30, economy: 60, stability: 60 }, 50); // authoritarian
+    const term1 = tick({ ...base, term: 1 }, content).state;
+    const term4 = tick({ ...base, term: 4 }, content).state;
+    // Corruption drifts up faster later (escalation multiplier).
+    expect(term4.stats.corruption - 30).toBeGreaterThan(term1.stats.corruption - 30);
+    // Economy and stability drain harder later (escalated pressure + additive term ramp).
+    expect(term4.stats.economy).toBeLessThan(term1.stats.economy);
+    expect(term4.stats.stability).toBeLessThan(term1.stats.stability);
+  });
+
+  it('term 1 has no escalation ramp (additive pressure is zero)', () => {
+    const content = quietContent();
+    const base = stateAt(content, { economy: 60, stability: 60 }, 10); // democratic, base pressure ×0.5
+    // With difficulty pressure 0.33 and no ramp, the term-1 economy drain is modest.
+    const term1 = tick({ ...base, term: 1 }, content).state;
+    const term2 = tick({ ...base, term: 2 }, content).state;
+    expect(term1.stats.economy).toBeGreaterThan(term2.stats.economy); // term 2 already ramps
   });
 });

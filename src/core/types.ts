@@ -67,8 +67,30 @@ export interface CountryProfile {
   startStatsOverride?: Partial<Stats>;
 }
 
+/** An effect batch that lands `afterTurns` months later (scheduled into GameState). */
+export interface DelayedEffect {
+  afterTurns: number;
+  effects: Effect[];
+}
+
+/** Non-numeric state changes an event option can trigger, kept declarative in content. */
+export interface EventOptionFlags {
+  /** Removes term limits — the ruler may run indefinitely (constitution question). */
+  amendConstitution?: boolean;
+}
+
 export interface EventOption {
   text: LocalizedText;
+  effects: Effect[];
+  /** Hidden costs/benefits applied later — e.g. the delayed price of complacency. */
+  delayedEffects?: DelayedEffect[];
+  /** Declarative non-stat state changes (see EventOptionFlags). */
+  flags?: EventOptionFlags;
+}
+
+/** A batch of effects queued to apply on a future turn (see EventOption.delayedEffects). */
+export interface ScheduledEffect {
+  applyOnTurn: number;
   effects: Effect[];
 }
 
@@ -129,6 +151,14 @@ export interface GameState {
   /** 0 = democracy, 100 = totalitarianism. */
   vector: number;
   influence: number;
+  /** Current term, 1-based. Elections land at the end of each term (turn = term * 48). */
+  term: number;
+  /** Whether the constitution has been amended to remove term limits. */
+  constitutionAmended: boolean;
+  /** Set on winning an election — pauses play for the inter-term inauguration screen. */
+  awaitingInauguration: boolean;
+  /** Effects queued to apply on a future turn (delayed event costs). */
+  scheduledEffects: ScheduledEffect[];
   ownedReforms: string[];
   /** Event currently awaiting the player's answer (blocks the next tick / auto-pauses the clock). */
   pendingEventId: string | null;
@@ -177,9 +207,30 @@ export interface Balance {
   totalitarianDevelopmentDecay: number;
   totalitarianApprovalCrashFactor: number;
   zoneInfluenceBonus: Record<VectorZone, number>;
-  electionsEveryTurns: number;
-  electionsApprovalToWin: number;
   revolutionStabilityCeiling: number;
+
+  // --- Elections (end of each term) & term limits ---
+  /** Democratic-zone approval needed to win re-election. */
+  electionsApprovalToWin: number;
+  /** Authoritarian zone wins at (electionsApprovalToWin - this) — «админресурс». */
+  authoritarianElectionMargin: number;
+  /** Totalitarian zone almost always "wins"; the sliver of loss keeps it deterministic-dramatic. */
+  totalitarianElectionWinChance: number;
+  /** A totalitarian "election win" shoves the vector further and costs reputation. */
+  totalitarianElectionVectorShift: number;
+  totalitarianElectionEconomyHit: number;
+  totalitarianElectionDevelopmentHit: number;
+  /** Constitution allows this many terms before the ruler must amend it or step down. */
+  termLimit: number;
+
+  // --- Per-term escalation: open-ended play must decay so every game terminates ---
+  /** External pressure & corruption growth multiply by this each term after the first. */
+  escalationPerTerm: number;
+  /** Additive economy+stability drain of (term-1)*this per month — bites even on easy
+   * (whose base external pressure is 0), guaranteeing open-ended games terminate. */
+  escalationPressurePerTerm: number;
+  /** Re-election approval bar rises by this per term. */
+  electionApprovalRisePerTerm: number;
 
   // --- Prosperity & corruption: the economy → treasury feedback loop ---
   /** Economy above this earns bonus income on top of the linear incomeEconomyFactor term. */

@@ -154,10 +154,10 @@ export const triggeredEvents: GameEvent[] = [
     ],
   },
   {
-    id: 'trg-cheering',
+    id: 'trg-dizzy-success',
     kind: 'triggered',
-    trigger: (s) => s.stats.approval > 85,
-    cooldown: 6,
+    once: true,
+    trigger: (s) => s.stats.approval > 75,
     title: {
       en: 'Dizzy with success',
       ru: 'Головокружение от успехов',
@@ -169,9 +169,59 @@ export const triggeredEvents: GameEvent[] = [
       uz: 'Reyting o‘ta yuqori. Maslahatchilar pichirlaydi: bunday sevgi bilan saylov — quruq rasmiyatchilik.',
     },
     options: [
-      { text: { en: 'Call early elections', ru: 'Провести досрочные выборы', uz: 'Muddatdan oldin saylov o‘tkazish' }, effects: [{ target: 'approval', delta: 2 }, { target: 'eliteLoyalty', delta: -3 }, { target: 'vector', delta: -6 }] },
-      { text: { en: 'Extend your term', ru: 'Продлить полномочия', uz: 'Vakolatni uzaytirish' }, effects: [{ target: 'eliteLoyalty', delta: 5 }, { target: 'approval', delta: -4 }, { target: 'vector', delta: 8 }] },
-      { text: { en: 'Stay modest', ru: 'Остаться скромным', uz: 'Kamtar qolish' }, effects: [{ target: 'stability', delta: 3 }, { target: 'vector', delta: -2 }] },
+      // (a) A cheap boost now, but complacency curdles into a ratings slump half a year on.
+      {
+        text: { en: 'Believe the advisers', ru: 'Поверить советникам', uz: 'Maslahatchilarga ishonish' },
+        effects: [{ target: 'influence', delta: 3 }],
+        delayedEffects: [{ afterTurns: 6, effects: [{ target: 'approval', delta: -10 }] }],
+      },
+      { text: { en: 'Check the rating in person', ru: '«Проверить рейтинг лично»', uz: 'Reytingni shaxsan tekshirish' }, effects: [{ target: 'treasury', delta: -5 }, { target: 'approval', delta: 3 }, { target: 'vector', delta: -3 }] },
+      { text: { en: 'Cancel the debates', ru: 'Отменить дебаты', uz: 'Debatlarni bekor qilish' }, effects: [{ target: 'vector', delta: 6 }, { target: 'stability', delta: 2 }, { target: 'approval', delta: -4 }] },
+    ],
+  },
+  {
+    id: 'trg-constitution',
+    kind: 'triggered',
+    once: true,
+    // Six months before the term-limit election (month 90 of the 96-month second term).
+    trigger: (s) => s.term === 2 && !s.constitutionAmended && s.turn >= 90,
+    title: {
+      en: 'The constitutional question',
+      ru: 'Конституционный вопрос',
+      uz: 'Konstitutsiyaviy masala',
+    },
+    text: {
+      en: 'Your second term is ending, and the constitution allows only two. The lawyers have already brought a draft amendment — just in case.',
+      ru: 'Второй срок подходит к концу, а конституция позволяет только два. Юристы уже принесли проект поправок — на всякий случай.',
+      uz: 'Ikkinchi muddatingiz tugayapti, konstitutsiya esa faqat ikkitasiga ruxsat beradi. Yuristlar har ehtimolga qarshi tuzatma loyihasini olib kelishdi.',
+    },
+    options: [
+      {
+        text: { en: 'Amend the constitution', ru: 'Изменить конституцию', uz: 'Konstitutsiyani o‘zgartirish' },
+        effects: [{ target: 'vector', delta: 15 }, { target: 'eliteLoyalty', delta: 10 }, { target: 'approval', delta: -8 }],
+        flags: { amendConstitution: true },
+      },
+      { text: { en: 'Refuse and step down after the term', ru: 'Отказаться и уйти после срока', uz: 'Rad etib, muddatdan so‘ng ketish' }, effects: [{ target: 'approval', delta: 5 }, { target: 'stability', delta: 3 }] },
+    ],
+  },
+  {
+    id: 'trg-amendments-sanctions',
+    kind: 'triggered',
+    once: true,
+    trigger: (s) => s.constitutionAmended,
+    title: {
+      en: 'The world reacts to the amendments',
+      ru: 'Реакция на поправки',
+      uz: 'Dunyoning tuzatmalarga munosabati',
+    },
+    text: {
+      en: 'The world community studied your constitutional amendments closely and suddenly remembered about sanctions. The wording is copied from last time.',
+      ru: 'Мировое сообщество внимательно изучило ваши поправки к конституции и внезапно вспомнило про санкции. Формулировки — как под копирку с прошлого раза.',
+      uz: 'Jahon hamjamiyati konstitutsiyaviy tuzatmalaringizni diqqat bilan o‘rgandi va to‘satdan sanksiyalarni esladi. Ifodalar o‘tgan safargidek nusxa.',
+    },
+    options: [
+      { text: { en: 'Proudly ignore them', ru: 'Гордо проигнорировать', uz: 'G‘urur bilan e’tiborsiz qoldirish' }, effects: [{ target: 'economy', delta: -5 }, { target: 'vector', delta: 4 }, { target: 'stability', delta: 2 }] },
+      { text: { en: 'Make concessions', ru: 'Пойти на уступки', uz: 'Yon berish' }, effects: [{ target: 'approval', delta: 3 }, { target: 'eliteLoyalty', delta: -4 }, { target: 'vector', delta: -3 }] },
     ],
   },
   {

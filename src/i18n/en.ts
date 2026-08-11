@@ -18,7 +18,15 @@ export const en: Ui = {
     brief: 'Country brief',
     reforms: 'Reforms',
     autosave: 'Saved automatically. Any resemblance to reality is coincidental.',
+    term: 'Term',
+    untilElection: 'until election',
+    monthsShort: 'mo',
     speed: { pause: 'Pause', normal: 'Play', fast: 'Fast forward' },
+  },
+  interTerm: {
+    stamp: 'Inauguration',
+    flavor: 'You are in power again. The orchestra plays something familiar. The people, it seems, recognize the tune too.',
+    continue: 'Take the oath',
   },
   months: [
     'January', 'February', 'March', 'April', 'May', 'June',
@@ -101,6 +109,10 @@ export const en: Ui = {
     },
   },
   victory: {
+    steppedDown: {
+      title: 'Left undefeated',
+      text: 'You laid down your powers yourself — intact, on time, of your own free will. No one in this country had ever done that. The textbooks will be baffled.',
+    },
     fatherDemocracy: {
       title: 'Father of democracy',
       text: 'They’ll write about you in the textbooks. In the good chapters.',

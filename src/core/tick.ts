@@ -3,20 +3,37 @@ import { applyEffects, clampStat } from './effects';
 import { vectorZone } from './vector';
 import { pickEvent } from './eventEngine';
 import { checkConditions } from './conditions';
+import { electionTurn, resolveElection } from './elections';
+
+/** Apply any delayed effects that come due on this turn, removing them from the queue. */
+function applyDueEffects(state: GameState): GameState {
+  if (state.scheduledEffects.length === 0) return state;
+  const due = state.scheduledEffects.filter((e) => e.applyOnTurn <= state.turn);
+  if (due.length === 0) return state;
+  let s: GameState = {
+    ...state,
+    scheduledEffects: state.scheduledEffects.filter((e) => e.applyOnTurn > state.turn),
+  };
+  for (const e of due) s = applyEffects(s, e.effects);
+  return s;
+}
 
 /**
  * Advances the game by one turn (one in-game month).
- * Order: income → stat interactions → zone effects → owned reform perTurn effects →
- * event selection → defeat/victory checks.
+ * Order: income → stat interactions → zone effects → owned reform perTurn → due delayed
+ * effects → defeat checks → end-of-term election (only on the election turn) → event selection.
  * Pure and deterministic: all randomness flows through state.rngState.
  * The real-time clock that decides *when* to call this lives in the store, not here.
  */
 export function tick(state: GameState, content: GameContent): TickResult {
-  if (state.outcome || state.pendingEventId) {
+  if (state.outcome || state.pendingEventId || state.awaitingInauguration) {
     return { state, firedEventId: null };
   }
   const b = content.balance;
   const zone = vectorZone(state.vector);
+  // Escalation compounds each term after the first, so open-ended play (post-amendment)
+  // grows unstable and every game still terminates.
+  const escalation = Math.pow(b.escalationPerTerm, state.term - 1);
 
   let s: GameState = { ...state, turn: state.turn + 1, stats: { ...state.stats } };
 
@@ -64,10 +81,10 @@ export function tick(state: GameState, content: GameContent): TickResult {
   }
 
   // Corruption drifts upward on its own — faster under totalitarianism, where unchecked
-  // power breeds theft — drags down development, and once it's severe enough it buys elite
-  // goodwill (they profit from the graft, which is why fighting it costs their loyalty).
+  // power breeds theft, and harsher each term (escalation) — drags down development, and
+  // once severe it buys elite goodwill (they profit from the graft, so fighting it costs loyalty).
   const corruptionGrowth =
-    b.corruptionGrowth * (zone === 'totalitarian' ? b.corruptionGrowthTotalitarianMultiplier : 1);
+    b.corruptionGrowth * escalation * (zone === 'totalitarian' ? b.corruptionGrowthTotalitarianMultiplier : 1);
   s.stats.corruption = clampStat(s.stats.corruption + corruptionGrowth);
   s.stats.development = clampStat(s.stats.development - s.stats.corruption * b.corruptionDevelopmentDrag);
   if (s.stats.corruption > b.corruptionEliteBondThreshold) {
@@ -82,8 +99,11 @@ export function tick(state: GameState, content: GameContent): TickResult {
     // Brain drain and isolation.
     s.stats.development = clampStat(s.stats.development - b.totalitarianDevelopmentDecay);
   }
-  // External pressure scales with difficulty and is harsher outside the democratic zone.
-  const pressure = content.difficulty.externalPressure * (zone === 'totalitarian' ? 2 : zone === 'authoritarian' ? 1 : 0.5);
+  // External pressure scales with difficulty, escalation and is harsher outside the democratic zone.
+  // The additive term ramp bites regardless of difficulty (so open-ended easy games still decay).
+  const pressure =
+    content.difficulty.externalPressure * escalation * (zone === 'totalitarian' ? 2 : zone === 'authoritarian' ? 1 : 0.5) +
+    (state.term - 1) * b.escalationPressurePerTerm;
   s.stats.economy = clampStat(s.stats.economy - pressure);
   s.stats.stability = clampStat(s.stats.stability - pressure);
 
@@ -93,7 +113,20 @@ export function tick(state: GameState, content: GameContent): TickResult {
     if (reform) s = applyEffects(s, reform.perTurn);
   }
 
-  // 5. Event selection.
+  // 5. Delayed event costs that come due this month.
+  s = applyDueEffects(s);
+
+  // 6. Grace-based defeats (coup / revolution / default).
+  s = checkConditions(s, content);
+  if (s.outcome) return { state: s, firedEventId: null };
+
+  // 7. End-of-term election preempts an ordinary event on the election month.
+  if (s.turn === electionTurn(s, content)) {
+    s = resolveElection(s, content);
+    return { state: s, firedEventId: null };
+  }
+
+  // 8. Event selection.
   const picked = pickEvent(s, content);
   s = picked.state;
   if (picked.eventId) {
@@ -103,9 +136,6 @@ export function tick(state: GameState, content: GameContent): TickResult {
       eventHistory: { ...s.eventHistory, [picked.eventId]: s.turn },
     };
   }
-
-  // 6. Defeat / victory.
-  s = checkConditions(s, content);
 
   return { state: s, firedEventId: picked.eventId };
 }

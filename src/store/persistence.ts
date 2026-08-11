@@ -4,7 +4,9 @@ import { DEFAULT_LANG, LANGS } from '../i18n';
 // MVP persistence: localStorage adapter.
 // TODO(stage 4): swap the storage backend to @capacitor/preferences — only this file changes.
 
-const KEY = 'prezident.save.v1';
+// v2: GameState gained term/constitutionAmended/awaitingInauguration/scheduledEffects.
+// Bumping the key discards incompatible v1 saves rather than loading a malformed state.
+const KEY = 'prezident.save.v2';
 const LANG_KEY = 'prezident.lang.v1';
 
 export interface SaveData {

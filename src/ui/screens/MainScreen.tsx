@@ -28,7 +28,10 @@ export function MainScreen() {
 
   const { month, year } = gameDate(state.turn, ui);
   const dangerThreshold = content.difficulty.defeatThreshold + 10;
-  const termProgress = Math.min(1, state.turn / content.difficulty.turnsToWin);
+  // The term/election cycle: elections land at the end of each 48-month term.
+  const termLength = content.difficulty.turnsToWin;
+  const monthsUntilElection = state.term * termLength - state.turn;
+  const termProgress = Math.min(1, (state.turn - (state.term - 1) * termLength) / termLength);
 
   return (
     <div className="flex flex-col gap-3 pt-10">
@@ -65,12 +68,18 @@ export function MainScreen() {
         </p>
       </header>
 
-      {/* Subtle progress toward the end of the term. */}
-      <div className="h-0.5 w-full bg-(--ink-soft)" aria-hidden>
-        <div
-          className="h-full bg-(--gold) opacity-60"
-          style={{ width: `${termProgress * 100}%`, transition: 'width 300ms' }}
-        />
+      {/* Term counter, election countdown, and progress toward the next election. */}
+      <div>
+        <div className="mb-1 flex items-center justify-between text-[0.6rem] uppercase tracking-wider text-(--text-faint)">
+          <span>{ui.main.term} {state.term}</span>
+          <span>{ui.main.untilElection}: <span className="num">{monthsUntilElection}</span> {ui.main.monthsShort}</span>
+        </div>
+        <div className="h-0.5 w-full bg-(--ink-soft)" aria-hidden>
+          <div
+            className="h-full bg-(--gold) opacity-60"
+            style={{ width: `${termProgress * 100}%`, transition: 'width 300ms' }}
+          />
+        </div>
       </div>
 
       <div className="panel p-3">

@@ -93,9 +93,13 @@ describe('i18n helpers', () => {
   });
 
   it('victoryRankKey follows GDD §9 thresholds', () => {
-    expect(victoryRankKey(75, 'democratic')).toBe('fatherDemocracy');
-    expect(victoryRankKey(75, 'totalitarian')).toBe('fatherNation');
-    expect(victoryRankKey(75, 'authoritarian')).toBe('manager');
+    // A thriving country you stepped down from earns the canonical top rank, any zone.
+    expect(victoryRankKey(80, 'democratic')).toBe('steppedDown');
+    expect(victoryRankKey(80, 'totalitarian')).toBe('steppedDown');
+    // Below the top tier, the rank is zone-flavored.
+    expect(victoryRankKey(65, 'democratic')).toBe('fatherDemocracy');
+    expect(victoryRankKey(65, 'totalitarian')).toBe('fatherNation');
+    expect(victoryRankKey(65, 'authoritarian')).toBe('manager');
     expect(victoryRankKey(50, 'democratic')).toBe('okay');
     expect(victoryRankKey(20, 'democratic')).toBe('survived');
   });

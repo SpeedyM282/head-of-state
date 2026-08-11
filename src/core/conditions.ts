@@ -2,13 +2,13 @@ import type { DefeatKind, GameContent, GameState } from './types';
 import { vectorZone } from './vector';
 
 /**
- * Defeats per GDD §9. Each condition must stay "armed" for defeatGraceTurns
- * consecutive turns before firing — the player gets a visible chance to recover.
- * Elections (democratic zone only) fire instantly on the election turn.
+ * Grace-based defeats per GDD §9 (coup / revolution / default). Each condition must stay
+ * "armed" for defeatGraceTurns consecutive turns before firing — a visible chance to recover.
+ * Elections and victory are resolved separately in elections.ts (end of each term).
  */
 export function checkConditions(state: GameState, content: GameContent): GameState {
   if (state.outcome) return state;
-  const { defeatThreshold, defeatGraceTurns, turnsToWin } = content.difficulty;
+  const { defeatThreshold, defeatGraceTurns } = content.difficulty;
   const b = content.balance;
   const zone = vectorZone(state.vector);
 
@@ -38,28 +38,6 @@ export function checkConditions(state: GameState, content: GameContent): GameSta
         outcome: { result: 'defeat', defeat: kind, turn: state.turn },
       };
     }
-  }
-
-  // Elections: democratic zone only, every N turns, instant.
-  if (
-    zone === 'democratic' &&
-    state.turn > 0 &&
-    state.turn % b.electionsEveryTurns === 0 &&
-    state.stats.approval < b.electionsApprovalToWin
-  ) {
-    return {
-      ...state,
-      defeatCounters: counters,
-      outcome: { result: 'defeat', defeat: 'elections', turn: state.turn },
-    };
-  }
-
-  if (state.turn >= turnsToWin) {
-    return {
-      ...state,
-      defeatCounters: counters,
-      outcome: { result: 'victory', turn: state.turn },
-    };
   }
 
   return { ...state, defeatCounters: counters };

@@ -48,21 +48,9 @@ describe('defeat conditions', () => {
     expect(s.outcome?.defeat).toBe('default');
   });
 
-  it('elections defeat: democratic zone, election turn, low approval — instant', () => {
-    const electionTurn = content.balance.electionsEveryTurns;
-    const s = armed({ approval: 30 }, { vector: 10, turn: electionTurn });
-    expect(checkConditions(s, content).outcome?.defeat).toBe('elections');
-  });
-
-  it('no elections outside the democratic zone', () => {
-    const electionTurn = content.balance.electionsEveryTurns;
-    const s = armed({ approval: 30 }, { vector: 80, turn: electionTurn, stats: undefined as never });
-    const fixed = { ...s, stats: { ...initGame(content, 1).stats, approval: 30, stability: 60, eliteLoyalty: 60 } };
-    expect(checkConditions(fixed, content).outcome).toBeNull();
-  });
-
-  it('victory at turnsToWin', () => {
-    const s = armed({}, { turn: content.difficulty.turnsToWin });
-    expect(checkConditions(s, content).outcome?.result).toBe('victory');
+  it('does not resolve elections or victory — those live in elections.ts now', () => {
+    // Reaching a term boundary is no longer a checkConditions concern.
+    const atTermEnd = armed({ approval: 5 }, { vector: 10, turn: content.difficulty.turnsToWin });
+    expect(checkConditions(atTermEnd, content).outcome).toBeNull();
   });
 });
