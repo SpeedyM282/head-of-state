@@ -5,8 +5,9 @@ import { DEFAULT_LANG, LANGS } from '../i18n';
 // TODO(stage 4): swap the storage backend to @capacitor/preferences — only this file changes.
 
 // v2: GameState gained term/constitutionAmended/awaitingInauguration/scheduledEffects.
-// Bumping the key discards incompatible v1 saves rather than loading a malformed state.
-const KEY = 'prezident.save.v2';
+// v3: GameState gained stepDownPending (mandatory per-term run/step-down choice).
+// Bumping the key discards incompatible older saves rather than loading a malformed state.
+const KEY = 'prezident.save.v3';
 const LANG_KEY = 'prezident.lang.v1';
 
 export interface SaveData {

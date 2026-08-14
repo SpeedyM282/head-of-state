@@ -13,6 +13,7 @@ export function initGame(content: GameContent, seed: number): GameState {
     influence: content.balance.startingInfluence,
     term: 1,
     constitutionAmended: false,
+    stepDownPending: false,
     awaitingInauguration: false,
     scheduledEffects: [],
     ownedReforms: [],

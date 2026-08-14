@@ -82,3 +82,32 @@ describe('resolveElection — term limit & constitution', () => {
     expect(s.term).toBe(b.termLimit + 1);
   });
 });
+
+describe('resolveElection — stepDownPending (mandatory per-term run/step-down choice)', () => {
+  it('resolves as the step-down victory even in term 1, below the term limit', () => {
+    const s = resolveElection({ ...state({ term: 1, vector: 10, approval: 95 }), stepDownPending: true }, content);
+    expect(s.outcome?.result).toBe('victory');
+    expect(s.awaitingInauguration).toBe(false);
+    expect(s.term).toBe(1);
+  });
+
+  it('overrides an otherwise-winning election — the choice to leave is final', () => {
+    const winning = state({ term: 1, vector: 10, approval: 95 });
+    const stayed = resolveElection(winning, content);
+    expect(stayed.outcome).toBeNull(); // control: would have won and continued
+
+    const left = resolveElection({ ...winning, stepDownPending: true }, content);
+    expect(left.outcome?.result).toBe('victory');
+  });
+
+  it('overrides an otherwise-losing election — leaving is a victory, not a defeat', () => {
+    const s = resolveElection({ ...state({ term: 1, vector: 10, approval: 5 }), stepDownPending: true }, content);
+    expect(s.outcome?.result).toBe('victory');
+  });
+
+  it('without the flag, term 1 resolves normally (no premature step-down)', () => {
+    const s = resolveElection(state({ term: 1, vector: 10, approval: 95 }), content);
+    expect(s.outcome).toBeNull();
+    expect(s.term).toBe(2);
+  });
+});

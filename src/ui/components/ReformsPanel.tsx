@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { canBuyReformReason } from "../../core";
 import type { ReformBlock } from "../../core";
 import type { Reform } from "../../core/types";
@@ -77,6 +77,14 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 	const ui = useUi();
 	const [activeBranch, setActiveBranch] = useState<Branch>("economy");
 	const [selectedId, setSelectedId] = useState<string | null>(null);
+	const chainScrollRef = useRef<HTMLDivElement>(null);
+
+	// Switching branch tabs shows a different node chain — jump its scroll area back to
+	// the top instead of keeping the previous tab's scroll position.
+	useEffect(() => {
+		if (chainScrollRef.current) chainScrollRef.current.scrollTop = 0;
+	}, [activeBranch]);
+
 	if (!state || !content) return null;
 
 	const branchReforms = content.reforms
@@ -217,7 +225,7 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
           docked at the bottom on narrow screens. The drawer is always on screen (see
           effectiveId above) — no click needed to reveal it. */}
 			<div className="mx-auto flex w-full max-w-150 flex-1 flex-col overflow-hidden md:flex-row">
-				<div className="min-h-0 flex-1 overflow-y-auto p-3">
+				<div ref={chainScrollRef} className="min-h-0 flex-1 overflow-y-auto p-3">
 					<div className="flex flex-col items-stretch">
 						{branchReforms.map((r, i) => {
 							const reason = canBuyReformReason(state, content, r.id);

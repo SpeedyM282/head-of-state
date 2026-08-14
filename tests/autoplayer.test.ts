@@ -21,7 +21,7 @@ interface RunStats {
   avgLength: number;
 }
 
-function playGame(difficulty: Difficulty, seed: number): { outcome: Outcome; turns: number } {
+function playGame(difficulty: Difficulty, seed: number): { outcome: Outcome; turns: number; term: number } {
   const content = buildContent(difficulty);
   let s: GameState = initGame(content, seed);
   // Separate rng for the "player brain" so it never touches simulation determinism assertions
@@ -49,7 +49,7 @@ function playGame(difficulty: Difficulty, seed: number): { outcome: Outcome; tur
     if (s.awaitingInauguration) s = { ...s, awaitingInauguration: false };
   }
   if (!s.outcome) throw new Error(`game did not terminate (difficulty=${difficulty}, seed=${seed})`);
-  return { outcome: s.outcome, turns: s.turn };
+  return { outcome: s.outcome, turns: s.turn, term: s.term };
 }
 
 function runMany(difficulty: Difficulty, games: number): RunStats {
@@ -84,6 +84,19 @@ describe('autoplayer', () => {
   it('the step-down victory is reachable — some easy games end by voluntarily leaving power', () => {
     const stats = runMany('easy', 500);
     expect(stats.outcomes['victory'] ?? 0).toBeGreaterThan(0);
+  });
+
+  it('the mandatory per-term choice does not collapse the game into a single term — both '
+    + 'stepping down early and running into a later term are reachable', () => {
+    let sawTerm1Only = false;
+    let sawTerm2Plus = false;
+    for (let seed = 1; seed <= 500; seed++) {
+      const { term } = playGame('easy', seed);
+      if (term >= 2) sawTerm2Plus = true;
+      else sawTerm1Only = true;
+    }
+    expect(sawTerm1Only).toBe(true); // some games resolve (step down or lose) within term 1
+    expect(sawTerm2Plus).toBe(true); // some games choose to run again and reach a later term
   });
 
   it('determinism: same seed + same actions = identical outcome', () => {

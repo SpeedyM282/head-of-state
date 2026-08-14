@@ -5,7 +5,15 @@
       "Bash(npm run *)",
       "Bash(echo \"typecheck exit: $?\")",
       "Bash(npx vitest *)",
-      "Bash(echo \"typecheck: $?\")"
+      "Bash(echo \"typecheck: $?\")",
+      "Bash(npx tsc *)",
+      "Bash(cat tsconfig.json)",
+      "Bash(cat tsconfig.app.json)",
+      "Bash(cat tsconfig.node.json)",
+      "Read(//tmp/**)",
+      "PowerShell(yarn typecheck *)",
+      "PowerShell(npx tsc --noEmit -p tsconfig.app.json; echo \"EXIT:$LASTEXITCODE\")",
+      "PowerShell(yarn test *)"
     ]
   }
 }

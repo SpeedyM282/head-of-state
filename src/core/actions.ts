@@ -65,6 +65,9 @@ export function applyPlayerActions(
       if (option.flags?.amendConstitution) {
         s = { ...s, constitutionAmended: true };
       }
+      if (option.flags?.stepDown) {
+        s = { ...s, stepDownPending: true };
+      }
       if (option.delayedEffects && option.delayedEffects.length > 0) {
         const scheduled = option.delayedEffects.map((d) => ({
           applyOnTurn: s.turn + d.afterTurns,

@@ -40,7 +40,7 @@ export function pickEvent(state: GameState, content: GameContent): PickedEvent {
   for (const e of content.events) {
     if (e.kind !== 'triggered' || !e.trigger) continue;
     if (!eligible(state, e)) continue;
-    if (e.trigger(state)) return { state, eventId: e.id };
+    if (e.trigger(state, content)) return { state, eventId: e.id };
   }
 
   let rng = state.rngState;

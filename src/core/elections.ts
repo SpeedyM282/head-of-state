@@ -22,7 +22,8 @@ export function electionThreshold(state: GameState, content: GameContent): numbe
  *  - totalitarian: almost always "wins", but each win shoves the vector and costs reputation
  *
  * Outcomes:
- *  - step down (term limit reached, constitution un-amended) → VICTORY (the good ending)
+ *  - step down (chosen via the mandatory per-term event, a refused constitution amendment,
+ *    or the term limit reached un-amended) → VICTORY (the good ending)
  *  - lose → 'elections' defeat
  *  - win → term++, awaitingInauguration set; stats are NOT reset — the country remembers.
  *
@@ -31,9 +32,10 @@ export function electionThreshold(state: GameState, content: GameContent): numbe
 export function resolveElection(state: GameState, content: GameContent): GameState {
   const b = content.balance;
 
-  // Constitution: once the term limit is reached, running again needs an amendment.
-  // Without it the ruler steps down of their own accord — the canonical "good ending".
-  if (state.term >= b.termLimit && !state.constitutionAmended) {
+  // Step down: either explicitly chosen (state.stepDownPending, set by an event flag — see
+  // EventOptionFlags.stepDown) or forced by the constitution's term limit going un-amended.
+  // Single resolution path for both — the canonical "good ending".
+  if (state.stepDownPending || (state.term >= b.termLimit && !state.constitutionAmended)) {
     return { ...state, outcome: { result: 'victory', turn: state.turn } };
   }
 

@@ -1,12 +1,51 @@
 import type { GameEvent } from '../../core/types';
 
 /**
- * Triggered events (8). Repeatable pressure/opportunity mechanics — they fire whenever
+ * Triggered events (12). Repeatable pressure/opportunity mechanics — they fire whenever
  * their predicate holds and re-fire after `cooldown` turns (not once-only). Six watch a
- * stat crossing into danger on the low side; the two newest watch the high side
- * (surplus treasury, runaway approval) — conditions the low-watch triggers never saw.
+ * stat crossing into danger on the low side; two watch the high side (surplus treasury,
+ * runaway approval); one is a scripted term-2 constitutional beat; two are election-cycle
+ * mechanics (per-term run/step-down choice, and its sanctions aftermath); one watches
+ * runaway corruption.
  */
 export const triggeredEvents: GameEvent[] = [
+  {
+    id: 'trg-election-choice',
+    kind: 'triggered',
+    // Fires in the 3-month window before every election, every term — including after a
+    // constitution amendment (elections keep happening, just without a term cap). Placed
+    // first for priority so it reliably wins the slot even if another triggered event's
+    // predicate is also true that month. Suppressed once stepDownPending is already set
+    // (e.g. the term-2 constitutional refusal already decided this term's outcome — see
+    // trg-constitution below — so there is nothing left to ask).
+    trigger: (s, content) => {
+      if (s.stepDownPending) return false;
+      const electionTurn = s.term * content.difficulty.turnsToWin;
+      return s.turn >= electionTurn - 3 && s.turn < electionTurn;
+    },
+    cooldown: 10, // wider than the 3-month window, narrower than a term — refires next term
+    title: {
+      en: 'Elections are looming',
+      ru: 'Выборы на носу',
+      uz: 'Saylovlar yaqinlashmoqda',
+    },
+    text: {
+      en: 'In three months the country votes on your fate again. The campaign office wants an answer: print new posters, or start drafting a farewell speech?',
+      ru: 'Через три месяца страна снова проголосует за вашу судьбу. Штаб ждёт ответа: печатать новые плакаты или уже готовить прощальную речь?',
+      uz: 'Uch oydan so‘ng mamlakat yana taqdiringiz uchun ovoz beradi. Shtab javob kutmoqda: yangi plakatlar bosilsinmi yoki xayrlashuv nutqi tayyorlansinmi?',
+    },
+    options: [
+      {
+        text: { en: 'Run for another term', ru: 'Баллотироваться на новый срок', uz: 'Yana bir muddatga nomzod bo‘lish' },
+        effects: [{ target: 'influence', delta: 2 }, { target: 'stability', delta: -1 }],
+      },
+      {
+        text: { en: 'Step down at your peak', ru: 'Уйти на пике популярности', uz: 'Mashhurlik cho‘qqisida ketish' },
+        effects: [{ target: 'approval', delta: 5 }],
+        flags: { stepDown: true },
+      },
+    ],
+  },
   {
     id: 'trg-protests',
     kind: 'triggered',
@@ -183,7 +222,9 @@ export const triggeredEvents: GameEvent[] = [
     id: 'trg-constitution',
     kind: 'triggered',
     once: true,
-    // Six months before the term-limit election (month 90 of the 96-month second term).
+    // Six months before the term-limit election (month 90 of the 96-month second term) —
+    // three months ahead of trg-election-choice's window (93-95), so it always resolves first.
+    // A refusal sets stepDownPending, which then suppresses trg-election-choice for this term.
     trigger: (s) => s.term === 2 && !s.constitutionAmended && s.turn >= 90,
     title: {
       en: 'The constitutional question',
@@ -201,7 +242,11 @@ export const triggeredEvents: GameEvent[] = [
         effects: [{ target: 'vector', delta: 15 }, { target: 'eliteLoyalty', delta: 10 }, { target: 'approval', delta: -8 }],
         flags: { amendConstitution: true },
       },
-      { text: { en: 'Refuse and step down after the term', ru: 'Отказаться и уйти после срока', uz: 'Rad etib, muddatdan so‘ng ketish' }, effects: [{ target: 'approval', delta: 5 }, { target: 'stability', delta: 3 }] },
+      {
+        text: { en: 'Refuse and step down after the term', ru: 'Отказаться и уйти после срока', uz: 'Rad etib, muddatdan so‘ng ketish' },
+        effects: [{ target: 'approval', delta: 5 }, { target: 'stability', delta: 3 }],
+        flags: { stepDown: true },
+      },
     ],
   },
   {

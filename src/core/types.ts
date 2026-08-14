@@ -77,6 +77,9 @@ export interface DelayedEffect {
 export interface EventOptionFlags {
   /** Removes term limits — the ruler may run indefinitely (constitution question). */
   amendConstitution?: boolean;
+  /** Commits to stepping down at the current term's election — resolved as the step-down
+   * victory instead of an ordinary election (see GameState.stepDownPending). */
+  stepDown?: boolean;
 }
 
 export interface EventOption {
@@ -102,7 +105,7 @@ export interface GameEvent {
   /** For external events: which zones this event belongs to. */
   zones?: VectorZone[];
   /** For triggered events: fires when predicate is true (checked before chance-based events). */
-  trigger?: (state: GameState) => boolean;
+  trigger?: (state: GameState, content: GameContent) => boolean;
   /** Triggered events do not repeat more often than this many turns. */
   cooldown?: number;
   /**
@@ -155,6 +158,10 @@ export interface GameState {
   term: number;
   /** Whether the constitution has been amended to remove term limits. */
   constitutionAmended: boolean;
+  /** Set when the player has committed to stepping down at this term's election (the mandatory
+   * per-term "run again or leave" choice, or a refused constitution amendment). The next
+   * resolveElection() call resolves as the step-down victory instead of an ordinary election. */
+  stepDownPending: boolean;
   /** Set on winning an election — pauses play for the inter-term inauguration screen. */
   awaitingInauguration: boolean;
   /** Effects queued to apply on a future turn (delayed event costs). */
