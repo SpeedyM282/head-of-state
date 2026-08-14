@@ -29,7 +29,7 @@ export function GameOverScreen() {
         {ui.gameOver.survived}: <span className="num text-sm">{o.turn}</span>
       </p>
       <div className="flex w-full max-w-xs flex-col gap-2">
-        <button className="btn btn-primary" onClick={() => startGame(content.difficulty.id)}>
+        <button className="btn btn-primary" onClick={() => startGame(content.country.id, content.difficulty.id)}>
           {ui.gameOver.playAgain}
         </button>
         <button className="btn" onClick={toMenu}>

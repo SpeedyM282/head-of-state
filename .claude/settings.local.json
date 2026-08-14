@@ -13,7 +13,12 @@
       "Read(//tmp/**)",
       "PowerShell(yarn typecheck *)",
       "PowerShell(npx tsc --noEmit -p tsconfig.app.json; echo \"EXIT:$LASTEXITCODE\")",
-      "PowerShell(yarn test *)"
+      "PowerShell(yarn test *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\user\\\\dev\\\\head-of-state\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(grep *)",
+      "Bash(xargs ls -la)",
+      "Bash(npx vite *)"
     ]
   }
 }

@@ -37,8 +37,10 @@ export type Difficulty = 'easy' | 'normal' | 'hard';
 
 export interface DifficultyConfig {
   id: Difficulty;
-  /** Starting value applied to every stat unless country profile overrides it. */
-  startStats: Stats;
+  /** Starting value for the 4 stats not derived from the country profile's levels. */
+  startStats: Pick<Stats, 'treasury' | 'approval' | 'eliteLoyalty' | 'stability'>;
+  /** Offset applied on top of the country profile's economy/corruption/development levels. */
+  levelOffsets: Pick<Stats, 'economy' | 'corruption' | 'development'>;
   /** Chance per turn that a random (non-triggered) event fires. */
   randomEventChance: number;
   /** Chance per turn that a zone-based external event fires (checked before random). */
@@ -58,12 +60,23 @@ export interface DifficultyConfig {
 export interface CountryProfile {
   id: string;
   name: LocalizedText;
+  /** 1-2 neutral, factual sentences — no jokes/stereotypes (satire lives in events only). */
+  description: LocalizedText;
+  flagEmoji: string;
   population: number; // people
   areaKm2: number;
   /** 0-100, natural resource wealth. Adds to treasury income. */
   resources: number;
   hasSeaAccess: boolean;
-  /** Optional overrides of difficulty start stats. */
+  /** 0-100, GDP-per-capita bucket. Combined with difficulty.levelOffsets.economy at init. */
+  economyLevel: number;
+  /** 0-100, inverted CPI bucket (higher = more corrupt). */
+  corruptionLevel: number;
+  /** 0-100, Democracy Index bucket (higher = more democratic). Inverted into starting vector. */
+  democracyLevel: number;
+  /** 0-100, HDI bucket. */
+  developmentLevel: number;
+  /** Optional overrides applied after derivation from country levels + difficulty. */
   startStatsOverride?: Partial<Stats>;
 }
 

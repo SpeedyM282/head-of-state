@@ -4,7 +4,7 @@ import { initGame } from '../../src/core/init';
 import { buildContent } from '../../src/data';
 import type { GameState } from '../../src/core/types';
 
-const content = buildContent('normal'); // threshold 15, grace 3
+const content = buildContent('absurdistan', 'normal'); // threshold 15, grace 3
 
 function armed(patch: Partial<GameState['stats']>, extra?: Partial<GameState>): GameState {
   const s = initGame(content, 1);

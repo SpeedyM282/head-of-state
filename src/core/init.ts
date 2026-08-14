@@ -1,15 +1,35 @@
-import type { GameContent, GameState } from './types';
+import { clampStat } from './effects';
+import type { CountryProfile, DifficultyConfig, GameContent, GameState, Stats } from './types';
 import { seedRng } from './rng';
+
+/** Derives economy/corruption/development from the country's levels plus the difficulty's
+ * offset; treasury/approval/eliteLoyalty/stability come from the difficulty alone. */
+export function deriveStartStats(profile: CountryProfile, difficulty: DifficultyConfig): Stats {
+  return {
+    economy: clampStat(profile.economyLevel + difficulty.levelOffsets.economy),
+    corruption: clampStat(profile.corruptionLevel + difficulty.levelOffsets.corruption),
+    development: clampStat(profile.developmentLevel + difficulty.levelOffsets.development),
+    treasury: difficulty.startStats.treasury,
+    approval: difficulty.startStats.approval,
+    eliteLoyalty: difficulty.startStats.eliteLoyalty,
+    stability: difficulty.startStats.stability,
+  };
+}
+
+/** 0 = democracy, 100 = totalitarianism — inverted from the country's democracy level. */
+export function deriveStartVector(profile: CountryProfile): number {
+  return clampStat(100 - profile.democracyLevel);
+}
 
 export function initGame(content: GameContent, seed: number): GameState {
   const stats = {
-    ...content.difficulty.startStats,
+    ...deriveStartStats(content.country, content.difficulty),
     ...content.country.startStatsOverride,
   };
   return {
     turn: 0,
     stats,
-    vector: 50, // start in the middle of the authoritarian zone — player's choices push it
+    vector: deriveStartVector(content.country),
     influence: content.balance.startingInfluence,
     term: 1,
     constitutionAmended: false,

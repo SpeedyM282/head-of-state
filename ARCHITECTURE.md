@@ -1,6 +1,6 @@
 # Архитектура — «Президент»
 
-Версия 0.3 (реальное время: часы в store вызывают tick() раз в игровой месяц; core остаётся пошаговым). Ранее 0.2 — слой локализации i18n (en/ru/uz, по умолчанию en). Дополняет GDD.md (разделы 11-12). Главный принцип: **ядро симуляции не знает о существовании React, Zustand и Capacitor.**
+Версия 0.6 (отдельный экран «Настройки», открывается с главного меню; единственное место смены языка — переключатель убран из шапки игрового экрана). Ранее 0.5 — карта выбора страны теперь рисуется через `react-simple-maps` поверх вендоренного TopoJSON Natural Earth вместо ручной SVG-сетки; экран карты грузится через `React.lazy`, см. §2a. Ранее 0.4 — выбор страны на карте Европы: `data/countries/europe.ts` + registry, `core/init.ts` получил `deriveStartStats`/`deriveStartVector`, новый UI-слой карты/досье. Ранее 0.3 — реальное время: часы в store вызывают tick() раз в игровой месяц; core остаётся пошаговым. Ранее 0.2 — слой локализации i18n (en/ru/uz, по умолчанию en). Дополняет GDD.md (разделы 10-12). Главный принцип: **ядро симуляции не знает о существовании React, Zustand и Capacitor.**
 
 ## 1. Слои и направление зависимостей
 
@@ -30,27 +30,33 @@ src/
     vector.ts         # зона вектора правления, модификаторы зон
     conditions.ts     # grace-поражения: переворот / революция / дефолт
     elections.ts      # выборы в конце срока (по зоне), лимит сроков, победа-уходом
-    init.ts           # initGame(profile, difficulty, seed) → GameState
+    init.ts           # initGame(content, seed) → GameState; deriveStartStats/deriveStartVector(profile, difficulty)
     index.ts          # публичный API ядра
   data/
-    countries/absurdistan.ts
+    countries/
+      absurdistan.ts  # вымышленная страна, калибрована как baseline (normal-офсет = 0)
+      europe.ts        # 18 реальных стран Европы: economyLevel/corruptionLevel/democracyLevel/developmentLevel
+      index.ts         # реестр countries[] + getCountryById()
+      isoNumeric.ts    # ISO 3166-1 numeric → alpha-2 (сопоставление с id геометрий в assets/world-110m.json)
+  assets/
+    world-110m.json    # вендоренный TopoJSON стран мира (Natural Earth, 110m, через world-atlas), см. NOTICE.md рядом
     reforms.ts
     events/random.ts | triggered.ts | external.ts | chains.ts
-    difficulty.ts     # конфиги 3 уровней сложности
+    difficulty.ts     # конфиги 3 уровней сложности + levelOffsets (экономика/коррупция/развитие поверх профиля страны)
     balance.ts        # ВСЕ настраиваемые коэффициенты формул в одном файле
-    index.ts          # собирает GameContent — единый объект контента
+    index.ts          # buildContent(countryId, difficulty) — собирает GameContent
   store/
-    gameStore.ts      # Zustand: state + действия (startGame, buyReform, answerEvent, setSpeed…)
+    gameStore.ts      # Zustand: state + действия (goToMap, goToSettings, startGame(countryId, difficulty), buyReform, answerEvent, setSpeed…)
     clock.ts          # GameClock: реальное время → tick() раз в месяц; React-free, тестируемый
     langStore.ts      # Zustand: активный язык + setLang (persist), хук useUi()
-    persistence.ts    # сохранение/загрузка через Capacitor Preferences; выбор языка
+    persistence.ts    # сохранение/загрузка (SaveData.countryId, с фолбэком для старых сейвов); выбор языка
   i18n/
     types.ts          # Ui — форма фиксированных строк интерфейса
     en.ts | ru.ts | uz.ts   # словари UI-строк по языкам (en — язык по умолчанию)
     index.ts          # uiStrings, LANGS, loc(), format(), victoryRankKey()
   ui/
-    screens/          # MainScreen, ReformsScreen, GameOverScreen
-    components/       # StatBar, VectorScale, EventModal, ReformNode…
+    screens/          # MenuScreen, MapScreen, SettingsScreen, MainScreen, ReformsScreen, GameOverScreen
+    components/       # StatBar, VectorScale, EventModal, ReformNode, EuropeMap, CountryDrawer, CountryListModal, LevelBar…
     hooks/
   App.tsx
 tests/
@@ -58,15 +64,27 @@ tests/
   autoplayer.test.ts  # 1000 случайных партий: статистика исходов
 ```
 
+## 2a. Стек карты выбора страны
+
+`ui/components/EuropeMap.tsx` рисует интерактивную карту через `react-simple-maps` (`ComposableMap` + `ZoomableGroup` + `Geographies`/`Geography`), а не вручную нарисованный SVG:
+
+- **Геометрия** — вендоренный `src/assets/world-110m.json` (TopoJSON стран мира, 110m, Natural Earth → пакет `world-atlas`, public domain/ISC; см. `src/assets/NOTICE.md`). Файл лежит в репозитории и не скачивается в рантайме — обязательное условие офлайн-работы под Capacitor.
+- **Сопоставление** — `data/countries/isoNumeric.ts` переводит числовой ISO 3166-1 (id геометрии в TopoJSON) в alpha-2 `CountryProfile.id`. Страны без записи в этой таблице рендерятся как некликабельный фон (`pointerEvents: none`, приглушённая заливка) — они не «дыры» на карте, а просто визуальный контекст.
+- **Проекция** — `geoAzimuthalEqualArea` с `rotate`/`scale`, подобранными численно (не на глаз) так, чтобы 18 стран из `europe.ts` заполняли viewBox с равномерными полями; см. комментарий в `EuropeMap.tsx`.
+- **Производительность** — `<Geography>` обёрнут в собственный `React.memo`-компонент (`MapGeography`) со стабильными объектами стилей и `useCallback`-обработчиками, чтобы пан/зум (перевызывающий render-prop `<Geographies>` на каждый кадр) не перерисовывал все ~180 геометрий мира, а только те 1-2, у которых реально изменилось состояние выбора.
+- **Ленивая загрузка** — `MapScreen` подключается в `App.tsx` через `React.lazy`/`Suspense`, а не статическим импортом: `react-simple-maps` + TopoJSON добавляют ~230 KB (gzip ~80 KB) в отдельный чанк, и без лени они утяжелили бы общий бандл на ~70%. С лени главный чанк остаётся на уровне до фичи (~104 KB gzip), а карта подгружается только при переходе на экран карты.
+
 ## 3. Ключевые контракты
 
 ```ts
 // Ядро — три главные функции:
-initGame(profile: CountryProfile, difficulty: Difficulty, seed: number): GameState
+initGame(content: GameContent, seed: number): GameState
 applyPlayerActions(state: GameState, actions: PlayerAction[], content: GameContent): GameState
 tick(state: GameState, content: GameContent, rng: Rng): TickResult
 // TickResult = { state; triggeredEvent?; outcome? /* поражение/победа */ }
 ```
+
+`content = buildContent(countryId, difficulty)` (`data/index.ts`) — страна и сложность выбираются до старта партии (карта Европы, см. GDD §10-11) и дальше едут вместе одним объектом; `initGame` внутри себя зовёт `deriveStartStats`/`deriveStartVector(content.country, content.difficulty)`, чтобы превратить профиль страны в стартовые показатели и вектор правления. Смена страны/сложности — это только смена входного параметра, ядро не знает о карте и не хранит списка стран.
 
 - Всё состояние партии — один сериализуемый объект `GameState` (без классов, функций, Date). Это даром даёт сохранения, реплеи и передачу по сети.
 - Случайность — только через `rng`, созданный из сида. `Math.random()` в core запрещён.
@@ -102,7 +120,8 @@ tick(state: GameState, content: GameContent, rng: Rng): TickResult
 - **Контент** (реформы, события, имя страны) несёт текст inline как `LocalizedText = Record<Lang, string>` — сатира лежит рядом с механикой каждого элемента. UI выбирает язык через `loc(text, lang)`.
 - **Фиксированные строки интерфейса** (кнопки, ярлыки статов/веток, заголовки зон, тексты поражений/побед) — перечислимые наборы, живут в `src/i18n/` (по словарю на язык), а не в data.
 - `GameState` хранит только id (реформ, события) и не хранит текст → смена языка на лету пересобирает весь текст из контента, сейв остаётся валидным.
-- Выбор языка хранится через `persistence` (`prezident.lang.v1`); `langStore` проставляет `<html lang>`.
+- Выбор языка хранится через `persistence` (`prezident.lang.v1`) — отдельный ключ localStorage, не смешанный с объектом сохранения партии (`prezident.save.v3`); `langStore` проставляет `<html lang>`.
+- Менять язык можно только на экране «Настройки» (`ui/screens/SettingsScreen.tsx`, фаза `settings`, вход с главного меню) — единственная точка входа; применяется сразу, без кнопки подтверждения. Экран задуман расширяемым: будущие настройки — новые секции того же экрана, а не отдельные экраны.
 - Тест `tests/i18n.test.ts` проверяет, что каждая `LocalizedText` и каждая UI-строка присутствуют и непусты во всех трёх языках, а структура ключей словарей совпадает.
 
 ## 7. Мобильная обвязка
@@ -115,7 +134,7 @@ tick(state: GameState, content: GameContent, rng: Rng): TickResult
 
 | Будущая фича | Что в архитектуре её ждёт |
 |---|---|
-| Карта мира, 50+ стран | `CountryProfile` — параметр `initGame`; новые страны = записи в `data/countries/` |
+| Больше стран (50+, другие регионы) | ✅ Заложено и уже используется для 18 стран Европы: `CountryProfile` — часть `GameContent`, `initGame` от него не зависит напрямую; новая страна = запись в `data/countries/europe.ts` (или новый файл-регион), без изменений в `core/` |
 | Дипломатия | Внешние события изолированы в `events/external.ts` — заменятся подсистемой |
 | Мультиплеер | Ядро чистое и детерминированное → крутится на Node-сервере как есть; `GameState` сериализуем → ходит по WebSocket |
 | Войны | Ещё одна подсистема core + расширение GameState; UI и стор не переписываются |

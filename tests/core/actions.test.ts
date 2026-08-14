@@ -3,7 +3,7 @@ import { applyPlayerActions, canBuyReform, canBuyReformReason } from '../../src/
 import { initGame } from '../../src/core/init';
 import { buildContent } from '../../src/data';
 
-const content = buildContent('normal');
+const content = buildContent('absurdistan', 'normal');
 
 describe('reform purchase', () => {
   it('requires influence, treasury and previous tier', () => {

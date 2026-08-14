@@ -3,7 +3,7 @@ import type { Ui } from './types';
 export const en: Ui = {
   menu: {
     eyebrow: 'Republic of Absurdistan · top secret',
-    title: 'PRESIDENT',
+    title: 'HEAD OF STATE',
     subtitle: 'A satirical simulator of power. The people, the elites, and common sense — all against you.',
     stamp: 'For execution',
     continue: 'Continue your rule',
@@ -12,6 +12,26 @@ export const en: Ui = {
       normal: { name: 'Medium', tagline: 'Transition period' },
       hard: { name: 'Hard', tagline: 'It’s complicated' },
     },
+  },
+  map: {
+    playCta: 'Play',
+    listButton: 'List view',
+    loading: 'Loading map…',
+    searchPlaceholder: 'Search country…',
+    close: 'Close',
+    dossier: {
+      population: 'Population',
+      area: 'Area',
+      economy: 'Economy level',
+      corruption: 'Corruption',
+      democracy: 'Democracy',
+      development: 'Development',
+    },
+    choose: 'Choose',
+  },
+  settings: {
+    title: 'Settings',
+    language: 'Language',
   },
   main: {
     influence: 'Influence',
@@ -35,7 +55,7 @@ export const en: Ui = {
   vector: {
     heading: 'Governance vector',
     zones: {
-      democratic: 'President',
+      democratic: 'Head of State',
       authoritarian: 'National leader',
       totalitarian: 'Leader',
     },

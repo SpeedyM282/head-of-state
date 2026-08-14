@@ -4,7 +4,7 @@ import { initGame } from '../../src/core/init';
 import { buildContent } from '../../src/data';
 import type { GameState } from '../../src/core/types';
 
-const content = buildContent('normal');
+const content = buildContent('absurdistan', 'normal');
 const b = content.balance;
 
 function state(opts: { term?: number; approval?: number; vector?: number; amended?: boolean }): GameState {

@@ -1,11 +1,8 @@
-import type { Difficulty } from '../../core/types';
 import { useUi } from '../../store/langStore';
 import { useGameStore } from '../../store/gameStore';
 
-const DIFFICULTY_ORDER: Difficulty[] = ['easy', 'normal', 'hard'];
-
 export function MenuScreen() {
-  const { startGame, continueGame, hasSave } = useGameStore();
+  const { goToMap, goToSettings, continueGame, hasSave } = useGameStore();
   const ui = useUi();
   return (
     <div className="flex min-h-[80dvh] flex-col items-center justify-center gap-8 text-center">
@@ -21,11 +18,12 @@ export function MenuScreen() {
             {ui.menu.continue}
           </button>
         )}
-        {DIFFICULTY_ORDER.map((d) => (
-          <button key={d} className="btn" onClick={() => startGame(d)}>
-            {ui.menu.difficulties[d].name} — «{ui.menu.difficulties[d].tagline}»
-          </button>
-        ))}
+        <button className="btn" onClick={goToMap}>
+          {ui.map.playCta}
+        </button>
+        <button className="btn text-sm opacity-80" onClick={goToSettings}>
+          {ui.settings.title}
+        </button>
       </div>
     </div>
   );

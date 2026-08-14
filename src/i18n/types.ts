@@ -33,6 +33,33 @@ export interface Ui {
     continue: string;
     difficulties: Record<Difficulty, { name: string; tagline: string }>;
   };
+  /** Europe map / country selection screen and its drawer, between menu and playing. */
+  map: {
+    /** MenuScreen's single "Play" button — navigates to the map. */
+    playCta: string;
+    /** Accessibility/fallback searchable list of the same countries as the map. */
+    listButton: string;
+    /** Shown briefly while the map screen's code chunk (lazy-loaded) downloads. */
+    loading: string;
+    searchPlaceholder: string;
+    close: string;
+    dossier: {
+      population: string;
+      area: string;
+      economy: string;
+      corruption: string;
+      democracy: string;
+      development: string;
+    };
+    /** Primary button in the country drawer that starts the game. */
+    choose: string;
+  };
+  /** Settings screen, reached from the main menu. Language selection today; more sections may be added later. */
+  settings: {
+    /** Screen header, and the label of the menu button that opens it. */
+    title: string;
+    language: string;
+  };
   main: {
     influence: string;
     brief: string;

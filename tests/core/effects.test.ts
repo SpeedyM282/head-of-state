@@ -3,7 +3,7 @@ import { applyEffects } from '../../src/core/effects';
 import { initGame } from '../../src/core/init';
 import { buildContent } from '../../src/data';
 
-const state = () => initGame(buildContent('normal'), 1);
+const state = () => initGame(buildContent('absurdistan', 'normal'), 1);
 
 describe('applyEffects', () => {
   it('applies stat deltas and clamps to 0-100', () => {

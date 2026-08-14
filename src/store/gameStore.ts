@@ -5,7 +5,7 @@ import { buildContent } from '../data';
 import { GameClock, type Speed } from './clock';
 import { clearSave, loadGame, saveGame } from './persistence';
 
-type Phase = 'menu' | 'playing' | 'over' | 'interTerm';
+type Phase = 'menu' | 'map' | 'settings' | 'playing' | 'over' | 'interTerm';
 
 interface GameStore {
   phase: Phase;
@@ -18,7 +18,9 @@ interface GameStore {
   speed: Speed;
   /** Whether the reforms panel is open — mirrored here so the clock can auto-pause. */
   reformsOpen: boolean;
-  startGame: (difficulty: Difficulty) => void;
+  goToMap: () => void;
+  goToSettings: () => void;
+  startGame: (countryId: string, difficulty: Difficulty) => void;
   continueGame: () => void;
   buyReform: (reformId: string) => void;
   answerEvent: (optionIndex: number) => void;
@@ -41,7 +43,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       if (!state || !content || state.pendingEventId || state.outcome || state.awaitingInauguration) return;
       const prevStats = state.stats;
       const next = tick(state, content).state;
-      saveGame({ state: next, difficulty: content.difficulty.id });
+      saveGame({ state: next, difficulty: content.difficulty.id, countryId: content.country.id });
       // An event auto-pauses time until the player answers; a result or a won election
       // (the inter-term inauguration) stops the clock until the player continues.
       if (next.pendingEventId) clock.setAutoPaused('event', true);
@@ -60,8 +62,11 @@ export const useGameStore = create<GameStore>((set, get) => {
     speed: 'normal',
     reformsOpen: false,
 
-    startGame: (difficulty) => {
-      const content = buildContent(difficulty);
+    goToMap: () => set({ phase: 'map' }),
+    goToSettings: () => set({ phase: 'settings' }),
+
+    startGame: (countryId, difficulty) => {
+      const content = buildContent(countryId, difficulty);
       const state = initGame(content, Date.now() % 2 ** 31);
       clearSave();
       clock.setUserSpeed('normal');
@@ -73,7 +78,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     continueGame: () => {
       const save = loadGame();
       if (!save) return;
-      const content = buildContent(save.difficulty);
+      const content = buildContent(save.countryId, save.difficulty);
       clock.setUserSpeed('normal');
       clock.setAutoPaused('reforms', false);
       clock.setAutoPaused('event', !!save.state.pendingEventId);
@@ -85,7 +90,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       const { state, content } = get();
       if (!state || !content) return;
       const next = applyPlayerActions(state, [{ type: 'buyReform', reformId }], content);
-      saveGame({ state: next, difficulty: content.difficulty.id });
+      saveGame({ state: next, difficulty: content.difficulty.id, countryId: content.country.id });
       set({ state: next });
     },
 
@@ -95,7 +100,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       const next = applyPlayerActions(state, [{ type: 'answerEvent', optionIndex }], content);
       // Answering lifts the event auto-pause; manual pause (if any) still wins inside the clock.
       clock.setAutoPaused('event', false);
-      saveGame({ state: next, difficulty: content.difficulty.id });
+      saveGame({ state: next, difficulty: content.difficulty.id, countryId: content.country.id });
       set({ state: next });
     },
 
@@ -103,7 +108,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       const { state, content } = get();
       if (!state || !content || !state.awaitingInauguration) return;
       const next = { ...state, awaitingInauguration: false };
-      saveGame({ state: next, difficulty: content.difficulty.id });
+      saveGame({ state: next, difficulty: content.difficulty.id, countryId: content.country.id });
       // prevStats reset so the new term's trends start clean; the clock restarts on MainScreen mount.
       set({ state: next, prevStats: null, phase: 'playing' });
     },

@@ -7,7 +7,7 @@ import type { GameContent, GameState, Stats } from '../../src/core/types';
 
 /** Isolate tick() math from event/rng noise: no random/external/triggered events can fire. */
 function quietContent(): GameContent {
-  const base = buildContent('normal');
+  const base = buildContent('absurdistan', 'normal');
   return {
     ...base,
     difficulty: { ...base.difficulty, randomEventChance: 0, externalEventChance: 0 },
@@ -141,7 +141,7 @@ describe('corruption side effects', () => {
 
 describe('delayed event effects', () => {
   it('answering an option with delayedEffects schedules them for later, applies the immediate part now', () => {
-    const content = buildContent('normal'); // full pool so trg-dizzy-success exists
+    const content = buildContent('absurdistan', 'normal'); // full pool so trg-dizzy-success exists
     const base = initGame(content, 1);
     const answered = applyPlayerActions(
       { ...base, pendingEventId: 'trg-dizzy-success' },

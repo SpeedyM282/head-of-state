@@ -3,7 +3,7 @@ import type { Ui } from './types';
 export const uz: Ui = {
   menu: {
     eyebrow: 'Absurdiston Respublikasi · mutlaqo maxfiy',
-    title: 'PREZIDENT',
+    title: 'DAVLAT BOSHLIG‘I',
     subtitle: 'Hokimiyatning satirik simulyatori. Xalq, elitalar va sog‘lom aql — sizga qarshi.',
     stamp: 'Ijro etilsin',
     continue: 'Hukmronlikni davom ettirish',
@@ -12,6 +12,26 @@ export const uz: Ui = {
       normal: { name: 'O‘rtacha', tagline: 'O‘tish davri' },
       hard: { name: 'Qiyin', tagline: 'Hammasi murakkab' },
     },
+  },
+  map: {
+    playCta: 'O‘ynash',
+    listButton: 'Ro‘yxat',
+    loading: 'Xarita yuklanmoqda…',
+    searchPlaceholder: 'Davlatni qidirish…',
+    close: 'Yopish',
+    dossier: {
+      population: 'Aholi',
+      area: 'Maydon',
+      economy: 'Iqtisodiyot darajasi',
+      corruption: 'Korrupsiya',
+      democracy: 'Demokratiya',
+      development: 'Rivojlanish',
+    },
+    choose: 'Tanlash',
+  },
+  settings: {
+    title: 'Sozlamalar',
+    language: 'Til',
   },
   main: {
     influence: 'Ta’sir',
@@ -35,7 +55,7 @@ export const uz: Ui = {
   vector: {
     heading: 'Boshqaruv vektori',
     zones: {
-      democratic: 'Prezident',
+      democratic: 'Davlat boshlig‘i',
       authoritarian: 'Milliy yetakchi',
       totalitarian: 'Dohiy',
     },

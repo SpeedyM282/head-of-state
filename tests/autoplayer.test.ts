@@ -21,8 +21,8 @@ interface RunStats {
   avgLength: number;
 }
 
-function playGame(difficulty: Difficulty, seed: number): { outcome: Outcome; turns: number; term: number } {
-  const content = buildContent(difficulty);
+function playGame(countryId: string, difficulty: Difficulty, seed: number): { outcome: Outcome; turns: number; term: number } {
+  const content = buildContent(countryId, difficulty);
   let s: GameState = initGame(content, seed);
   // Separate rng for the "player brain" so it never touches simulation determinism assertions
   let brain = seed ^ 0x9e3779b9;
@@ -48,15 +48,15 @@ function playGame(difficulty: Difficulty, seed: number): { outcome: Outcome; tur
     // The inter-term inauguration is a ui pause; the sim just continues into the new term.
     if (s.awaitingInauguration) s = { ...s, awaitingInauguration: false };
   }
-  if (!s.outcome) throw new Error(`game did not terminate (difficulty=${difficulty}, seed=${seed})`);
+  if (!s.outcome) throw new Error(`game did not terminate (country=${countryId}, difficulty=${difficulty}, seed=${seed})`);
   return { outcome: s.outcome, turns: s.turn, term: s.term };
 }
 
-function runMany(difficulty: Difficulty, games: number): RunStats {
+function runMany(countryId: string, difficulty: Difficulty, games: number): RunStats {
   const outcomes: Record<string, number> = {};
   let totalTurns = 0;
   for (let seed = 1; seed <= games; seed++) {
-    const { outcome, turns } = playGame(difficulty, seed);
+    const { outcome, turns } = playGame(countryId, difficulty, seed);
     const key = outcome.result === 'victory' ? 'victory' : outcome.defeat!;
     outcomes[key] = (outcomes[key] ?? 0) + 1;
     totalTurns += turns;
@@ -67,22 +67,22 @@ function runMany(difficulty: Difficulty, games: number): RunStats {
 describe('autoplayer', () => {
   it('every game terminates and stats are sane (500 games x 3 difficulties)', () => {
     for (const difficulty of ['easy', 'normal', 'hard'] as const) {
-      const stats = runMany(difficulty, 500);
+      const stats = runMany('absurdistan', difficulty, 500);
       const total = Object.values(stats.outcomes).reduce((a, b) => a + b, 0);
       expect(total).toBe(500);
       // eslint-disable-next-line no-console
-      console.log(`[autoplayer] ${difficulty}:`, JSON.stringify(stats.outcomes), `avgLength=${stats.avgLength.toFixed(1)}`);
+      console.log(`[autoplayer] absurdistan/${difficulty}:`, JSON.stringify(stats.outcomes), `avgLength=${stats.avgLength.toFixed(1)}`);
     }
   });
 
   it('random play loses most games on hard', () => {
-    const stats = runMany('hard', 300);
+    const stats = runMany('absurdistan', 'hard', 300);
     const defeats = 300 - (stats.outcomes['victory'] ?? 0);
     expect(defeats / 300).toBeGreaterThan(0.6);
   });
 
   it('the step-down victory is reachable — some easy games end by voluntarily leaving power', () => {
-    const stats = runMany('easy', 500);
+    const stats = runMany('absurdistan', 'easy', 500);
     expect(stats.outcomes['victory'] ?? 0).toBeGreaterThan(0);
   });
 
@@ -91,7 +91,7 @@ describe('autoplayer', () => {
     let sawTerm1Only = false;
     let sawTerm2Plus = false;
     for (let seed = 1; seed <= 500; seed++) {
-      const { term } = playGame('easy', seed);
+      const { term } = playGame('absurdistan', 'easy', seed);
       if (term >= 2) sawTerm2Plus = true;
       else sawTerm1Only = true;
     }
@@ -100,14 +100,14 @@ describe('autoplayer', () => {
   });
 
   it('determinism: same seed + same actions = identical outcome', () => {
-    const a = playGame('normal', 12345);
-    const b = playGame('normal', 12345);
+    const a = playGame('absurdistan', 'normal', 12345);
+    const b = playGame('absurdistan', 'normal', 12345);
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
   });
 
   it('all four defeat kinds AND the step-down victory are reachable across seeds', () => {
-    const hard = runMany('hard', 500).outcomes;
-    const easy = runMany('easy', 500).outcomes;
+    const hard = runMany('absurdistan', 'hard', 500).outcomes;
+    const easy = runMany('absurdistan', 'easy', 500).outcomes;
     const merged: Record<string, number> = {};
     for (const src of [hard, easy]) for (const [k, v] of Object.entries(src)) merged[k] = (merged[k] ?? 0) + v;
 
@@ -116,5 +116,31 @@ describe('autoplayer', () => {
     }
     // Step-down victory (the good ending) must be reachable too.
     expect(merged['victory'] ?? 0, 'step-down victory should be reachable').toBeGreaterThan(0);
+  });
+});
+
+// Country profiles now shape starting stats and the starting governance vector (see
+// core/init.ts deriveStartStats/deriveStartVector). Absurdistan is the calibrated baseline;
+// Norway/Bulgaria/Serbia span the rest of the real-country spread (high/mid/low levels,
+// Serbia additionally starting deep in the authoritarian zone) — this just confirms the
+// simulation stays sane (terminates, produces a believable outcome mix) across that spread.
+describe('autoplayer across country profiles', () => {
+  const PROFILES = ['absurdistan', 'no', 'bg', 'rs'] as const;
+  const GAMES_PER_CELL = 150;
+
+  it('every profile x difficulty cell terminates; per-profile outcome stats are reported', () => {
+    for (const countryId of PROFILES) {
+      for (const difficulty of ['easy', 'normal', 'hard'] as const) {
+        const stats = runMany(countryId, difficulty, GAMES_PER_CELL);
+        const total = Object.values(stats.outcomes).reduce((a, b) => a + b, 0);
+        expect(total).toBe(GAMES_PER_CELL);
+        // eslint-disable-next-line no-console
+        console.log(
+          `[autoplayer] ${countryId}/${difficulty}:`,
+          JSON.stringify(stats.outcomes),
+          `avgLength=${stats.avgLength.toFixed(1)}`,
+        );
+      }
+    }
   });
 });

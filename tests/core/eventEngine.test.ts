@@ -17,7 +17,7 @@ function ev(partial: Partial<GameEvent> & Pick<GameEvent, 'id' | 'kind'>): GameE
 
 /** Content with forced event chances so selection is deterministic given the pool. */
 function makeContent(events: GameEvent[]): GameContent {
-  const base = buildContent('normal');
+  const base = buildContent('absurdistan', 'normal');
   return {
     ...base,
     events,

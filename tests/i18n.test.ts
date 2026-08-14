@@ -8,14 +8,17 @@ import {
   uiStrings,
   victoryRankKey,
 } from '../src/i18n';
-import { absurdistan } from '../src/data/countries/absurdistan';
+import { countries } from '../src/data/countries';
 import { reforms } from '../src/data/reforms';
 import { events } from '../src/data/events';
 
 /** Every LocalizedText in the game content, flattened. */
 function contentTexts(): { label: string; text: LocalizedText }[] {
   const out: { label: string; text: LocalizedText }[] = [];
-  out.push({ label: 'country.name', text: absurdistan.name });
+  for (const c of countries) {
+    out.push({ label: `country ${c.id} name`, text: c.name });
+    out.push({ label: `country ${c.id} description`, text: c.description });
+  }
   for (const r of reforms) {
     out.push({ label: `reform ${r.id} title`, text: r.title });
     out.push({ label: `reform ${r.id} description`, text: r.description });

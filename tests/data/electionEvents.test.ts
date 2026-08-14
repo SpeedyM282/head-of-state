@@ -6,7 +6,7 @@ import { initGame } from '../../src/core/init';
 import { buildContent } from '../../src/data';
 import type { GameState } from '../../src/core/types';
 
-const content = buildContent('normal');
+const content = buildContent('absurdistan', 'normal');
 const turnsToWin = content.difficulty.turnsToWin; // 48
 
 const electionChoice = triggeredEvents.find((e) => e.id === 'trg-election-choice')!;

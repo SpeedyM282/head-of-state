@@ -3,7 +3,7 @@ import type { Ui } from './types';
 export const ru: Ui = {
   menu: {
     eyebrow: 'Республика Абсурдистан · совершенно секретно',
-    title: 'ПРЕЗИДЕНТ',
+    title: 'ГЛАВА ГОСУДАРСТВА',
     subtitle: 'Сатирический симулятор власти. Народ, элиты и здравый смысл — против вас.',
     stamp: 'К исполнению',
     continue: 'Продолжить правление',
@@ -12,6 +12,26 @@ export const ru: Ui = {
       normal: { name: 'Средняя', tagline: 'Переходный период' },
       hard: { name: 'Сложная', tagline: 'Всё сложно' },
     },
+  },
+  map: {
+    playCta: 'Играть',
+    listButton: 'Списком',
+    loading: 'Загрузка карты…',
+    searchPlaceholder: 'Поиск страны…',
+    close: 'Закрыть',
+    dossier: {
+      population: 'Население',
+      area: 'Площадь',
+      economy: 'Уровень экономики',
+      corruption: 'Коррупция',
+      democracy: 'Демократия',
+      development: 'Развитие',
+    },
+    choose: 'Выбрать',
+  },
+  settings: {
+    title: 'Настройки',
+    language: 'Язык',
   },
   main: {
     influence: 'Влияние',
@@ -35,7 +55,7 @@ export const ru: Ui = {
   vector: {
     heading: 'Вектор правления',
     zones: {
-      democratic: 'Президент',
+      democratic: 'Глава государства',
       authoritarian: 'Национальный лидер',
       totalitarian: 'Вождь',
     },
