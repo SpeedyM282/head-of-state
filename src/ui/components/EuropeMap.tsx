@@ -17,10 +17,12 @@ import worldTopology from '../../assets/world-110m.json';
 
 const MAP_WIDTH = 560;
 const MAP_HEIGHT = 640;
-// Centers the 18-country Europe set (see data/countries/isoNumeric.ts) inside the
-// viewBox: rotate/scale were fit numerically against the vendored topology so the
-// selectable countries fill the frame with even padding, not eyeballed.
-const PROJECTION_CONFIG = { rotate: [-9, -58.5, 0] as [number, number, number], scale: 735.5 };
+// Frames the full European set (see data/countries/isoNumeric.ts) inside the viewBox:
+// rotate/scale were fit numerically against the vendored topology (bbox-centered on the
+// non-transcontinental countries, so Russia/Turkey stay selectable at the edges without
+// their Asian bulk blowing out the frame) so the selectable countries fill it with even
+// padding — not eyeballed.
+const PROJECTION_CONFIG = { rotate: [17.3, -46.14, 0] as [number, number, number], scale: 388 };
 /** Offset (px) of the hover tooltip from the cursor so it doesn't sit under the pointer. */
 const TOOLTIP_OFFSET = 14;
 

@@ -35,7 +35,8 @@ src/
   data/
     countries/
       absurdistan.ts  # вымышленная страна, калибрована как baseline (normal-офсет = 0)
-      europe.ts        # 18 реальных стран Европы: economyLevel/corruptionLevel/democracyLevel/developmentLevel
+      europe.ts        # 40 реальных стран Европы: economyLevel/corruptionLevel/democracyLevel/developmentLevel
+      isoNumeric.ts    # ISO 3166-1 numeric (id в world-110m.json) → alpha-2 id профиля
       index.ts         # реестр countries[] + getCountryById()
       isoNumeric.ts    # ISO 3166-1 numeric → alpha-2 (сопоставление с id геометрий в assets/world-110m.json)
   assets/

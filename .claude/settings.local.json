@@ -18,7 +18,10 @@
       "Bash(Select-Object Name)",
       "Bash(grep *)",
       "Bash(xargs ls -la)",
-      "Bash(npx vite *)"
+      "Bash(npx vite *)",
+      "Bash(node -e ' *)",
+      "Bash(node -e \"require\\('d3-geo'\\); require\\('topojson-client'\\); console.log\\('geo libs OK'\\)\")",
+      "Bash(node *)"
     ]
   }
 }
