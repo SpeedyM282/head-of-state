@@ -6,6 +6,7 @@ import { MainScreen } from './ui/screens/MainScreen';
 import { GameOverScreen } from './ui/screens/GameOverScreen';
 import { InterTermScreen } from './ui/screens/InterTermScreen';
 import { SettingsScreen } from './ui/screens/SettingsScreen';
+import { OrientationGate } from './ui/components/OrientationGate';
 
 // react-simple-maps + the vendored TopoJSON are heavy; split them into their own
 // chunk so the menu/gameplay screens (the common path) load fast.
@@ -19,17 +20,22 @@ function MapScreenFallback() {
 export function App() {
   const phase = useGameStore((s) => s.phase);
   return (
-    <div className="relative mx-auto min-h-dvh max-w-150 px-3 py-4">
-      {phase === 'menu' && <MenuScreen />}
-      {phase === 'map' && (
-        <Suspense fallback={<MapScreenFallback />}>
-          <MapScreen />
-        </Suspense>
-      )}
-      {phase === 'settings' && <SettingsScreen />}
-      {phase === 'playing' && <MainScreen />}
-      {phase === 'interTerm' && <InterTermScreen />}
-      {phase === 'over' && <GameOverScreen />}
-    </div>
+    <>
+      {/* Phone-landscape/tablet: unconstrained width, the screens themselves fill the
+          viewport. Desktop: centered canvas on the --ink backdrop, not stretched edge-to-edge. */}
+      <div className="safe-area-x relative mx-auto flex min-h-dvh flex-col py-1 tablet:py-3 desktop:max-w-[1150px] desktop:py-6">
+        {phase === 'menu' && <MenuScreen />}
+        {phase === 'map' && (
+          <Suspense fallback={<MapScreenFallback />}>
+            <MapScreen />
+          </Suspense>
+        )}
+        {phase === 'settings' && <SettingsScreen />}
+        {phase === 'playing' && <MainScreen />}
+        {phase === 'interTerm' && <InterTermScreen />}
+        {phase === 'over' && <GameOverScreen />}
+      </div>
+      <OrientationGate />
+    </>
   );
 }

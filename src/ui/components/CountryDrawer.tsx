@@ -57,11 +57,13 @@ export function CountryDrawer({ countryId, onClose }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-20 flex justify-end bg-black/60" role="dialog" aria-modal="true" onClick={onClose}>
+    // No dimming backdrop and no click-outside-to-close: the drawer can be open at the same
+    // time as the country list (see MapScreen) or the map itself, and both need to stay
+    // clickable underneath it — only the drawer's own panel captures pointer events.
+    <div className="pointer-events-none fixed inset-0 z-20 flex justify-end" role="dialog" aria-modal="true">
       <div
-        className={`panel flex h-full w-full max-w-sm flex-col overflow-hidden transition-transform duration-200 ${open ? 'translate-x-0' : 'translate-x-full'}`}
+        className={`panel pointer-events-auto flex h-full w-[45%] min-w-[260px] flex-col overflow-hidden pr-[env(safe-area-inset-right,0px)] transition-transform duration-200 tablet:w-[400px] ${open ? 'translate-x-0' : 'translate-x-full'}`}
         style={dragging ? { transform: `translateX(${dragX}px)`, transition: 'none' } : undefined}
-        onClick={(e) => e.stopPropagation()}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -69,7 +71,12 @@ export function CountryDrawer({ countryId, onClose }: Props) {
         <header className="flex shrink-0 items-center gap-2 border-b border-(--paper-line) p-4">
           <span className="text-2xl">{country.flagEmoji}</span>
           <h2 className="flex-1 text-lg font-bold leading-tight">{loc(country.name, lang)}</h2>
-          <button type="button" aria-label={ui.map.close} className="-mr-1 text-(--text-faint)" onClick={onClose}>
+          <button
+            type="button"
+            aria-label={ui.map.close}
+            className="-mr-1 flex h-11 w-11 shrink-0 items-center justify-center text-(--text-faint) desktop:h-8 desktop:w-8"
+            onClick={onClose}
+          >
             ✕
           </button>
         </header>
@@ -102,7 +109,7 @@ export function CountryDrawer({ countryId, onClose }: Props) {
                 type="button"
                 aria-pressed={d === difficulty}
                 onClick={() => setDifficulty(d)}
-                className="flex-1 border border-(--paper-line) px-2 py-1.5 text-xs"
+                className="min-h-11 flex-1 border border-(--paper-line) px-2 py-1.5 text-xs"
                 style={{
                   background: d === difficulty ? 'var(--gold)' : 'transparent',
                   fontWeight: d === difficulty ? 700 : 400,
@@ -112,7 +119,7 @@ export function CountryDrawer({ countryId, onClose }: Props) {
               </button>
             ))}
           </div>
-          <button type="button" className="btn btn-primary mt-2 w-full" onClick={() => startGame(country.id, difficulty)}>
+          <button type="button" className="btn btn-primary mt-2 min-h-11 w-full" onClick={() => startGame(country.id, difficulty)}>
             {ui.map.choose}
           </button>
         </footer>

@@ -2,10 +2,8 @@ import type { Ui } from './types';
 
 export const en: Ui = {
   menu: {
-    eyebrow: 'Republic of Absurdistan · top secret',
     title: 'HEAD OF STATE',
     subtitle: 'A satirical simulator of power. The people, the elites, and common sense — all against you.',
-    stamp: 'For execution',
     continue: 'Continue your rule',
     difficulties: {
       easy: { name: 'Easy', tagline: 'Stability' },
@@ -45,6 +43,10 @@ export const en: Ui = {
   settings: {
     title: 'Settings',
     language: 'Language',
+  },
+  orientationGate: {
+    title: 'Turn your device',
+    hint: 'State affairs are conducted in landscape mode.',
   },
   main: {
     influence: 'Influence',

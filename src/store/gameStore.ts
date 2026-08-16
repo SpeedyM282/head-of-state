@@ -33,6 +33,9 @@ interface GameStore {
   startClock: () => void;
   stopClock: () => void;
   toMenu: () => void;
+  /** OrientationGate toggles this while a phone is held portrait — same auto-pause mechanism
+   * as an event or the reforms panel, manual pause still wins. No-op if no game is running. */
+  setOrientationPaused: (paused: boolean) => void;
 }
 
 export const useGameStore = create<GameStore>((set, get) => {
@@ -130,6 +133,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     startClock: () => clock.start(),
     stopClock: () => clock.stop(),
+    setOrientationPaused: (paused) => clock.setAutoPaused('orientation', paused),
 
     toMenu: () => {
       clock.stop();

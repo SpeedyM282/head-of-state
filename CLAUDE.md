@@ -38,6 +38,12 @@ Player picks a country on a single whole-world map before the game starts — th
 - When changing balance: change only `data/balance.ts` or content files, then re-run the autoplayer and show before/after stats.
 - Keep GDD.md/ARCHITECTURE.md updated when the user approves a design change; note the change in the file's version line.
 
+## Agent permissions & workflow
+
+- **Scope.** Full permission to read, write, and run commands anywhere inside this project directory (`prezident/`). No permission outside it (other projects, system/global config, unrelated files) — ask first.
+- **External side effects.** Ask before installing any new dependency (see "Do not add dependencies without asking" above) and before interacting with any external API or service that hasn't already been configured/provided — no new accounts, no calls to unconfigured APIs, no new external integrations without asking first.
+- **Git.** Solo project, single branch, one dev (the user) — work directly in the current checkout. Don't create new branches or worktrees, and don't run git commands (commit, push, branch, etc.) unless explicitly asked to.
+
 ## Out of scope for MVP (do not build even if it seems easy)
 
 Multiplayer/networking, diplomacy simulation, war system, achievements, monetization, iOS build, sound.

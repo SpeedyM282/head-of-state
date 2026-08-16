@@ -53,7 +53,7 @@ export function SpeedControls() {
             onClick={() => setSpeed(o.speed)}
             aria-label={ui.main.speed[o.label]}
             aria-pressed={active}
-            className="flex h-7 w-7 shrink-0 items-center justify-center border"
+            className="flex h-11 w-11 shrink-0 items-center justify-center border desktop:h-9 desktop:w-9"
             style={{
               borderColor: 'var(--paper-line)',
               background: active ? 'var(--gold)' : 'var(--paper)',

@@ -1,5 +1,17 @@
 @import 'tailwindcss';
 
+/* ─── Responsive form factors ───
+   Three form factors, mobile-first: unprefixed utilities target phone-landscape (the primary
+   target, designed for 640×360 first — phone PORTRAIT is fully gated out by OrientationGate,
+   so the base/no-prefix styles never need to serve a portrait phone). `tablet:` and `desktop:`
+   layer on top for larger viewports — see ARCHITECTURE.md's "Форм-факторы и адаптивность".
+   Both are plain min-width/min-height media features (no `not`/exclusion), so at genuinely
+   desktop sizes BOTH variants match; `desktop` is declared after `tablet` so its rules win the
+   cascade there — the same "later-registered breakpoint wins on overlap" model Tailwind's own
+   sm/md/lg/xl already use. A wide (>=1280px) but coarse-pointer tablet only matches `tablet`. */
+@custom-variant tablet (@media (min-width: 768px) and (min-height: 500px));
+@custom-variant desktop (@media (min-width: 1280px) and (pointer: fine));
+
 /* ─── Design tokens: state-dossier satire ───
    Dark "cabinet" backdrop, aged-paper panels, one loud element: the red stamp. */
 :root {
@@ -24,6 +36,9 @@ body {
   color: var(--paper);
   font-family: Georgia, 'Times New Roman', serif;
   -webkit-tap-highlight-color: transparent;
+  /* Belt-and-suspenders against any single element's rounding/transform pushing a horizontal
+     scrollbar onto the page — every wide element (map, tables) scrolls internally instead. */
+  overflow-x: hidden;
 }
 
 /* All interactive controls get a pointer cursor; disabled ones show not-allowed. */
@@ -33,6 +48,18 @@ select {
 }
 button:disabled {
   cursor: not-allowed;
+}
+/* Keyboard-focus ring on every button, not just .btn — several icon-only controls (back/close
+   buttons, reform branch tabs) aren't styled with .btn. */
+button:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 2px;
+}
+/* WorldMap's country/region shapes are keyboard-focusable SVG <path role="button"> elements,
+   not real <button>s (react-simple-maps' <Geography>) — same focus ring, reached separately. */
+svg path[role='button']:focus-visible {
+  outline: 2px solid var(--gold);
+  outline-offset: 1px;
 }
 
 .eyebrow {
@@ -81,6 +108,13 @@ button:disabled {
 .btn-primary { background: var(--stamp); color: var(--paper); border-color: transparent; font-weight: 700; letter-spacing: 0.06em; }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
+/* Desktop-only hover feedback — (hover: hover) is true only for pointers that can actually
+   hover (mice/trackpads), so this never sticks on a tap the way a plain :hover would on touch. */
+@media (hover: hover) {
+  .btn:not(:disabled):hover { background: var(--paper-dim); }
+  .btn-primary:not(:disabled):hover { background: color-mix(in srgb, var(--stamp) 85%, black); }
+}
+
 .dotted-leader {
   overflow: hidden;
 }
@@ -102,4 +136,26 @@ button:disabled {
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
+}
+
+/* Safe-area clearance for the outermost layout — phones are landscape-only in this app (see
+   OrientationGate), so the notch/rounded-corner risk is on the LEFT/RIGHT edges, not top/bottom.
+   env() falls back to 0 on devices without an inset, so this is a no-op there. Self-contained
+   (raw media queries mirroring the tablet/desktop custom variants above) rather than composed
+   with Tailwind's px-* utilities, so there's no cross-layer cascade-order risk between the two. */
+.safe-area-x {
+  padding-left: calc(0.75rem + env(safe-area-inset-left, 0px));
+  padding-right: calc(0.75rem + env(safe-area-inset-right, 0px));
+}
+@media (min-width: 768px) and (min-height: 500px) {
+  .safe-area-x {
+    padding-left: calc(1.5rem + env(safe-area-inset-left, 0px));
+    padding-right: calc(1.5rem + env(safe-area-inset-right, 0px));
+  }
+}
+@media (min-width: 1280px) and (pointer: fine) {
+  .safe-area-x {
+    padding-left: calc(2rem + env(safe-area-inset-left, 0px));
+    padding-right: calc(2rem + env(safe-area-inset-right, 0px));
+  }
 }

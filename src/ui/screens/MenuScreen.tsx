@@ -5,23 +5,24 @@ export function MenuScreen() {
   const { goToMap, goToSettings, continueGame, hasSave } = useGameStore();
   const ui = useUi();
   return (
-    <div className="flex min-h-[80dvh] flex-col items-center justify-center gap-8 text-center">
-      <div>
-        <p className="eyebrow mb-3">{ui.menu.eyebrow}</p>
-        <h1 className="text-5xl font-bold tracking-wide">{ui.menu.title}</h1>
-        <p className="mt-3 text-sm opacity-70">{ui.menu.subtitle}</p>
+    // Phone landscape: title block and button stack sit side by side (the shape landscape
+    // gives us), so nothing needs to shrink onto one narrow column. Tablet/desktop revert to
+    // the original centered vertical stack, where there's height to spare for it.
+    <div className="flex min-h-0 flex-1 flex-row items-center justify-center gap-6 text-center tablet:flex-col tablet:gap-8">
+      <div className="min-w-0">
+        <h1 className="text-2xl font-bold tracking-wide tablet:text-4xl desktop:text-5xl">{ui.menu.title}</h1>
+        <p className="mt-1 text-xs opacity-70 tablet:mt-3 tablet:text-sm">{ui.menu.subtitle}</p>
       </div>
-      <span className="stamp text-lg">{ui.menu.stamp}</span>
-      <div className="flex w-full max-w-xs flex-col gap-2">
+      <div className="flex w-full max-w-[220px] shrink-0 flex-col gap-2 tablet:max-w-xs">
         {hasSave && (
-          <button className="btn btn-primary" onClick={continueGame}>
+          <button className="btn btn-primary min-h-11" onClick={continueGame}>
             {ui.menu.continue}
           </button>
         )}
-        <button className="btn" onClick={goToMap}>
+        <button className="btn min-h-11" onClick={goToMap}>
           {ui.map.playCta}
         </button>
-        <button className="btn text-sm opacity-80" onClick={goToSettings}>
+        <button className="btn min-h-11 text-sm opacity-80" onClick={goToSettings}>
           {ui.settings.title}
         </button>
       </div>

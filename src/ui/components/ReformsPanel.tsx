@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactElement } from "react";
 import { canBuyReformReason } from "../../core";
 import type { ReformBlock } from "../../core";
 import type { Reform } from "../../core/types";
@@ -71,6 +71,34 @@ function LockIcon() {
 	);
 }
 
+// One small line icon per branch, for the phone-landscape vertical rail — same austere
+// stroke style as the rest of the chrome (CrossIcon/LockIcon above), not a decorative set.
+const BRANCH_ICONS: Record<Branch, ReactElement> = {
+	economy: (
+		<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+			<circle cx="10" cy="10" r="7" />
+			<path d="M10 6.5v7M8 8.2c0-1 .8-1.7 2-1.7s2 .6 2 1.5c0 2-4 1.3-4 3.3 0 .9.9 1.5 2 1.5s2-.6 2-1.6" />
+		</svg>
+	),
+	force: (
+		<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden>
+			<path d="M10 3 L16 5.5 V10 c0 4-2.7 6.3-6 7.5-3.3-1.2-6-3.5-6-7.5V5.5 Z" />
+		</svg>
+	),
+	social: (
+		<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+			<path d="M10 17s-6-3.7-6-8.3C4 6 5.8 4.3 8 4.3c.9 0 1.7.4 2 1 .3-.6 1.1-1 2-1 2.2 0 4 1.7 4 4.4 0 4.6-6 8.3-6 8.3Z" />
+		</svg>
+	),
+	propaganda: (
+		<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+			<path d="M3 8.5v3l11 3.5v-10Z" />
+			<path d="M14 6.5v7c1.7 0 3-1.6 3-3.5s-1.3-3.5-3-3.5Z" />
+			<path d="M6.5 12v3.5c0 .8.7 1.5 1.5 1.5s1.5-.7 1.5-1.5V13" />
+		</svg>
+	),
+};
+
 export function ReformsPanel({ onClose }: { onClose: () => void }) {
 	const { state, content, buyReform } = useGameStore();
 	const lang = useLang((s) => s.lang);
@@ -80,9 +108,13 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 	const chainScrollRef = useRef<HTMLDivElement>(null);
 
 	// Switching branch tabs shows a different node chain — jump its scroll area back to
-	// the top instead of keeping the previous tab's scroll position.
+	// the start instead of keeping the previous tab's scroll position (top on the tablet+
+	// vertical chain, left on the phone-landscape horizontal one — reset both axes).
 	useEffect(() => {
-		if (chainScrollRef.current) chainScrollRef.current.scrollTop = 0;
+		if (chainScrollRef.current) {
+			chainScrollRef.current.scrollTop = 0;
+			chainScrollRef.current.scrollLeft = 0;
+		}
 	}, [activeBranch]);
 
 	if (!state || !content) return null;
@@ -99,6 +131,11 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 		? (branchReforms.find((r) => r.id === effectiveId) ?? null)
 		: null;
 
+	function selectBranch(b: Branch) {
+		setActiveBranch(b);
+		setSelectedId(null);
+	}
+
 	function renderDetail(r: Reform) {
 		const reason = canBuyReformReason(state!, content!, r.id);
 		const owned = reason === "owned";
@@ -107,15 +144,15 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 		// (aside is the flex-col container — see below — so this footer never needs scrolling to reach).
 		return (
 			<>
-				<div className="flex-1 overflow-y-auto p-4">
+				<div className="flex-1 overflow-y-auto p-3 tablet:p-4">
 					<p className="eyebrow">
 						{ui.reformsPanel.tier} {r.tier + 1}
 					</p>
-					<h3 className="text-lg font-bold leading-tight">
+					<h3 className="text-base font-bold leading-tight tablet:text-lg">
 						{loc(r.title, lang)}
 					</h3>
 
-					<p className="mt-2 text-sm leading-snug text-(--text-faint)">
+					<p className="mt-2 text-xs leading-snug text-(--text-faint) tablet:text-sm">
 						{loc(r.description, lang)}
 					</p>
 
@@ -139,14 +176,14 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 					)}
 				</div>
 
-				<div className="shrink-0 border-t border-(--paper-line) p-4">
+				<div className="shrink-0 border-t border-(--paper-line) p-3 tablet:p-4">
 					{owned ? (
 						<span className="stamp text-sm">{ui.reformsPanel.adopted}</span>
 					) : (
 						<>
 							<button
 								type="button"
-								className="btn btn-primary w-full"
+								className="btn btn-primary min-h-11 w-full"
 								disabled={reason !== null}
 								onClick={() => buyReform(r.id)}
 							>
@@ -165,11 +202,11 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 	}
 
 	return (
-		<div className="fixed inset-0 z-10 flex flex-col bg-(--ink)">
+		<div className="safe-area-x fixed inset-0 z-10 flex flex-col bg-(--ink)">
 			{/* Pinned header */}
 			<header className="shrink-0 border-b border-(--paper-line)">
-				<div className="mx-auto flex max-w-150 items-center gap-3 px-3 py-2">
-					<h2 className="text-lg font-bold">{ui.reformsPanel.title}</h2>
+				<div className="mx-auto flex items-center gap-3 px-3 py-1.5 tablet:px-4 tablet:py-2 desktop:max-w-[1150px]">
+					<h2 className="text-base font-bold tablet:text-lg">{ui.reformsPanel.title}</h2>
 					<p className="eyebrow flex-1 truncate">
 						{ui.reformsPanel.influencePoints}:{" "}
 						<span className="num text-(--gold)">
@@ -185,16 +222,16 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 						type="button"
 						aria-label={ui.reformsPanel.close}
 						onClick={onClose}
-						className="-mr-1 flex h-8 w-8 shrink-0 items-center justify-center text-(--paper)"
+						className="flex h-11 w-11 shrink-0 items-center justify-center text-(--paper) hover:bg-(--ink-soft) desktop:h-8 desktop:w-8"
 					>
 						<CrossIcon />
 					</button>
 				</div>
 			</header>
 
-			{/* Branch tabs */}
+			{/* Tablet/desktop: branch tabs as a top row (unchanged from the original design). */}
 			<nav
-				className="mx-auto flex w-full max-w-150 shrink-0 border-b border-(--paper-line)"
+				className="mx-auto hidden w-full shrink-0 border-b border-(--paper-line) tablet:flex desktop:max-w-[1150px]"
 				aria-label={ui.reformsPanel.title}
 			>
 				{BRANCHES.map((b) => {
@@ -204,11 +241,8 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 							key={b}
 							type="button"
 							aria-pressed={active}
-							onClick={() => {
-								setActiveBranch(b);
-								setSelectedId(null);
-							}}
-							className="flex min-h-11 flex-1 items-center justify-center px-1 text-center text-[0.7rem] uppercase leading-tight tracking-wide"
+							onClick={() => selectBranch(b)}
+							className="flex min-h-11 flex-1 items-center justify-center gap-1.5 px-1 text-center text-[0.7rem] uppercase leading-tight tracking-wide hover:opacity-80"
 							style={{
 								background: active ? "var(--gold)" : "transparent",
 								color: active ? "var(--ink)" : "var(--paper)",
@@ -221,12 +255,45 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 				})}
 			</nav>
 
-			{/* Node chain + detail drawer: side-by-side on ≥768px, stacked with the drawer
-          docked at the bottom on narrow screens. The drawer is always on screen (see
-          effectiveId above) — no click needed to reveal it. */}
-			<div className="mx-auto flex w-full max-w-150 flex-1 flex-col overflow-hidden md:flex-row">
-				<div ref={chainScrollRef} className="min-h-0 flex-1 overflow-y-auto p-3">
-					<div className="flex flex-col items-stretch">
+			{/* Phone landscape: branch tabs as a left vertical rail alongside everything else,
+			    instead of a top row — keeps vertical space for the node chain. */}
+			<div className="mx-auto flex w-full min-h-0 flex-1 desktop:max-w-[1150px]">
+				<nav
+					className="flex w-16 shrink-0 flex-col border-r border-(--paper-line) tablet:hidden"
+					aria-label={ui.reformsPanel.title}
+				>
+					{BRANCHES.map((b) => {
+						const active = b === activeBranch;
+						return (
+							<button
+								key={b}
+								type="button"
+								aria-pressed={active}
+								onClick={() => selectBranch(b)}
+								className="flex min-h-11 flex-col items-center justify-center gap-0.5 px-1 py-2 text-center text-[0.55rem] uppercase leading-tight tracking-wide hover:opacity-80"
+								style={{
+									background: active ? "var(--gold)" : "transparent",
+									color: active ? "var(--ink)" : "var(--paper)",
+									fontWeight: active ? 700 : 400,
+								}}
+							>
+								{BRANCH_ICONS[b]}
+								{ui.branches[b]}
+							</button>
+						);
+					})}
+				</nav>
+
+				{/* Node chain + detail pane: horizontal-scrolling row of compact cards on phone
+				    landscape (vertical space is scarce there), a vertical stack with a sidebar
+				    detail pane from tablet up (more room). The detail pane is always visible
+				    (see effectiveId above) — no click needed to reveal it; there is no bottom-
+				    sheet variant anymore since phone portrait never reaches this screen. */}
+				<div
+					ref={chainScrollRef}
+					className="min-w-0 flex-1 overflow-x-auto overflow-y-hidden p-2 tablet:overflow-x-visible tablet:overflow-y-auto tablet:p-3"
+				>
+					<div className="flex h-full items-stretch gap-2 tablet:h-auto tablet:flex-col tablet:items-stretch tablet:gap-0">
 						{branchReforms.map((r, i) => {
 							const reason = canBuyReformReason(state, content, r.id);
 							const owned = reason === "owned";
@@ -235,14 +302,14 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 							const isSelected = effectiveId === r.id;
 							const opacity = owned ? 0.9 : available ? 1 : locked ? 0.45 : 0.7;
 							return (
-								<div key={r.id}>
+								<div key={r.id} className="flex items-stretch tablet:block">
 									{i > 0 && (
-										<div className="mx-auto h-4 w-0.5 bg-(--paper-line)" />
+										<div className="my-auto h-0.5 w-3 shrink-0 bg-(--paper-line) tablet:mx-auto tablet:h-4 tablet:w-0.5" />
 									)}
 									<button
 										type="button"
 										onClick={() => setSelectedId(r.id)}
-										className="panel w-full p-3 text-left"
+										className="panel w-44 shrink-0 p-2.5 text-left hover:bg-(--paper-dim) tablet:w-full tablet:p-3"
 										style={{
 											opacity,
 											boxShadow: isSelected
@@ -286,7 +353,7 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 				</div>
 
 				{selected && (
-					<aside className="flex max-h-[42vh] my-3 shrink-0 flex-col overflow-hidden rounded-t-2xl border-t border-(--paper-line) bg-(--paper) text-(--text-ink) md:max-h-none md:w-80 md:rounded-none md:border-l md:border-t-0">
+					<aside className="flex w-[38%] shrink-0 flex-col overflow-hidden border-l border-(--paper-line) bg-(--paper) text-(--text-ink) tablet:w-80 desktop:w-96">
 						{renderDetail(selected)}
 					</aside>
 				)}

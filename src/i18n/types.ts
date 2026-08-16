@@ -26,10 +26,8 @@ export type VictoryRankKey =
  */
 export interface Ui {
   menu: {
-    eyebrow: string;
     title: string;
     subtitle: string;
-    stamp: string;
     continue: string;
     difficulties: Record<Difficulty, { name: string; tagline: string }>;
   };
@@ -76,6 +74,12 @@ export interface Ui {
     /** Screen header, and the label of the menu button that opens it. */
     title: string;
     language: string;
+  };
+  /** Full-screen overlay shown on phone-sized portrait viewports (see OrientationGate) —
+   * the game is landscape-only on phones; this is the web fallback for orientation lock. */
+  orientationGate: {
+    title: string;
+    hint: string;
   };
   main: {
     influence: string;

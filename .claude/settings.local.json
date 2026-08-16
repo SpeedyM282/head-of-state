@@ -25,7 +25,14 @@
       "Bash(sed -i '' 's/const W = 480, H = 760, PAD = 16;/const W = 480, H = 580, PAD = 16;/' fit-americas.tmp.mjs)",
       "Bash(sed -i '' 's/for \\(let i = 0; i < 15; i++\\)/for \\(let i = 0; i < 25; i++\\)/' fit-americas.tmp.mjs)",
       "Bash(git -C /Users/speedym282/Downloads/prezident mv src/data/countries/isoNumeric.ts src/data/countries/isoNumericEurope.ts)",
-      "Bash(npm view *)"
+      "Bash(npm view *)",
+      "Bash(yarn -v)",
+      "Bash(npm install *)",
+      "Bash(npx --yes playwright --version)",
+      "Bash(timeout 60 npx --yes playwright install chromium --with-deps)",
+      "Bash(npx --yes playwright install chromium)",
+      "Bash(npm --prefix /Users/speedym282/Downloads/prezident run typecheck)",
+      "Bash(npm --prefix /Users/speedym282/Downloads/prezident run test)"
     ]
   }
 }

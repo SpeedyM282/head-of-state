@@ -136,6 +136,31 @@ describe('GameClock auto-pause', () => {
     expect(clock.effectiveSpeed()).toBe('paused');
   });
 
+  it('OrientationGate: a portrait phone auto-pauses like an event, and un-rotating resumes', () => {
+    let t = 0;
+    const fired: number[] = [];
+    const clock = new GameClock({ onTick: () => fired.push(t), now: () => t });
+    clock.setUserSpeed('normal');
+
+    clock.setAutoPaused('orientation', true); // phone rotated to portrait
+    t = SPEED_MS.normal;
+    clock.sample();
+    expect(fired).toHaveLength(0); // frozen while the rotate-device overlay is shown
+
+    clock.setAutoPaused('orientation', false); // rotated back to landscape
+    t = SPEED_MS.normal * 2;
+    clock.sample();
+    expect(fired).toHaveLength(1);
+  });
+
+  it('OrientationGate: manual pause still wins over rotating back to landscape', () => {
+    const clock = new GameClock({ onTick: () => {}, now: () => 0 });
+    clock.setUserSpeed('paused');
+    clock.setAutoPaused('orientation', true);
+    clock.setAutoPaused('orientation', false);
+    expect(clock.effectiveSpeed()).toBe('paused');
+  });
+
   it('requires all auto-pause reasons cleared before running', () => {
     const clock = new GameClock({ onTick: () => {}, now: () => 0 });
     clock.setUserSpeed('normal');

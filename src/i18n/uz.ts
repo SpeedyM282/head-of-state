@@ -2,10 +2,8 @@ import type { Ui } from './types';
 
 export const uz: Ui = {
   menu: {
-    eyebrow: 'Absurdiston Respublikasi · mutlaqo maxfiy',
     title: 'DAVLAT BOSHLIG‘I',
     subtitle: 'Hokimiyatning satirik simulyatori. Xalq, elitalar va sog‘lom aql — sizga qarshi.',
-    stamp: 'Ijro etilsin',
     continue: 'Hukmronlikni davom ettirish',
     difficulties: {
       easy: { name: 'Oson', tagline: 'Barqarorlik' },
@@ -45,6 +43,10 @@ export const uz: Ui = {
   settings: {
     title: 'Sozlamalar',
     language: 'Til',
+  },
+  orientationGate: {
+    title: 'Qurilmani ag‘daring',
+    hint: 'Davlat ishlari faqat landshaft rejimida yuritiladi.',
   },
   main: {
     influence: 'Ta’sir',

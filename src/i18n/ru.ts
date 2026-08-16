@@ -2,10 +2,8 @@ import type { Ui } from './types';
 
 export const ru: Ui = {
   menu: {
-    eyebrow: 'Республика Абсурдистан · совершенно секретно',
     title: 'ГЛАВА ГОСУДАРСТВА',
     subtitle: 'Сатирический симулятор власти. Народ, элиты и здравый смысл — против вас.',
-    stamp: 'К исполнению',
     continue: 'Продолжить правление',
     difficulties: {
       easy: { name: 'Лёгкая', tagline: 'Стабильность' },
@@ -45,6 +43,10 @@ export const ru: Ui = {
   settings: {
     title: 'Настройки',
     language: 'Язык',
+  },
+  orientationGate: {
+    title: 'Поверните устройство',
+    hint: 'Государственные дела ведутся только в альбомной ориентации.',
   },
   main: {
     influence: 'Влияние',

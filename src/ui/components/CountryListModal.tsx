@@ -27,7 +27,7 @@ export function CountryListModal({ onSelect, onClose }: Props) {
             autoFocus
             className="flex-1 border border-(--paper-line) bg-(--paper-dim) px-3 py-2 text-sm text-(--text-ink) focus-visible:outline-2 focus-visible:outline-(--gold)"
           />
-          <button type="button" className="btn" onClick={onClose}>
+          <button type="button" className="btn min-h-11" onClick={onClose}>
             {ui.map.close}
           </button>
         </div>
@@ -36,7 +36,7 @@ export function CountryListModal({ onSelect, onClose }: Props) {
             <button
               key={c.id}
               type="button"
-              className="flex w-full items-center gap-2 border-b border-(--paper-line) py-2 text-left"
+              className="flex min-h-11 w-full items-center gap-2 border-b border-(--paper-line) py-2 text-left hover:bg-(--paper-dim)"
               onClick={() => onSelect(c.id)}
             >
               <span className="text-lg">{c.flagEmoji}</span>
