@@ -43,6 +43,23 @@ export interface Ui {
     loading: string;
     searchPlaceholder: string;
     close: string;
+    /** Region names — shown as the hover/tap tooltip for any country at the world-map
+     * overview (before a region is entered), and as the active-region heading afterward. */
+    continents: {
+      westernEurope: string;
+      easternEurope: string;
+      northAmerica: string;
+      southAmerica: string;
+      centralAsia: string;
+      middleEast: string;
+      southSoutheastAsia: string;
+      easternAsia: string;
+      oceania: string;
+    };
+    /** Shown above the map, only while a region is active. */
+    chooseRegion: string;
+    /** Back button: exits the active region, returning to the world overview. */
+    backToRegions: string;
     dossier: {
       population: string;
       area: string;

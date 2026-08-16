@@ -12,6 +12,9 @@
   --text-faint: #6f6753;
   --stamp: #a8352c;
   --gold: #b98f3e;
+  /* Hover fill for map shapes — a lighter step between --paper-dim (idle) and full --gold
+     (selected), so hover reads as "the whole shape lit up" without pre-empting selection. */
+  --gold-soft: color-mix(in srgb, var(--gold) 45%, var(--paper-dim));
   --ok: #4c7a4c;
 }
 
@@ -85,6 +88,16 @@ button:disabled {
   content: ' ······································';
   color: var(--text-faint);
   letter-spacing: 2px;
+}
+
+/* WorldMap's region zoom/pan (ZoomableGroup's center+zoom props) is a plain 2D transform
+   over a fixed projection — react-simple-maps applies it as the SVG `transform` attribute
+   on this class instantly, with no built-in animation. Modern browsers animate the SVG2
+   `transform` attribute via a CSS transition on the property of the same name, so this is
+   enough to make entering/leaving a region glide instead of jump; browsers that don't
+   support it just apply the transform instantly (still fully functional). */
+.rsm-zoomable-group {
+  transition: transform 500ms ease;
 }
 
 @media (prefers-reduced-motion: reduce) {
