@@ -605,7 +605,7 @@ export function WorldMap({ activeRegion, onEnterRegion, selectedCountryId, onSel
 
       <div
         ref={tooltipRef}
-        className="pointer-events-none absolute left-0 top-0 whitespace-nowrap border border-(--paper-line) bg-(--paper) px-2 py-1 text-xs font-bold text-(--text-ink) shadow-sm"
+        className="pointer-events-none absolute left-0 top-0 whitespace-nowrap border border-(--paper-line) bg-(--paper) px-sp-2 py-sp-1 text-caption font-bold text-(--text-ink) shadow-sm"
         style={{ opacity: hoverLabel ? 1 : 0, transition: 'opacity 100ms ease' }}
       >
         {hoverLabel}

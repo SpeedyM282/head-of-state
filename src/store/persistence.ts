@@ -12,12 +12,22 @@ import { DEFAULT_LANG, LANGS } from '../i18n';
 // always been populated too and can back-fill it.
 const KEY = 'prezident.save.v3';
 const LANG_KEY = 'prezident.lang.v1';
+const TUTORIAL_KEY = 'prezident.tutorial.v1';
 
 export interface SaveData {
   state: GameState;
   difficulty: Difficulty;
   countryId: string;
 }
+
+/** First-time-user tutorial progress. Deliberately separate from SaveData/KEY: replaying a
+ * game ("Играть снова") must never re-trigger tips the player has already seen. */
+export interface TutorialData {
+  completed: boolean;
+  seenTips: string[];
+}
+
+const DEFAULT_TUTORIAL: TutorialData = { completed: false, seenTips: [] };
 
 export function saveGame(data: SaveData): void {
   try {
@@ -61,5 +71,27 @@ export function saveLang(lang: Lang): void {
     localStorage.setItem(LANG_KEY, lang);
   } catch {
     // ignore
+  }
+}
+
+export function loadTutorial(): TutorialData {
+  try {
+    const raw = localStorage.getItem(TUTORIAL_KEY);
+    if (!raw) return DEFAULT_TUTORIAL;
+    const parsed = JSON.parse(raw) as Partial<TutorialData>;
+    return {
+      completed: parsed.completed === true,
+      seenTips: Array.isArray(parsed.seenTips) ? parsed.seenTips.filter((t) => typeof t === 'string') : [],
+    };
+  } catch {
+    return DEFAULT_TUTORIAL;
+  }
+}
+
+export function saveTutorial(data: TutorialData): void {
+  try {
+    localStorage.setItem(TUTORIAL_KEY, JSON.stringify(data));
+  } catch {
+    // Storage full or unavailable — tutorial state just won't persist across reloads.
   }
 }

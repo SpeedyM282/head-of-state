@@ -36,6 +36,9 @@ interface GameStore {
   /** OrientationGate toggles this while a phone is held portrait — same auto-pause mechanism
    * as an event or the reforms panel, manual pause still wins. No-op if no game is running. */
   setOrientationPaused: (paused: boolean) => void;
+  /** The tutorial overlay (scripted opening steps, just-in-time tips) toggles this while it is
+   * showing guidance — same auto-pause mechanism as an event or the reforms panel. */
+  setTutorialPaused: (paused: boolean) => void;
 }
 
 export const useGameStore = create<GameStore>((set, get) => {
@@ -75,6 +78,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       clock.setUserSpeed('normal');
       clock.setAutoPaused('event', false);
       clock.setAutoPaused('reforms', false);
+      clock.setAutoPaused('tutorial', false);
       set({ phase: 'playing', content, state, prevStats: null, hasSave: false, speed: 'normal', reformsOpen: false });
     },
 
@@ -84,6 +88,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       const content = buildContent(save.countryId, save.difficulty);
       clock.setUserSpeed('normal');
       clock.setAutoPaused('reforms', false);
+      clock.setAutoPaused('tutorial', false);
       clock.setAutoPaused('event', !!save.state.pendingEventId);
       const phase = save.state.outcome ? 'over' : save.state.awaitingInauguration ? 'interTerm' : 'playing';
       set({ phase, content, state: save.state, prevStats: null, speed: 'normal', reformsOpen: false });
@@ -134,6 +139,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     startClock: () => clock.start(),
     stopClock: () => clock.stop(),
     setOrientationPaused: (paused) => clock.setAutoPaused('orientation', paused),
+    setTutorialPaused: (paused) => clock.setAutoPaused('tutorial', paused),
 
     toMenu: () => {
       clock.stop();

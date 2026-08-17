@@ -7,6 +7,7 @@ import { GameOverScreen } from './ui/screens/GameOverScreen';
 import { InterTermScreen } from './ui/screens/InterTermScreen';
 import { SettingsScreen } from './ui/screens/SettingsScreen';
 import { OrientationGate } from './ui/components/OrientationGate';
+import { TutorialOverlay } from './ui/tutorial/TutorialOverlay';
 
 // react-simple-maps + the vendored TopoJSON are heavy; split them into their own
 // chunk so the menu/gameplay screens (the common path) load fast.
@@ -35,6 +36,7 @@ export function App() {
         {phase === 'interTerm' && <InterTermScreen />}
         {phase === 'over' && <GameOverScreen />}
       </div>
+      <TutorialOverlay />
       <OrientationGate />
     </>
   );

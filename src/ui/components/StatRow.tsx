@@ -16,8 +16,11 @@ export function StatRow({ statKey, value, prev, danger }: Props) {
   const trend = trendGlyph(direction);
   const color = trendColor(statKey, direction);
   return (
-    <div className="flex items-center gap-1.5 py-0.5 tablet:gap-2 tablet:py-1">
-      <span className="w-24 shrink-0 truncate text-xs tablet:w-40 tablet:text-sm">{ui.stats[statKey]}</span>
+    // py stays a fixed sub-token value (not p-sp-*) — the 7-row stack must fit 640×360 with no
+    // scroll, and even the smallest spacing token grows a couple px by desktop that this
+    // height-critical row can't spare.
+    <div className="flex items-center gap-sp-1 py-0.5 tablet:py-1">
+      <span className="w-24 shrink-0 truncate text-label tablet:w-40">{ui.stats[statKey]}</span>
       <div className="h-1.5 flex-1 border border-(--paper-line) bg-(--paper-dim) tablet:h-2">
         <div
           className="h-full"
@@ -28,8 +31,8 @@ export function StatRow({ statKey, value, prev, danger }: Props) {
           }}
         />
       </div>
-      <span className="num w-7 text-right text-xs tablet:w-8 tablet:text-sm">{Math.round(value)}</span>
-      <span className="w-3 text-[0.65rem] tablet:text-xs" style={{ color }} aria-label={`${ui.trend} ${trend}`}>
+      <span className="num w-7 text-right text-num tablet:w-8">{Math.round(value)}</span>
+      <span className="w-3 text-caption" style={{ color }} aria-label={`${ui.trend} ${trend}`}>
         {trend}
       </span>
     </div>

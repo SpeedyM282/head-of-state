@@ -148,4 +148,53 @@ export interface Ui {
   };
   defeat: Record<DefeatKind, RankText>;
   victory: Record<VictoryRankKey, RankText>;
+  /** First-time-user tutorial: the entry prompt and the advisor panel's fixed chrome.
+   * Scripted-step/tip flavor text itself is LocalizedText data in ui/tutorial/content.ts,
+   * not here — this is only the reusable button/label strings around it. */
+  tutorial: {
+    /** «Советник» — the advisor panel's speaker label. */
+    advisorLabel: string;
+    /** Advances a scripted step or dismisses a tip. */
+    next: string;
+    /** Abandons the scripted opening early; also the Settings restart button's neighbor. */
+    skip: string;
+    prompt: {
+      title: string;
+      start: string;
+      skip: string;
+    };
+    /** Settings screen button: resets the completed flag and seen-tips set. */
+    restart: string;
+  };
+  /** Static «Справка» reference screen, reached from Settings — the "re-read later" layer.
+   * Terse by design; sourced entirely from ui strings, not GDD prose. */
+  help: {
+    title: string;
+    close: string;
+    stats: {
+      heading: string;
+      economy: string;
+      treasury: string;
+      approval: string;
+      eliteLoyalty: string;
+      stability: string;
+      development: string;
+      corruption: string;
+    };
+    vector: {
+      heading: string;
+      democratic: string;
+      authoritarian: string;
+      totalitarian: string;
+    };
+    elections: { heading: string; text: string };
+    defeats: {
+      heading: string;
+      coup: string;
+      revolution: string;
+      default: string;
+      elections: string;
+    };
+    reforms: { heading: string; text: string };
+  };
 }

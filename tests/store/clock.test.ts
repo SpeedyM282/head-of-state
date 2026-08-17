@@ -161,6 +161,31 @@ describe('GameClock auto-pause', () => {
     expect(clock.effectiveSpeed()).toBe('paused');
   });
 
+  it('tutorial overlay: a spotlight step or tip auto-pauses like an event, and dismissing resumes', () => {
+    let t = 0;
+    const fired: number[] = [];
+    const clock = new GameClock({ onTick: () => fired.push(t), now: () => t });
+    clock.setUserSpeed('normal');
+
+    clock.setAutoPaused('tutorial', true); // a scripted step / just-in-time tip is showing
+    t = SPEED_MS.normal;
+    clock.sample();
+    expect(fired).toHaveLength(0); // frozen while the advisor is speaking
+
+    clock.setAutoPaused('tutorial', false); // player dismissed it
+    t = SPEED_MS.normal * 2;
+    clock.sample();
+    expect(fired).toHaveLength(1);
+  });
+
+  it('tutorial overlay: manual pause still wins over dismissing a tip', () => {
+    const clock = new GameClock({ onTick: () => {}, now: () => 0 });
+    clock.setUserSpeed('paused');
+    clock.setAutoPaused('tutorial', true);
+    clock.setAutoPaused('tutorial', false);
+    expect(clock.effectiveSpeed()).toBe('paused');
+  });
+
   it('requires all auto-pause reasons cleared before running', () => {
     const clock = new GameClock({ onTick: () => {}, now: () => 0 });
     clock.setUserSpeed('normal');

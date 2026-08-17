@@ -1,16 +1,24 @@
-import { useEffect } from 'react';
-import type { StatKey } from '../../core/types';
-import { gameDate, loc } from '../../i18n';
-import { isDangerous } from '../../data/statMeta';
-import { useLang, useUi } from '../../store/langStore';
-import { useGameStore } from '../../store/gameStore';
-import { StatRow } from '../components/StatRow';
-import { VectorScale } from '../components/VectorScale';
-import { EventModal } from '../components/EventModal';
-import { ReformsPanel } from '../components/ReformsPanel';
-import { SpeedControls } from '../components/SpeedControls';
+import { useEffect } from "react";
+import type { StatKey } from "../../core/types";
+import { gameDate, loc } from "../../i18n";
+import { isDangerous } from "../../data/statMeta";
+import { useLang, useUi } from "../../store/langStore";
+import { useGameStore } from "../../store/gameStore";
+import { StatRow } from "../components/StatRow";
+import { VectorScale } from "../components/VectorScale";
+import { EventModal } from "../components/EventModal";
+import { ReformsPanel } from "../components/ReformsPanel";
+import { SpeedControls } from "../components/SpeedControls";
 
-const STAT_ORDER: StatKey[] = ['economy', 'treasury', 'approval', 'eliteLoyalty', 'stability', 'development', 'corruption'];
+const STAT_ORDER: StatKey[] = [
+	"economy",
+	"treasury",
+	"approval",
+	"eliteLoyalty",
+	"stability",
+	"development",
+	"corruption",
+];
 
 /**
  * Two-panel layout at every form factor (phone-landscape designed first at 640×360, tablet and
@@ -20,118 +28,169 @@ const STAT_ORDER: StatKey[] = ['economy', 'treasury', 'approval', 'eliteLoyalty'
  * lives as a small corner control instead of its own row.
  */
 export function MainScreen() {
-  const { state, content, prevStats, reformsOpen, openReforms, closeReforms, startClock, stopClock, toMenu, speed, setSpeed } =
-    useGameStore();
-  const lang = useLang((s) => s.lang);
-  const ui = useUi();
+	const {
+		state,
+		content,
+		prevStats,
+		reformsOpen,
+		openReforms,
+		closeReforms,
+		startClock,
+		stopClock,
+		toMenu,
+		speed,
+		setSpeed,
+	} = useGameStore();
+	const lang = useLang((s) => s.lang);
+	const ui = useUi();
 
-  // The real-time clock runs only while the game screen is mounted (cleaned up on unmount).
-  useEffect(() => {
-    startClock();
-    return () => stopClock();
-  }, [startClock, stopClock]);
+	// The real-time clock runs only while the game screen is mounted (cleaned up on unmount).
+	useEffect(() => {
+		startClock();
+		return () => stopClock();
+	}, [startClock, stopClock]);
 
-  // Keyboard: Space toggles pause/resume (manual pause — same "manual pause wins" priority as
-  // the speed buttons), Esc closes the reforms panel. Ignored while a form control has focus
-  // so it doesn't fight the browser's own Space-activates-focused-button behavior.
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      const target = e.target as HTMLElement | null;
-      const isFormControl = target && ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'].includes(target.tagName);
-      if (e.code === 'Space' && !isFormControl) {
-        e.preventDefault();
-        setSpeed(speed === 'paused' ? 'normal' : 'paused');
-      } else if (e.key === 'Escape' && reformsOpen) {
-        closeReforms();
-      }
-    }
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [speed, setSpeed, reformsOpen, closeReforms]);
+	// Keyboard: Space toggles pause/resume (manual pause — same "manual pause wins" priority as
+	// the speed buttons), Esc closes the reforms panel. Ignored while a form control has focus
+	// so it doesn't fight the browser's own Space-activates-focused-button behavior.
+	useEffect(() => {
+		function onKeyDown(e: KeyboardEvent) {
+			const target = e.target as HTMLElement | null;
+			const isFormControl =
+				target &&
+				["INPUT", "TEXTAREA", "SELECT", "BUTTON"].includes(target.tagName);
+			if (e.code === "Space" && !isFormControl) {
+				e.preventDefault();
+				setSpeed(speed === "paused" ? "normal" : "paused");
+			} else if (e.key === "Escape" && reformsOpen) {
+				closeReforms();
+			}
+		}
+		window.addEventListener("keydown", onKeyDown);
+		return () => window.removeEventListener("keydown", onKeyDown);
+	}, [speed, setSpeed, reformsOpen, closeReforms]);
 
-  if (!state || !content) return null;
+	if (!state || !content) return null;
 
-  const { month, year } = gameDate(state.turn, ui);
-  const dangerThreshold = content.difficulty.defeatThreshold + 10;
-  // The term/election cycle: elections land at the end of each 48-month term.
-  const termLength = content.difficulty.turnsToWin;
-  const monthsUntilElection = state.term * termLength - state.turn;
-  const termProgress = Math.min(1, (state.turn - (state.term - 1) * termLength) / termLength);
+	const { month, year } = gameDate(state.turn, ui);
+	const dangerThreshold = content.difficulty.defeatThreshold + 10;
+	// The term/election cycle: elections land at the end of each 48-month term.
+	const termLength = content.difficulty.turnsToWin;
+	const monthsUntilElection = state.term * termLength - state.turn;
+	const termProgress = Math.min(
+		1,
+		(state.turn - (state.term - 1) * termLength) / termLength,
+	);
 
-  return (
-    <div className="flex min-h-0 flex-1 flex-col gap-1.5 tablet:gap-3">
-      <div className="flex min-h-0 flex-1 gap-2 tablet:gap-4 desktop:gap-6">
-        {/* LEFT: the 7 stat rows. */}
-        <div className="panel flex w-[58%] min-w-0 flex-col justify-center gap-0 overflow-y-auto p-2 tablet:w-[55%] tablet:p-3 desktop:w-[52%]">
-          <div className="mb-1 flex shrink-0 items-center gap-2">
-            <button
-              type="button"
-              onClick={toMenu}
-              aria-label={ui.gameOver.toMenu}
-              className="-ml-1 flex h-11 w-11 shrink-0 items-center justify-center text-(--text-ink) hover:bg-(--paper-dim) desktop:h-8 desktop:w-8"
-            >
-              <svg width="16" height="16" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                <path d="M12 5 L7 10 L12 15" />
-              </svg>
-            </button>
-            <p className="eyebrow truncate">{ui.main.brief}</p>
-          </div>
-          {STAT_ORDER.map((k) => (
-            <StatRow
-              key={k}
-              statKey={k}
-              value={state.stats[k]}
-              prev={prevStats ? prevStats[k] : null}
-              danger={isDangerous(k, state.stats[k], dangerThreshold)}
-            />
-          ))}
-        </div>
+	return (
+		<div className="flex min-h-0 flex-1 flex-col gap-sp-2">
+			<div className="flex min-h-0 flex-1 gap-sp-4">
+				{/* LEFT: the 7 stat rows. */}
+				<div
+					data-tutorial="stats-panel"
+					className="panel flex w-[58%] max-h-70 min-w-0 flex-col justify-center gap-0 overflow-y-auto p-sp-2 tablet:w-[55%] desktop:w-[52%]"
+				>
+					<div className="mb-sp-1 flex shrink-0 items-center gap-sp-2">
+						<button
+							type="button"
+							onClick={toMenu}
+							aria-label={ui.gameOver.toMenu}
+							className="-ml-1 flex h-11 w-11 shrink-0 items-center justify-center text-(--text-ink) hover:bg-(--paper-dim) desktop:h-8 desktop:w-8"
+						>
+							<svg
+								width="16"
+								height="16"
+								viewBox="0 0 20 20"
+								fill="none"
+								stroke="currentColor"
+								strokeWidth="2"
+								strokeLinecap="round"
+								strokeLinejoin="round"
+								aria-hidden
+							>
+								<path d="M12 5 L7 10 L12 15" />
+							</svg>
+						</button>
+						<p className="eyebrow truncate">{ui.main.brief}</p>
+					</div>
+					{STAT_ORDER.map((k) => (
+						<StatRow
+							key={k}
+							statKey={k}
+							value={state.stats[k]}
+							prev={prevStats ? prevStats[k] : null}
+							danger={isDangerous(k, state.stats[k], dangerThreshold)}
+						/>
+					))}
+				</div>
 
-        {/* RIGHT: identity/date/influence, term progress, vector, clock, reforms. */}
-        <div className="flex w-[42%] min-w-0 flex-col gap-1.5 overflow-y-auto tablet:w-[45%] tablet:gap-3 desktop:w-[48%]">
-          <header className="flex shrink-0 items-start justify-between gap-2">
-            <div className="min-w-0">
-              <p className="eyebrow truncate">{loc(content.country.name, lang)}</p>
-              <p className="text-base font-bold leading-tight tablet:text-lg">
-                {month} <span className="num">{year}</span>
-              </p>
-            </div>
-            <p className="min-w-0 shrink-0 text-right text-sm">
-              <span className="eyebrow block">{ui.main.influence}</span>
-              <span className="num text-lg text-(--gold) tablet:text-xl">{Math.floor(state.influence)}</span>
-            </p>
-          </header>
+				{/* RIGHT: identity/date/influence, term progress, vector, clock, reforms. */}
+				<div className="flex w-[42%] min-w-0 flex-col gap-sp-2 overflow-y-auto tablet:w-[45%] desktop:w-[48%]">
+					<header className="flex shrink-0 items-start justify-between gap-sp-2">
+						<div className="min-w-0">
+							<p className="eyebrow truncate">
+								{loc(content.country.name, lang)}
+							</p>
+							<p className="text-heading font-bold leading-tight">
+								{month} <span className="num">{year}</span>
+							</p>
+						</div>
+						<p className="min-w-0 shrink-0 text-right text-label">
+							<span className="eyebrow block">{ui.main.influence}</span>
+							<span className="num text-heading text-(--gold)">
+								{Math.floor(state.influence)}
+							</span>
+						</p>
+					</header>
 
-          <div className="shrink-0">
-            <div className="mb-1 flex items-center justify-between text-[0.6rem] uppercase tracking-wider text-(--text-faint)">
-              <span>{ui.main.term} {state.term}</span>
-              <span>{ui.main.untilElection}: <span className="num">{monthsUntilElection}</span> {ui.main.monthsShort}</span>
-            </div>
-            <div className="h-0.5 w-full bg-(--ink-soft)" aria-hidden>
-              <div
-                className="h-full bg-(--gold) opacity-60"
-                style={{ width: `${termProgress * 100}%`, transition: 'width 300ms' }}
-              />
-            </div>
-          </div>
+					<div className="shrink-0">
+						<div className="mb-sp-1 flex items-center justify-between text-caption uppercase tracking-wider text-(--text-faint)">
+							<span>
+								{ui.main.term} {state.term}
+							</span>
+							<span>
+								{ui.main.untilElection}:{" "}
+								<span className="num">{monthsUntilElection}</span>{" "}
+								{ui.main.monthsShort}
+							</span>
+						</div>
+						<div className="h-0.5 w-full bg-(--ink-soft)" aria-hidden>
+							<div
+								className="h-full bg-(--gold) opacity-60"
+								style={{
+									width: `${termProgress * 100}%`,
+									transition: "width 300ms",
+								}}
+							/>
+						</div>
+					</div>
 
-          <div className="shrink-0">
-            <VectorScale vector={state.vector} />
-          </div>
+					<div className="shrink-0" data-tutorial="vector-scale">
+						<VectorScale vector={state.vector} />
+					</div>
 
-          <div className="flex shrink-0 items-center justify-between gap-2">
-            <SpeedControls />
-            <p className="hidden text-right text-[0.6rem] opacity-50 tablet:block">{ui.main.autosave}</p>
-          </div>
+					<div
+						className="flex shrink-0 items-center justify-between gap-sp-2"
+						data-tutorial="clock-controls"
+					>
+						<SpeedControls />
+						<p className="hidden text-right text-caption opacity-50 tablet:block">
+							{ui.main.autosave}
+						</p>
+					</div>
 
-          <button className="btn min-h-11 w-full" onClick={openReforms}>
-            {ui.main.reforms}
-          </button>
-        </div>
-      </div>
+					<button
+						className="btn min-h-11 w-full"
+						onClick={openReforms}
+						data-tutorial="reforms-button"
+					>
+						{ui.main.reforms}
+					</button>
+				</div>
+			</div>
 
-      {reformsOpen && <ReformsPanel onClose={closeReforms} />}
-      <EventModal />
-    </div>
-  );
+			{reformsOpen && <ReformsPanel onClose={closeReforms} />}
+			<EventModal />
+		</div>
+	);
 }

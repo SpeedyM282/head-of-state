@@ -29,9 +29,9 @@ export function effectColor(e: Effect): string {
 /** Vertical effect list — used by the reforms detail pane. */
 export function EffectLines({ effects, ui }: { effects: Effect[]; ui: Ui }) {
   return (
-    <ul className="mt-1">
+    <ul className="mt-sp-1">
       {effects.map((e, i) => (
-        <li key={i} className="flex items-center justify-between gap-3 py-0.5 text-sm">
+        <li key={i} className="flex items-center justify-between gap-sp-3 py-0.5 text-caption">
           <span className="text-(--text-faint)">{targetLabel(e.target, ui)}</span>
           <span className="num" style={{ color: effectColor(e) }}>{signed(e.delta)}</span>
         </li>
@@ -48,7 +48,7 @@ export function EffectLines({ effects, ui }: { effects: Effect[]; ui: Ui }) {
 export function EffectSummaryLine({ effects, ui }: { effects: Effect[]; ui: Ui }) {
   if (effects.length === 0) return null;
   return (
-    <span className="mt-1 block text-xs leading-relaxed text-(--text-faint)">
+    <span className="mt-sp-1 block text-caption leading-relaxed text-(--text-faint)">
       {effects.map((e, i) => (
         <span key={i}>
           {i > 0 && ' · '}

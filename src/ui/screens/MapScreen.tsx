@@ -31,11 +31,11 @@ export function MapScreen() {
   }, [listOpen, selectedCountryId]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-1.5 tablet:gap-3">
+    <div className="flex min-h-0 flex-1 flex-col gap-sp-2">
       {/* One compact row: back-to-menu, region back/heading, and the list-view fallback —
           keeps the map itself as tall as possible in phone landscape's scarce vertical space. */}
-      <div className="flex shrink-0 items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-1.5">
+      <div className="flex shrink-0 items-center justify-between gap-sp-2">
+        <div className="flex min-w-0 items-center gap-sp-2">
           <button
             type="button"
             onClick={toMenu}
@@ -50,7 +50,7 @@ export function MapScreen() {
             <button
               type="button"
               onClick={() => setActiveRegion(null)}
-              className="flex min-h-11 shrink-0 items-center gap-1 border border-(--paper-line) px-2 text-xs hover:bg-(--paper-dim)"
+              className="flex min-h-11 shrink-0 items-center gap-sp-1 border border-(--paper-line) px-sp-2 text-caption hover:bg-(--paper-dim)"
             >
               <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                 <path d="M12 5 L7 10 L12 15" />
@@ -77,7 +77,7 @@ export function MapScreen() {
             control row above — reads like a map label, out of the way of the shapes. */}
         {activeRegion && (
           <div
-            className="pointer-events-none absolute bottom-2 border border-(--paper-line) bg-(--paper) px-2 py-1 text-xs font-bold text-(--text-ink) shadow-sm tablet:bottom-3"
+            className="pointer-events-none absolute bottom-2 border border-(--paper-line) bg-(--paper) px-sp-2 py-sp-1 text-caption font-bold text-(--text-ink) shadow-sm tablet:bottom-3"
             style={{ left: 'calc(0.5rem + env(safe-area-inset-left, 0px))' }}
           >
             {ui.map.continents[activeRegion]}

@@ -1,5 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { clearSave, loadGame, loadLang, saveGame, saveLang, type SaveData } from '../../src/store/persistence';
+import {
+  clearSave,
+  loadGame,
+  loadLang,
+  loadTutorial,
+  saveGame,
+  saveLang,
+  saveTutorial,
+  type SaveData,
+} from '../../src/store/persistence';
 import { buildContent } from '../../src/data';
 import { initGame } from '../../src/core/init';
 import { DEFAULT_LANG } from '../../src/i18n';
@@ -107,5 +116,30 @@ describe('persistence: language (settings)', () => {
   it('falls back to the default language for an unsupported stored value', () => {
     memoryStorage.setItem('prezident.lang.v1', 'fr');
     expect(loadLang()).toBe(DEFAULT_LANG);
+  });
+});
+
+describe('persistence: tutorial (settings, independent of the game save)', () => {
+  it('defaults to not completed and no seen tips when nothing is stored', () => {
+    expect(loadTutorial()).toEqual({ completed: false, seenTips: [] });
+  });
+
+  it('round-trips completed + seenTips under its own key, independent of the game save', () => {
+    saveGame(makeSave('no'));
+    saveTutorial({ completed: true, seenTips: ['danger-zone', 'first-event'] });
+    expect(loadTutorial()).toEqual({ completed: true, seenTips: ['danger-zone', 'first-event'] });
+    // "Играть снова" (clearSave) must never re-trigger already-seen tips.
+    clearSave();
+    expect(loadTutorial()).toEqual({ completed: true, seenTips: ['danger-zone', 'first-event'] });
+  });
+
+  it('falls back to defaults for malformed stored data instead of throwing', () => {
+    memoryStorage.setItem('prezident.tutorial.v1', '{not json');
+    expect(loadTutorial()).toEqual({ completed: false, seenTips: [] });
+  });
+
+  it('coerces a missing/malformed completed flag and filters non-string seenTips entries', () => {
+    memoryStorage.setItem('prezident.tutorial.v1', JSON.stringify({ seenTips: ['a', 1, null, 'b'] }));
+    expect(loadTutorial()).toEqual({ completed: false, seenTips: ['a', 'b'] });
   });
 });

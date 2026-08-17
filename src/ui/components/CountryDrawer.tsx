@@ -68,9 +68,9 @@ export function CountryDrawer({ countryId, onClose }: Props) {
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
       >
-        <header className="flex shrink-0 items-center gap-2 border-b border-(--paper-line) p-4">
-          <span className="text-2xl">{country.flagEmoji}</span>
-          <h2 className="flex-1 text-lg font-bold leading-tight">{loc(country.name, lang)}</h2>
+        <header className="flex shrink-0 items-center gap-sp-2 border-b border-(--paper-line) p-sp-4">
+          <span className="text-heading">{country.flagEmoji}</span>
+          <h2 className="flex-1 text-heading font-bold leading-tight">{loc(country.name, lang)}</h2>
           <button
             type="button"
             aria-label={ui.map.close}
@@ -81,19 +81,19 @@ export function CountryDrawer({ countryId, onClose }: Props) {
           </button>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-4">
-          <p className="text-sm leading-relaxed text-(--text-faint)">{loc(country.description, lang)}</p>
+        <div className="flex-1 overflow-y-auto p-sp-4">
+          <p className="text-body leading-relaxed text-(--text-faint)">{loc(country.description, lang)}</p>
 
-          <div className="mt-4 flex items-center justify-between py-1 text-sm">
+          <div className="mt-sp-4 flex items-center justify-between py-sp-1 text-label">
             <span>{ui.map.dossier.population}</span>
-            <span className="num">{country.population.toLocaleString()}</span>
+            <span className="num text-num">{country.population.toLocaleString()}</span>
           </div>
-          <div className="flex items-center justify-between border-b border-(--paper-line) py-1 pb-3 text-sm">
+          <div className="flex items-center justify-between border-b border-(--paper-line) py-sp-1 pb-sp-3 text-label">
             <span>{ui.map.dossier.area}</span>
-            <span className="num">{country.areaKm2.toLocaleString()} km²</span>
+            <span className="num text-num">{country.areaKm2.toLocaleString()} km²</span>
           </div>
 
-          <div className="mt-3">
+          <div className="mt-sp-3">
             <LevelBar label={ui.map.dossier.economy} value={country.economyLevel} />
             <LevelBar label={ui.map.dossier.corruption} value={country.corruptionLevel} inverted />
             <LevelBar label={ui.map.dossier.democracy} value={country.democracyLevel} />
@@ -101,15 +101,15 @@ export function CountryDrawer({ countryId, onClose }: Props) {
           </div>
         </div>
 
-        <footer className="shrink-0 border-t border-(--paper-line) p-4">
-          <div className="flex gap-1">
+        <footer className="shrink-0 border-t border-(--paper-line) p-sp-4">
+          <div className="flex gap-sp-1">
             {DIFFICULTY_ORDER.map((d) => (
               <button
                 key={d}
                 type="button"
                 aria-pressed={d === difficulty}
                 onClick={() => setDifficulty(d)}
-                className="min-h-11 flex-1 border border-(--paper-line) px-2 py-1.5 text-xs"
+                className="min-h-11 flex-1 border border-(--paper-line) px-sp-2 py-sp-1 text-label"
                 style={{
                   background: d === difficulty ? 'var(--gold)' : 'transparent',
                   fontWeight: d === difficulty ? 700 : 400,
@@ -119,7 +119,7 @@ export function CountryDrawer({ countryId, onClose }: Props) {
               </button>
             ))}
           </div>
-          <button type="button" className="btn btn-primary mt-2 min-h-11 w-full" onClick={() => startGame(country.id, difficulty)}>
+          <button type="button" className="btn btn-primary mt-sp-2 min-h-11 w-full" onClick={() => startGame(country.id, difficulty)}>
             {ui.map.choose}
           </button>
         </footer>

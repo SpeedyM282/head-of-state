@@ -174,4 +174,50 @@ export const en: Ui = {
       text: 'You survived to the end of your term. By today’s standards, that’s already a state achievement.',
     },
   },
+  tutorial: {
+    advisorLabel: 'Advisor',
+    next: 'Next',
+    skip: 'Skip tutorial',
+    prompt: {
+      title: 'First time in power?',
+      start: 'Tutorial',
+      skip: 'I’ll figure it out',
+    },
+    restart: 'Replay tutorial',
+  },
+  help: {
+    title: 'Reference',
+    close: 'Close',
+    stats: {
+      heading: 'Stats',
+      economy: 'Drives treasury and approval. Decays over time without development.',
+      treasury: 'Pays upkeep, reforms and elite salaries. Below the threshold, elites grow restless.',
+      approval: 'The public’s opinion of you. Decides democratic elections.',
+      eliteLoyalty: 'Loyalty of the security bloc and elites. Falls to zero and it’s a coup.',
+      stability: 'How firmly things hold together. Low stability combined with discontent leads to revolution.',
+      development: 'Long-term investment in the country. Slowly feeds the economy and approval.',
+      corruption: 'The one stat where more is worse. Skims the treasury, drags development — but above 50 it buys elite loyalty.',
+    },
+    vector: {
+      heading: 'Governance zones',
+      democratic: 'Soft power resting on honest elections. Elites find you a little boring.',
+      authoritarian: 'A middle zone: elections are decided by “administrative resources”, elites are calmer.',
+      totalitarian: 'A formality instead of an election. More influence — and slow isolation of the country.',
+    },
+    elections: {
+      heading: 'Elections and terms',
+      text: 'Each term runs 48 months, ending in an election. Democracy is decided by approval, authoritarianism has a lower bar (“administrative resources”), totalitarianism is a near-guaranteed formality. Lose, and it’s removal from office. Serve two terms and you must amend the constitution or step down.',
+    },
+    defeats: {
+      heading: 'How to lose',
+      coup: 'The elites run out of patience — a coup.',
+      revolution: 'The people run out of patience and faith in stability — a revolution.',
+      default: 'The treasury stays empty too long — default.',
+      elections: 'Lost the election — also the end of your rule, just a more civilized one.',
+    },
+    reforms: {
+      heading: 'Reforms and influence',
+      text: 'Reforms are bought with influence points and treasury, chained one after another within each branch. Influence accrues every month; without it, nothing gets bought.',
+    },
+  },
 };

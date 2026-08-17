@@ -46,14 +46,14 @@ export function OrientationGate() {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-4 px-[max(2rem,calc(1rem+env(safe-area-inset-left,0px)))] text-center"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-center gap-sp-4 px-[max(2rem,calc(1rem+env(safe-area-inset-left,0px)))] text-center"
       style={{ background: 'var(--ink)', color: 'var(--paper)' }}
       role="alert"
     >
       <RotateDeviceIcon />
       <div>
-        <p className="text-lg font-bold tracking-wide">{ui.orientationGate.title}</p>
-        <p className="mt-1 text-sm opacity-70">{ui.orientationGate.hint}</p>
+        <p className="text-heading font-bold tracking-wide">{ui.orientationGate.title}</p>
+        <p className="mt-sp-1 text-caption opacity-70">{ui.orientationGate.hint}</p>
       </div>
     </div>
   );

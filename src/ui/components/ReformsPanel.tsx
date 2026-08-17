@@ -6,6 +6,7 @@ import { loc } from "../../i18n";
 import type { Ui } from "../../i18n";
 import { useLang, useUi } from "../../store/langStore";
 import { useGameStore } from "../../store/gameStore";
+import { useTutorialStore } from "../../store/tutorialStore";
 import { EffectLines } from "../effectFormat";
 
 const BRANCHES = ["economy", "force", "social", "propaganda"] as const;
@@ -101,8 +102,10 @@ const BRANCH_ICONS: Record<Branch, ReactElement> = {
 
 export function ReformsPanel({ onClose }: { onClose: () => void }) {
 	const { state, content, buyReform } = useGameStore();
+	const scriptedStep = useTutorialStore((s) => s.scriptedStep);
 	const lang = useLang((s) => s.lang);
 	const ui = useUi();
+	const tutorialTabsAnchor = scriptedStep === "reformsBuy" ? "reforms-tabs" : undefined;
 	const [activeBranch, setActiveBranch] = useState<Branch>("economy");
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const chainScrollRef = useRef<HTMLDivElement>(null);
@@ -144,19 +147,19 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 		// (aside is the flex-col container — see below — so this footer never needs scrolling to reach).
 		return (
 			<>
-				<div className="flex-1 overflow-y-auto p-3 tablet:p-4">
+				<div className="flex-1 overflow-y-auto p-sp-3">
 					<p className="eyebrow">
 						{ui.reformsPanel.tier} {r.tier + 1}
 					</p>
-					<h3 className="text-base font-bold leading-tight tablet:text-lg">
+					<h3 className="text-heading font-bold leading-tight">
 						{loc(r.title, lang)}
 					</h3>
 
-					<p className="mt-2 text-xs leading-snug text-(--text-faint) tablet:text-sm">
+					<p className="mt-sp-2 text-body leading-snug text-(--text-faint)">
 						{loc(r.description, lang)}
 					</p>
 
-					<p className="eyebrow mt-3">
+					<p className="eyebrow mt-sp-3">
 						{ui.reformsPanel.influencePoints}:{" "}
 						<span className="num text-(--gold)">{r.costInfluence}</span>
 						{" · "}
@@ -164,21 +167,21 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 						<span className="num text-(--gold)">{r.costTreasury}</span>
 					</p>
 
-					<div className="mt-3">
+					<div className="mt-sp-3">
 						<p className="eyebrow">{ui.reformsPanel.effectsInstant}</p>
 						<EffectLines effects={r.instant} ui={ui} />
 					</div>
 					{r.perTurn.length > 0 && (
-						<div className="mt-3">
+						<div className="mt-sp-3">
 							<p className="eyebrow">{ui.reformsPanel.effectsPerMonth}</p>
 							<EffectLines effects={r.perTurn} ui={ui} />
 						</div>
 					)}
 				</div>
 
-				<div className="shrink-0 border-t border-(--paper-line) p-3 tablet:p-4">
+				<div className="shrink-0 border-t border-(--paper-line) p-sp-3">
 					{owned ? (
-						<span className="stamp text-sm">{ui.reformsPanel.adopted}</span>
+						<span className="stamp text-label">{ui.reformsPanel.adopted}</span>
 					) : (
 						<>
 							<button
@@ -190,7 +193,7 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 								{ui.reformsPanel.approve}
 							</button>
 							{line && (
-								<p className="mt-1 text-center text-xs text-(--stamp)">
+								<p className="mt-sp-1 text-center text-caption text-(--stamp)">
 									{line}
 								</p>
 							)}
@@ -205,8 +208,8 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 		<div className="safe-area-x fixed inset-0 z-10 flex flex-col bg-(--ink)">
 			{/* Pinned header */}
 			<header className="shrink-0 border-b border-(--paper-line)">
-				<div className="mx-auto flex items-center gap-3 px-3 py-1.5 tablet:px-4 tablet:py-2 desktop:max-w-[1150px]">
-					<h2 className="text-base font-bold tablet:text-lg">{ui.reformsPanel.title}</h2>
+				<div className="mx-auto flex items-center gap-sp-3 px-sp-3 py-sp-1 desktop:max-w-[1150px]">
+					<h2 className="text-heading font-bold">{ui.reformsPanel.title}</h2>
 					<p className="eyebrow flex-1 truncate">
 						{ui.reformsPanel.influencePoints}:{" "}
 						<span className="num text-(--gold)">
@@ -233,6 +236,7 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 			<nav
 				className="mx-auto hidden w-full shrink-0 border-b border-(--paper-line) tablet:flex desktop:max-w-[1150px]"
 				aria-label={ui.reformsPanel.title}
+				data-tutorial={tutorialTabsAnchor}
 			>
 				{BRANCHES.map((b) => {
 					const active = b === activeBranch;
@@ -242,7 +246,7 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 							type="button"
 							aria-pressed={active}
 							onClick={() => selectBranch(b)}
-							className="flex min-h-11 flex-1 items-center justify-center gap-1.5 px-1 text-center text-[0.7rem] uppercase leading-tight tracking-wide hover:opacity-80"
+							className="flex min-h-11 flex-1 items-center justify-center gap-1.5 px-1 text-center text-label uppercase leading-tight tracking-wide hover:opacity-80"
 							style={{
 								background: active ? "var(--gold)" : "transparent",
 								color: active ? "var(--ink)" : "var(--paper)",
@@ -256,11 +260,15 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 			</nav>
 
 			{/* Phone landscape: branch tabs as a left vertical rail alongside everything else,
-			    instead of a top row — keeps vertical space for the node chain. */}
+			    instead of a top row — keeps vertical space for the node chain. text-caption here
+			    (not text-label, despite being a button) is deliberate: at w-16 two-word branch
+			    names (e.g. ru "Силовой блок") already wrap to 2 lines, and label-size text would
+			    push a 3rd line past the min-h-11 row. */}
 			<div className="mx-auto flex w-full min-h-0 flex-1 desktop:max-w-[1150px]">
 				<nav
 					className="flex w-16 shrink-0 flex-col border-r border-(--paper-line) tablet:hidden"
 					aria-label={ui.reformsPanel.title}
+					data-tutorial={tutorialTabsAnchor}
 				>
 					{BRANCHES.map((b) => {
 						const active = b === activeBranch;
@@ -270,7 +278,7 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 								type="button"
 								aria-pressed={active}
 								onClick={() => selectBranch(b)}
-								className="flex min-h-11 flex-col items-center justify-center gap-0.5 px-1 py-2 text-center text-[0.55rem] uppercase leading-tight tracking-wide hover:opacity-80"
+								className="flex min-h-11 flex-col items-center justify-center gap-0.5 px-1 py-2 text-center text-caption uppercase leading-tight tracking-wide hover:opacity-80"
 								style={{
 									background: active ? "var(--gold)" : "transparent",
 									color: active ? "var(--ink)" : "var(--paper)",
@@ -291,9 +299,9 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 				    sheet variant anymore since phone portrait never reaches this screen. */}
 				<div
 					ref={chainScrollRef}
-					className="min-w-0 flex-1 overflow-x-auto overflow-y-hidden p-2 tablet:overflow-x-visible tablet:overflow-y-auto tablet:p-3"
+					className="min-w-0 flex-1 overflow-x-auto overflow-y-hidden p-sp-2 tablet:overflow-x-visible tablet:overflow-y-auto"
 				>
-					<div className="flex h-full items-stretch gap-2 tablet:h-auto tablet:flex-col tablet:items-stretch tablet:gap-0">
+					<div className="flex h-full items-stretch gap-sp-2 tablet:h-auto tablet:flex-col tablet:items-stretch tablet:gap-0">
 						{branchReforms.map((r, i) => {
 							const reason = canBuyReformReason(state, content, r.id);
 							const owned = reason === "owned";
@@ -301,6 +309,7 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 							const available = reason === null;
 							const isSelected = effectiveId === r.id;
 							const opacity = owned ? 0.9 : available ? 1 : locked ? 0.45 : 0.7;
+							const isTutorialFirstNode = scriptedStep === "reformsBuy" && r.tier === 0 && available;
 							return (
 								<div key={r.id} className="flex items-stretch tablet:block">
 									{i > 0 && (
@@ -309,7 +318,8 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 									<button
 										type="button"
 										onClick={() => setSelectedId(r.id)}
-										className="panel w-44 shrink-0 p-2.5 text-left hover:bg-(--paper-dim) tablet:w-full tablet:p-3"
+										data-tutorial={isTutorialFirstNode ? "reforms-first-node" : undefined}
+										className="panel w-44 shrink-0 p-sp-2 text-left hover:bg-(--paper-dim) tablet:w-full"
 										style={{
 											opacity,
 											boxShadow: isSelected
@@ -317,7 +327,7 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 												: undefined,
 										}}
 									>
-										<div className="flex items-center justify-between gap-2">
+										<div className="flex items-center justify-between gap-sp-2">
 											<div className="min-w-0">
 												<p className="eyebrow">
 													{ui.reformsPanel.tier} {r.tier + 1}
@@ -325,7 +335,7 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 												<p className="font-bold">{loc(r.title, lang)}</p>
 											</div>
 											{owned ? (
-												<span className="stamp shrink-0 text-[0.6rem]">
+												<span className="stamp shrink-0 text-caption">
 													{ui.reformsPanel.adopted}
 												</span>
 											) : locked ? (
@@ -336,13 +346,13 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 													<LockIcon />
 												</span>
 											) : (
-												<span className="num shrink-0 text-xs text-(--text-faint)">
+												<span className="num shrink-0 text-num text-(--text-faint)">
 													{r.costInfluence} {ui.reformsPanel.costInfluence} ·{" "}
 													{r.costTreasury} {ui.reformsPanel.costTreasury}
 												</span>
 											)}
 										</div>
-										<p className="mt-1 text-xs leading-snug text-(--text-faint)">
+										<p className="mt-sp-1 text-caption leading-snug text-(--text-faint)">
 											{loc(r.description, lang)}
 										</p>
 									</button>

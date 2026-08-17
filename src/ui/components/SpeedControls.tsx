@@ -42,7 +42,7 @@ export function SpeedControls() {
   const setSpeed = useGameStore((s) => s.setSpeed);
   const ui = useUi();
   return (
-    <div className="flex items-center gap-1" role="group" aria-label={ui.main.speed.normal}>
+    <div className="flex items-center gap-sp-1" role="group" aria-label={ui.main.speed.normal}>
       {OPTIONS.map((o) => {
         const active = speed === o.speed;
         const Icon = o.Icon;

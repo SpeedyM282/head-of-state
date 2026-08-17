@@ -174,4 +174,50 @@ export const uz: Ui = {
       text: 'Muddat oxirigacha omon qoldingiz. Hozirgi o‘lchovlar bo‘yicha — bu allaqachon davlat yutug‘i.',
     },
   },
+  tutorial: {
+    advisorLabel: 'Maslahatchi',
+    next: 'Keyingi',
+    skip: 'Qo‘llanmani o‘tkazib yuborish',
+    prompt: {
+      title: 'Birinchi marta hokimiyatdami?',
+      start: 'Qo‘llanma',
+      skip: 'O‘zim uddalayman',
+    },
+    restart: 'Qo‘llanmani qaytadan o‘tish',
+  },
+  help: {
+    title: 'Ma’lumotnoma',
+    close: 'Yopish',
+    stats: {
+      heading: 'Ko‘rsatkichlar',
+      economy: 'Xazina va ma’qullashning dvigateli. Rivojlanishsiz vaqt o‘tishi bilan pasayadi.',
+      treasury: 'Ushlab turish, islohotlar va elita maoshlariga ketadi. Chegaradan past bo‘lsa — elita norozi bo‘ladi.',
+      approval: 'Xalqning sizga munosabati. Demokratik saylovlar natijasini hal qiladi.',
+      eliteLoyalty: 'Kuch tuzilmalari va elitaning sadoqati. Nolga tushsa — to‘ntarish.',
+      stability: 'Hamma narsa qanchalik mustahkam turibdi. Past barqarorlik norozilik bilan qo‘shilsa — inqilobga olib boradi.',
+      development: 'Mamlakatga uzoq muddatli sarmoya. Iqtisodiyot va ma’qullashni sekin oziqlantiradi.',
+      corruption: 'Yagona ko‘rsatkich — bunda ko‘p bo‘lishi yomon. Xazinadan o‘g‘irlaydi, rivojlanishni tormozlaydi, lekin 50 dan yuqorida elita sadoqatini sotib oladi.',
+    },
+    vector: {
+      heading: 'Boshqaruv zonalari',
+      democratic: 'Halol saylovlarga tayangan yumshoq hokimiyat. Elitaga sizsiz birozgina zerikarli.',
+      authoritarian: 'Oraliq zona: saylovni «ma’muriy resurs» hal qiladi, elita tinchroq.',
+      totalitarian: 'Saylov o‘rniga rasmiyat. Ko‘proq ta’sir — va mamlakatning sekin izolyatsiyasi.',
+    },
+    elections: {
+      heading: 'Saylovlar va muddatlar',
+      text: 'Har bir muddat 48 oy, oxirida — saylov. Demokratiyada ma’qullash hal qiladi, avtoritarizmda chegara pastroq («ma’muriy resurs»), totalitarizmda esa deyarli kafolatlangan rasmiyat. Yutqazsangiz — lavozimdan chetlatilasiz. Ikki muddatdan so‘ng konstitutsiyani o‘zgartirish yoki iste’foga chiqish kerak.',
+    },
+    defeats: {
+      heading: 'Qanday yutqazish mumkin',
+      coup: 'Elita sabri tugaydi — to‘ntarish.',
+      revolution: 'Xalqning sabri va barqarorlikka ishonchi tugaydi — inqilob.',
+      default: 'Xazina uzoq vaqt bo‘sh qoladi — defolt.',
+      elections: 'Saylovda yutqazish ham hukmronlikning oxiri, faqat bir oz madaniyroq.',
+    },
+    reforms: {
+      heading: 'Islohotlar va ta’sir',
+      text: 'Islohotlar ta’sir ballari va xazina evaziga sotib olinadi, har bir tarmoqda birin-ketin zanjir bo‘ylab to‘planadi. Ta’sir har oy ortadi; usiz hech narsa sotib olib bo‘lmaydi.',
+    },
+  },
 };
