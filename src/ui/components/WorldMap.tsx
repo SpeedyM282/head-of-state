@@ -25,6 +25,11 @@ import { MIDDLE_EAST_ISO_NUMERIC_TO_ALPHA2 } from '../../data/countries/isoNumer
 import { EASTERN_ASIA_ISO_NUMERIC_TO_ALPHA2 } from '../../data/countries/isoNumericEasternAsia';
 import { SOUTH_SOUTHEAST_ASIA_ISO_NUMERIC_TO_ALPHA2 } from '../../data/countries/isoNumericSouthSoutheastAsia';
 import { OCEANIA_ISO_NUMERIC_TO_ALPHA2 } from '../../data/countries/isoNumericOceania';
+import { NORTH_AFRICA_ISO_NUMERIC_TO_ALPHA2 } from '../../data/countries/isoNumericNorthAfrica';
+import { WESTERN_AFRICA_ISO_NUMERIC_TO_ALPHA2 } from '../../data/countries/isoNumericWesternAfrica';
+import { CENTRAL_AFRICA_ISO_NUMERIC_TO_ALPHA2 } from '../../data/countries/isoNumericCentralAfrica';
+import { EASTERN_AFRICA_ISO_NUMERIC_TO_ALPHA2 } from '../../data/countries/isoNumericEasternAfrica';
+import { SOUTHERN_AFRICA_ISO_NUMERIC_TO_ALPHA2 } from '../../data/countries/isoNumericSouthernAfrica';
 import worldTopologyJson from '../../assets/world-110m.json';
 
 // TS's JSON-module inference widens string literals (e.g. "type": "Topology") to `string`,
@@ -78,7 +83,12 @@ export type RegionKey =
   | 'middleEast'
   | 'southSoutheastAsia'
   | 'easternAsia'
-  | 'oceania';
+  | 'oceania'
+  | 'northAfrica'
+  | 'westernAfrica'
+  | 'centralAfrica'
+  | 'easternAfrica'
+  | 'southernAfrica';
 const REGION_KEYS: RegionKey[] = [
   'westernEurope',
   'easternEurope',
@@ -89,6 +99,11 @@ const REGION_KEYS: RegionKey[] = [
   'southSoutheastAsia',
   'easternAsia',
   'oceania',
+  'northAfrica',
+  'westernAfrica',
+  'centralAfrica',
+  'easternAfrica',
+  'southernAfrica',
 ];
 
 /** Offset (px) of the hover tooltip from the cursor so it doesn't sit under the pointer. */
@@ -104,6 +119,11 @@ const REGION_ISO_MAPS: Record<RegionKey, Record<string, string>> = {
   southSoutheastAsia: SOUTH_SOUTHEAST_ASIA_ISO_NUMERIC_TO_ALPHA2,
   easternAsia: EASTERN_ASIA_ISO_NUMERIC_TO_ALPHA2,
   oceania: OCEANIA_ISO_NUMERIC_TO_ALPHA2,
+  northAfrica: NORTH_AFRICA_ISO_NUMERIC_TO_ALPHA2,
+  westernAfrica: WESTERN_AFRICA_ISO_NUMERIC_TO_ALPHA2,
+  centralAfrica: CENTRAL_AFRICA_ISO_NUMERIC_TO_ALPHA2,
+  easternAfrica: EASTERN_AFRICA_ISO_NUMERIC_TO_ALPHA2,
+  southernAfrica: SOUTHERN_AFRICA_ISO_NUMERIC_TO_ALPHA2,
 };
 
 interface RegionFrame {
@@ -153,6 +173,11 @@ const MAP_FRAMES: Record<MapFrameBucket, MapFrameConfig> = {
       southSoutheastAsia: { center: [99.564, 13.359], zoom: 2.398 },
       easternAsia: { center: [105.788, 34.715], zoom: 3.647 },
       oceania: { center: [140.582, -23.501], zoom: 2.744 },
+      northAfrica: { center: [10.889, 22.369], zoom: 4.09 },
+      westernAfrica: { center: [-0.978, 15.642], zoom: 5.014 },
+      centralAfrica: { center: [19.829, 2.645], zoom: 2.775 },
+      easternAfrica: { center: [36.098, -4.194], zoom: 2.572 },
+      southernAfrica: { center: [22.375, -25.697], zoom: 6.724 },
     },
   },
   // ~0.695 aspect (820×1180 test case): tablet held portrait.
@@ -170,6 +195,11 @@ const MAP_FRAMES: Record<MapFrameBucket, MapFrameConfig> = {
       southSoutheastAsia: { center: [99.564, 13.359], zoom: 3.403 },
       easternAsia: { center: [105.788, 34.715], zoom: 4.652 },
       oceania: { center: [140.582, -23.501], zoom: 4.909 },
+      northAfrica: { center: [10.889, 22.369], zoom: 5.374 },
+      westernAfrica: { center: [-0.978, 15.642], zoom: 8.859 },
+      centralAfrica: { center: [19.829, 2.645], zoom: 7.592 },
+      easternAfrica: { center: [36.098, -4.194], zoom: 7.037 },
+      southernAfrica: { center: [22.375, -25.697], zoom: 14.767 },
     },
   },
   // ~1.334 aspect (1024×768 test case): tablet/small-laptop landscape.
@@ -187,6 +217,11 @@ const MAP_FRAMES: Record<MapFrameBucket, MapFrameConfig> = {
       southSoutheastAsia: { center: [99.564, 13.359], zoom: 3.403 },
       easternAsia: { center: [105.788, 34.715], zoom: 4.652 },
       oceania: { center: [140.582, -23.501], zoom: 3.911 },
+      northAfrica: { center: [10.889, 22.369], zoom: 5.374 },
+      westernAfrica: { center: [-0.978, 15.642], zoom: 7.147 },
+      centralAfrica: { center: [19.829, 2.645], zoom: 3.955 },
+      easternAfrica: { center: [36.098, -4.194], zoom: 3.666 },
+      southernAfrica: { center: [22.375, -25.697], zoom: 9.584 },
     },
   },
   // ~1.6 aspect (1440×900 test case): wide desktop.
@@ -204,14 +239,21 @@ const MAP_FRAMES: Record<MapFrameBucket, MapFrameConfig> = {
       southSoutheastAsia: { center: [99.564, 13.359], zoom: 2.854 },
       easternAsia: { center: [105.788, 34.715], zoom: 4.339 },
       oceania: { center: [140.582, -23.501], zoom: 3.264 },
+      northAfrica: { center: [10.889, 22.369], zoom: 4.866 },
+      westernAfrica: { center: [-0.978, 15.642], zoom: 5.965 },
+      centralAfrica: { center: [19.829, 2.645], zoom: 3.301 },
+      easternAfrica: { center: [36.098, -4.194], zoom: 3.060 },
+      southernAfrica: { center: [22.375, -25.697], zoom: 8.0 },
     },
   },
 };
 
-/** Highest zoom any bucket's regions need (10.302, tabletPortrait's Middle East) plus headroom
- * for the user's own pinch-zoom past the auto-fit frame — mirrors the old single-bucket
- * maxZoom's ~4% headroom over its own highest frame (10/9.585). */
-const MAX_ZOOM = 11.5;
+/** Highest zoom any bucket's regions need (14.767, tabletPortrait's Southern Africa — its 5
+ * countries cluster into a comparatively small angular span, so filling the same tall/narrow
+ * viewport needs more zoom than a wider-spanning region like North Africa or Middle East)
+ * plus headroom for the user's own pinch-zoom past the auto-fit frame — mirrors the old
+ * single-bucket maxZoom's ~4% headroom over its own highest frame (10/9.585). */
+const MAX_ZOOM = 16.5;
 
 /** Same breakpoints as the `tablet:`/`desktop:` CSS custom variants in index.css, so the map's
  * chosen frame bucket always matches whichever layout is actually on screen. */
@@ -262,7 +304,7 @@ const STYLE_CONTEXT: GeographyStyle = {
   pressed: { fill: 'var(--ink-soft)', stroke: 'var(--paper-line)', strokeWidth: 0.5, outline: 'none', pointerEvents: 'none' },
 };
 /** Fully invisible and non-interactive: a region's member country while that region is NOT
- * the active one, or (once any region is active) any country outside the map's 9 regions
+ * the active one, or (once any region is active) any country outside the map's 14 regions
  * entirely. Selecting a region hides everything else on the map, not just the other regions'
  * borders — the region overlay (world view) is what represents non-active regions instead. */
 const STYLE_HIDDEN: GeographyStyle = {

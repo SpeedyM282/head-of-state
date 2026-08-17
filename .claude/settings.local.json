@@ -32,7 +32,16 @@
       "Bash(timeout 60 npx --yes playwright install chromium --with-deps)",
       "Bash(npx --yes playwright install chromium)",
       "Bash(npm --prefix /Users/speedym282/Downloads/prezident run typecheck)",
-      "Bash(npm --prefix /Users/speedym282/Downloads/prezident run test)"
+      "Bash(npm --prefix /Users/speedym282/Downloads/prezident run test)",
+      "Bash(echo \"EXIT: $?\")",
+      "Bash(chromium-cli --help)",
+      "Bash(npx --no-install playwright --version)",
+      "Bash(npx --no-install playwright install --dry-run chromium)",
+      "Bash(npm ls *)",
+      "Bash(npm root *)",
+      "Bash(echo \"TSC EXIT: $?\")",
+      "Bash(yarn test *)",
+      "Bash(netstat -ano)"
     ]
   }
 }

@@ -53,6 +53,11 @@ export interface Ui {
       southSoutheastAsia: string;
       easternAsia: string;
       oceania: string;
+      northAfrica: string;
+      westernAfrica: string;
+      centralAfrica: string;
+      easternAfrica: string;
+      southernAfrica: string;
     };
     /** Shown above the map, only while a region is active. */
     chooseRegion: string;

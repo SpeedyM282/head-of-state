@@ -4,6 +4,7 @@ import { europeCountries } from './europe';
 import { americasCountries } from './americas';
 import { asiaCountries } from './asia';
 import { oceaniaCountries } from './oceania';
+import { africaCountries } from './africa';
 
 export const countries: CountryProfile[] = [
   absurdistan,
@@ -11,6 +12,7 @@ export const countries: CountryProfile[] = [
   ...americasCountries,
   ...asiaCountries,
   ...oceaniaCountries,
+  ...africaCountries,
 ];
 
 export function getCountryById(id: string): CountryProfile {
