@@ -66,6 +66,16 @@ export function TutorialOverlay() {
   const activeTip = !active && activeTipId ? (JIT_TIPS.find((t) => t.id === activeTipId) ?? null) : null;
   const anchor = active?.anchor ?? activeTip?.anchor ?? null;
   const rect = useAnchorRect(anchor);
+  // These anchors sit in the tall left/right columns of MainScreen, so a below/above placement
+  // would land far from the highlighted element — anchoring the advisor to the side it has room
+  // on keeps it adjacent instead. The stats panel (left column) opens rightward; the right-
+  // column anchors (vector, clock, reforms button) open leftward, into the stats panel's space.
+  const side =
+    anchor === 'stats-panel'
+      ? 'right'
+      : anchor === 'vector-scale' || anchor === 'clock-controls' || anchor === 'reforms-button'
+        ? 'left'
+        : 'below';
 
   // Esc/back closes the current step or tip, same as pressing "Дальше" — capture phase so it
   // wins over screen-level Esc handlers (e.g. MainScreen closing the reforms panel) regardless
@@ -96,6 +106,7 @@ export function TutorialOverlay() {
       <Spotlight rect={rect} />
       <AdvisorPanel
         rect={rect}
+        side={side}
         advisorLabel={ui.tutorial.advisorLabel}
         text={text}
         primaryLabel={showNext || !!activeTip ? ui.tutorial.next : undefined}

@@ -8,12 +8,17 @@ const BELOW_THRESHOLD = 110;
 
 /**
  * The advisor's compact panel — positioned near the spotlighted element without covering it
- * (below by default, above when there isn't room below), or centered on screen when there's no
- * anchor. Placement is recomputed from `useViewport()` on every resize, same primitive
- * OrientationGate/WorldMap already use for the one JS-driven layout decision in the app.
+ * (below by default, above when there isn't room below; or to a side for anchors where
+ * `side="left"`/`side="right"` is requested, e.g. the stats panel and the right-column anchors
+ * next to it, which are tall enough that a below/above placement would land far from the
+ * anchor), or centered on screen when there's no anchor. The requested side is a preference,
+ * not a guarantee — it flips to the other side when there isn't room. Placement is recomputed
+ * from `useViewport()` on every resize, same primitive OrientationGate/WorldMap already use for
+ * the one JS-driven layout decision in the app.
  */
 export function AdvisorPanel({
   rect,
+  side = 'below',
   advisorLabel,
   text,
   primaryLabel,
@@ -22,6 +27,7 @@ export function AdvisorPanel({
   onSkip,
 }: {
   rect: AnchorRect | null;
+  side?: 'below' | 'left' | 'right';
   advisorLabel: string;
   text: string;
   primaryLabel?: string;
@@ -35,6 +41,15 @@ export function AdvisorPanel({
   let style: CSSProperties;
   if (!rect) {
     style = { top: '50%', left: '50%', width: maxWidth, transform: 'translate(-50%, -50%)' };
+  } else if (side === 'left' || side === 'right') {
+    const spaceRight = vp.width - (rect.left + rect.width);
+    const spaceLeft = rect.left;
+    const placeRight =
+      side === 'right' ? spaceRight >= maxWidth + GAP || spaceRight >= spaceLeft : spaceRight >= maxWidth + GAP && spaceRight > spaceLeft;
+    const top = Math.max(MARGIN, Math.min(rect.top, vp.height - MARGIN));
+    style = placeRight
+      ? { top, left: rect.left + rect.width + GAP, width: maxWidth }
+      : { top, left: Math.max(MARGIN, rect.left - maxWidth - GAP), width: maxWidth };
   } else {
     const spaceBelow = vp.height - (rect.top + rect.height);
     const spaceAbove = rect.top;
