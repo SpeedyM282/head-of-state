@@ -59,7 +59,14 @@
       "Bash(rm -rf \"C:/Users/user/dev/head-of-state/.verify-shots\")",
       "Bash(yarn build *)",
       "PowerShell(npx tsc -b --noEmit)",
-      "Bash(rm -f \"C:/Users/user/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/verify-micro.mjs\" \"C:/Users/user/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/verify-micro2.mjs\")"
+      "Bash(rm -f \"C:/Users/user/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/verify-micro.mjs\" \"C:/Users/user/AppData/Local/npm-cache/_npx/e41f203b7505f1fb/verify-micro2.mjs\")",
+      "Read(//c/Users/user/Downloads/App redesign inquiry/**)",
+      "Bash(curl -sf http://localhost:5173/src/index.css -o /tmp/index2.css)",
+      "Bash(curl -s http://localhost:5173/src/index.css)",
+      "Bash(python3 -c ' *)",
+      "Bash(pkill -f \"vite\")",
+      "Bash(git stash *)",
+      "Bash(curl -s http://localhost:5175/src/index.css)"
     ]
   }
 }

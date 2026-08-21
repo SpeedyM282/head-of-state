@@ -49,28 +49,43 @@
   --text-micro-lg: 0.6rem;
 }
 
-/* ─── Design tokens: state-dossier satire ───
-   Dark "cabinet" backdrop, aged-paper panels, one loud element: the red stamp. */
+/* ─── Design tokens: Государственная ведомость (newsprint ledger) ───
+   Paper-white gazette page, near-black ink rules/text, and a two-color CMYK accent pair (cyan =
+   affirmative/selected, magenta = negative/danger) in place of the old dark-cabinet gold/red
+   pair. Variable NAMES are kept as-is (--ink/--gold/--stamp/--ok) even though their hues
+   changed, so every existing consumer (WorldMap's geography styles, focus rings, the
+   trend/effect color helpers, buttons, ...) re-skins for free without a project-wide rename —
+   "gold" and "stamp" are now historical names for the accent/danger roles, not literal colors.
+   Neutral and tint steps are derived via color-mix rather than hand-picked hex, since the
+   Broadsheet reference stylesheet the design mock links to (a styles.css under its broadsheet
+   asset folder) isn't part of the handoff bundle — these approximate its neutral-300/400/500 and
+   accent tint/deep ramps from the two base hexes the handoff's README does specify. */
 :root {
-  --ink: #191f27;
-  --ink-soft: #232b36;
-  --paper: #eae0c8;
-  --paper-dim: #ded2b4;
-  --paper-line: #c8b995;
-  --text-ink: #23201a;
-  --text-faint: #6f6753;
-  --stamp: #a8352c;
-  --gold: #b98f3e;
+  --ink: #201e1d;
+  --ink-soft: color-mix(in srgb, var(--ink) 82%, var(--paper));
+  --paper: #f3f2f2;
+  --paper-dim: color-mix(in srgb, var(--ink) 6%, var(--paper));
+  --paper-line: color-mix(in srgb, var(--ink) 16%, var(--paper));
+  --text-ink: #201e1d;
+  --text-faint: color-mix(in srgb, var(--ink) 55%, var(--paper));
+  --stamp: #d6006c;
+  --stamp-deep: #9c0b53;
+  --stamp-tint: color-mix(in srgb, var(--stamp) 12%, var(--paper));
+  --gold: #0088b0;
+  --gold-deep: #016082;
+  --gold-tint: color-mix(in srgb, var(--gold) 12%, var(--paper));
   /* Hover fill for map shapes — a lighter step between --paper-dim (idle) and full --gold
      (selected), so hover reads as "the whole shape lit up" without pre-empting selection. */
   --gold-soft: color-mix(in srgb, var(--gold) 45%, var(--paper-dim));
-  --ok: #4c7a4c;
+  /* No separate "good news" green in the ledger palette — positive deltas read as the accent
+     cyan, same as selection/active state; only negative deltas get the magenta --stamp. */
+  --ok: var(--gold);
 }
 
 html,
 body {
-  background: var(--ink);
-  color: var(--paper);
+  background: var(--paper);
+  color: var(--text-ink);
   font-family: Georgia, 'Times New Roman', serif;
   -webkit-tap-highlight-color: transparent;
   /* Belt-and-suspenders against any single element's rounding/transform pushing a horizontal
@@ -101,16 +116,20 @@ svg path[role='button']:focus-visible {
 
 .eyebrow {
   font-size: var(--text-caption);
-  letter-spacing: 0.22em;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--text-faint);
 }
 
+/* Panel background now matches the page background (--paper on --paper) — on a printed-ledger
+   page, a "panel" reads via its rule/border and a faint lift, not a boxed card; the shadow is
+   kept just heavy enough for true overlays (modals, the advisor popup) to feel raised above the
+   page beneath them. */
 .panel {
   background: var(--paper);
   color: var(--text-ink);
   border: 1px solid var(--paper-line);
-  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.35);
+  box-shadow: 0 1px 3px rgba(32, 30, 29, 0.12);
 }
 
 .num {
@@ -131,6 +150,9 @@ svg path[role='button']:focus-visible {
   user-select: none;
 }
 
+/* Base .btn is the "secondary" look (bordered, paper fill) — .btn-secondary is an explicit
+   alias of the same values so components can name the mock's three-variant intent (primary/
+   secondary/ghost) without a behavioral difference from the bare class. */
 .btn {
   border: 1px solid var(--paper-line);
   background: var(--paper);
@@ -142,14 +164,19 @@ svg path[role='button']:focus-visible {
 }
 .btn:active { transform: translateY(1px); }
 .btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
-.btn-primary { background: var(--stamp); color: var(--paper); border-color: transparent; font-weight: 700; letter-spacing: 0.06em; }
+/* Primary CTA fill is the affirmative accent (cyan), matching the mock's use of the same accent
+   for selection/active state everywhere else — not the danger/magenta --stamp role. */
+.btn-primary { background: var(--gold); color: var(--paper); border-color: transparent; font-weight: 700; letter-spacing: 0.06em; }
+.btn-secondary { background: var(--paper); color: var(--text-ink); border-color: var(--paper-line); }
+.btn-ghost { background: transparent; color: var(--text-ink); border-color: transparent; }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
 
 /* Desktop-only hover feedback — (hover: hover) is true only for pointers that can actually
    hover (mice/trackpads), so this never sticks on a tap the way a plain :hover would on touch. */
 @media (hover: hover) {
   .btn:not(:disabled):hover { background: var(--paper-dim); }
-  .btn-primary:not(:disabled):hover { background: color-mix(in srgb, var(--stamp) 85%, black); }
+  .btn-primary:not(:disabled):hover { background: var(--gold-deep); }
+  .btn-ghost:not(:disabled):hover { background: var(--paper-dim); }
 }
 
 .dotted-leader {
