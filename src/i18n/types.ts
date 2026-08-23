@@ -35,6 +35,13 @@ export interface Ui {
     /** Colophon row under the nameplate: three short cells. */
     colophon: { price: string; print: string; number: string };
   };
+  /** Dedicated screen between the main menu and the map: pick Easy/Medium/Hard before picking
+   * a country, instead of choosing it inline in the country dossier (see ARCHITECTURE.md). */
+  difficulty: {
+    title: string;
+    /** Advances to the map, carrying the chosen difficulty forward. */
+    next: string;
+  };
   /** Europe map / country selection screen and its drawer, between menu and playing. */
   map: {
     /** MenuScreen's single "Play" button — navigates to the map. */
@@ -63,7 +70,7 @@ export interface Ui {
       easternAfrica: string;
       southernAfrica: string;
     };
-    /** Shown above the map, only while a region is active. */
+    /** Shown over the map, only at the world overview (before a region is entered). */
     chooseRegion: string;
     /** Back button: exits the active region, returning to the world overview. */
     backToRegions: string;
@@ -76,11 +83,26 @@ export interface Ui {
       corruption: string;
       democracy: string;
       development: string;
+      /** Read-only readout of the difficulty already chosen on DifficultyScreen, shown right
+       * above "Choose" — not a control; see ui.difficulty for where it's actually picked. */
+      difficulty: string;
     };
     /** Primary button in the country drawer that starts the game. */
     choose: string;
     /** Kicker above the inline country dossier rail (map screen, not the modal drawer). */
     dossierKicker: string;
+    /** The inline rail's other state: a region is active but no country picked yet — shows an
+     * overview of the region (member count, summed population/area, averaged levels) instead
+     * of one country's dossier. Reuses `dossier`'s population/area/economy/corruption/
+     * democracy/development labels for its own rows — same concepts, aggregated. */
+    regionInfo: {
+      /** Kicker above the region-overview rail, parallel to dossierKicker. */
+      kicker: string;
+      /** Row label for the region's member-country count. */
+      countries: string;
+      /** Caption prompting the player toward the next step, in place of a country's description. */
+      hint: string;
+    };
   };
   /** Settings screen, reached from the main menu. A master->detail hub: a 3-row menu
    * (Language/Theme/Reference) over local `view` state, not flat panels. */

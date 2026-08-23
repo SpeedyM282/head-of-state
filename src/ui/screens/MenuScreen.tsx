@@ -4,7 +4,7 @@ import { useGameStore } from '../../store/gameStore';
 import { useTutorialStore } from '../../store/tutorialStore';
 
 export function MenuScreen() {
-  const { goToMap, goToSettings, continueGame, hasSave, startGame } = useGameStore();
+  const { goToDifficulty, goToSettings, continueGame, hasSave, startGame } = useGameStore();
   const tutorialCompleted = useTutorialStore((s) => s.completed);
   const skipTutorial = useTutorialStore((s) => s.skip);
   const beginScripted = useTutorialStore((s) => s.beginScripted);
@@ -12,9 +12,10 @@ export function MenuScreen() {
   const [showTutorialPrompt, setShowTutorialPrompt] = useState(false);
 
   // First-ever "Играть": offer the guided opening before the player picks a country. Once the
-  // tutorial has been completed (or explicitly skipped once), this goes straight to the map.
+  // tutorial has been completed (or explicitly skipped once), this goes to the difficulty
+  // picker first, then the map.
   function handlePlay() {
-    if (tutorialCompleted) goToMap();
+    if (tutorialCompleted) goToDifficulty();
     else setShowTutorialPrompt(true);
   }
 
@@ -27,7 +28,7 @@ export function MenuScreen() {
   function declineTutorial() {
     setShowTutorialPrompt(false);
     skipTutorial();
-    goToMap();
+    goToDifficulty();
   }
 
   return (

@@ -1,7 +1,10 @@
+import { useLayoutEffect, useRef } from 'react';
 import type { StatKey } from '../../core/types';
 import { useUi } from '../../store/langStore';
 
 const STAT_KEYS: StatKey[] = ['economy', 'treasury', 'approval', 'eliteLoyalty', 'stability', 'development', 'corruption'];
+
+export type HelpSection = 'stats' | 'vector' | 'elections' | 'defeats' | 'reforms';
 
 function CrossIcon() {
   return (
@@ -15,9 +18,24 @@ function CrossIcon() {
  * Settings' "Справка" — a static reference over already-localized ui strings (not the GDD
  * directly), for a player who wants to re-read the rules mid-game without replaying the
  * scripted tutorial. Same full-screen panel shell as ReformsPanel/EventModal.
+ *
+ * `initialSection`, when set, scrolls straight to that section on open — Settings' four
+ * reference-topic buttons all open this same modal, so without it every one of them landed on
+ * an identical view (the top of the whole list) regardless of which topic was actually clicked.
  */
-export function HelpModal({ onClose }: { onClose: () => void }) {
+export function HelpModal({ onClose, initialSection }: { onClose: () => void; initialSection?: HelpSection }) {
   const ui = useUi();
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const sectionRefs = useRef<Partial<Record<HelpSection, HTMLElement | null>>>({});
+
+  // Runs once on mount (a fresh HelpModal instance per open — see SettingsScreen) before paint,
+  // so the jump to section is never visible as a scroll animation.
+  useLayoutEffect(() => {
+    if (!initialSection) return;
+    const el = sectionRefs.current[initialSection];
+    const container = scrollRef.current;
+    if (el && container) container.scrollTop = el.offsetTop;
+  }, [initialSection]);
 
   return (
     <div className="fixed inset-0 z-30 flex items-center justify-center bg-black/60 p-sp-3" role="dialog" aria-modal="true">
@@ -34,8 +52,13 @@ export function HelpModal({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto text-body leading-relaxed">
-          <section className="mb-sp-3">
+        <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto text-body leading-relaxed">
+          <section
+            ref={(el) => {
+              sectionRefs.current.stats = el;
+            }}
+            className="mb-sp-3"
+          >
             <p className="eyebrow">{ui.help.stats.heading}</p>
             <ul className="mt-sp-1 flex flex-col gap-sp-1">
               {STAT_KEYS.map((k) => (
@@ -46,7 +69,12 @@ export function HelpModal({ onClose }: { onClose: () => void }) {
             </ul>
           </section>
 
-          <section className="mb-sp-3">
+          <section
+            ref={(el) => {
+              sectionRefs.current.vector = el;
+            }}
+            className="mb-sp-3"
+          >
             <p className="eyebrow">{ui.help.vector.heading}</p>
             <ul className="mt-sp-1 flex flex-col gap-sp-1">
               <li>
@@ -61,12 +89,22 @@ export function HelpModal({ onClose }: { onClose: () => void }) {
             </ul>
           </section>
 
-          <section className="mb-sp-3">
+          <section
+            ref={(el) => {
+              sectionRefs.current.elections = el;
+            }}
+            className="mb-sp-3"
+          >
             <p className="eyebrow">{ui.help.elections.heading}</p>
             <p className="mt-sp-1">{ui.help.elections.text}</p>
           </section>
 
-          <section className="mb-sp-3">
+          <section
+            ref={(el) => {
+              sectionRefs.current.defeats = el;
+            }}
+            className="mb-sp-3"
+          >
             <p className="eyebrow">{ui.help.defeats.heading}</p>
             <ul className="mt-sp-1 flex flex-col gap-sp-1">
               <li>{ui.help.defeats.coup}</li>
@@ -76,7 +114,11 @@ export function HelpModal({ onClose }: { onClose: () => void }) {
             </ul>
           </section>
 
-          <section>
+          <section
+            ref={(el) => {
+              sectionRefs.current.reforms = el;
+            }}
+          >
             <p className="eyebrow">{ui.help.reforms.heading}</p>
             <p className="mt-sp-1">{ui.help.reforms.text}</p>
           </section>

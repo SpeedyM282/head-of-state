@@ -13,6 +13,10 @@ export const en: Ui = {
     kicker: 'Special Edition · Published on Every Change of Power',
     colophon: { price: 'Price: one decision', print: 'Print run: 1 copy', number: 'No. 001' },
   },
+  difficulty: {
+    title: 'Choose difficulty',
+    next: 'Next',
+  },
   map: {
     playCta: 'Play',
     listButton: 'List view',
@@ -45,9 +49,15 @@ export const en: Ui = {
       corruption: 'Corruption',
       democracy: 'Democracy',
       development: 'Development',
+      difficulty: 'Difficulty',
     },
     choose: 'Choose',
     dossierKicker: 'Country dossier',
+    regionInfo: {
+      kicker: 'Region overview',
+      countries: 'Countries',
+      hint: 'Pick a country on the map or from the list to see its profile.',
+    },
   },
   settings: {
     title: 'Settings',

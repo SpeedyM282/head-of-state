@@ -13,6 +13,10 @@ export const uz: Ui = {
     kicker: 'Maxsus son · Har bir hokimiyat almashinuvida chiqariladi',
     colophon: { price: 'Narxi: bitta qaror', print: 'Adadi: 1 nusxa', number: '№ 001' },
   },
+  difficulty: {
+    title: 'Qiyinlik darajasini tanlang',
+    next: 'Keyingi',
+  },
   map: {
     playCta: 'O‘ynash',
     listButton: 'Ro‘yxat',
@@ -45,9 +49,15 @@ export const uz: Ui = {
       corruption: 'Korrupsiya',
       democracy: 'Demokratiya',
       development: 'Rivojlanish',
+      difficulty: 'Qiyinlik',
     },
     choose: 'Tanlash',
     dossierKicker: 'Davlat dosyesi',
+    regionInfo: {
+      kicker: 'Mintaqa haqida',
+      countries: 'Davlatlar',
+      hint: 'Profilini ko‘rish uchun xaritada yoki ro‘yxatdan davlatni tanlang.',
+    },
   },
   settings: {
     title: 'Sozlamalar',

@@ -13,6 +13,10 @@ export const ru: Ui = {
     kicker: 'Специальный выпуск · Издаётся при каждой смене власти',
     colophon: { price: 'Цена: одно решение', print: 'Тираж: 1 экз.', number: '№ 001' },
   },
+  difficulty: {
+    title: 'Выбор сложности',
+    next: 'Далее',
+  },
   map: {
     playCta: 'Играть',
     listButton: 'Списком',
@@ -45,9 +49,15 @@ export const ru: Ui = {
       corruption: 'Коррупция',
       democracy: 'Демократия',
       development: 'Развитие',
+      difficulty: 'Сложность',
     },
     choose: 'Выбрать',
     dossierKicker: 'Досье страны',
+    regionInfo: {
+      kicker: 'Обзор региона',
+      countries: 'Стран',
+      hint: 'Выберите страну на карте или из списка, чтобы увидеть её досье.',
+    },
   },
   settings: {
     title: 'Настройки',

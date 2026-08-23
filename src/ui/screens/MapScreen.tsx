@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
-import type { Difficulty } from '../../core/types';
 import { useUi } from '../../store/langStore';
 import { useGameStore } from '../../store/gameStore';
-import { WorldMap, type RegionKey } from '../components/WorldMap';
+import { WorldMap, regionCountryIds, type RegionKey } from '../components/WorldMap';
 import { CountryListModal } from '../components/CountryListModal';
 import { CountryDossier } from '../components/CountryDossier';
+import { RegionInfo } from '../components/RegionInfo';
 
 function ChevronLeftIcon() {
   return (
@@ -30,7 +30,6 @@ export function MapScreen() {
   const toMenu = useGameStore((s) => s.toMenu);
   const [activeRegion, setActiveRegion] = useState<RegionKey | null>(null);
   const [selectedCountryId, setSelectedCountryId] = useState<string | null>(null);
-  const [difficulty, setDifficulty] = useState<Difficulty>('normal');
   const [listOpen, setListOpen] = useState(false);
 
   function selectFromList(id: string) {
@@ -64,47 +63,63 @@ export function MapScreen() {
   }, [listOpen, selectedCountryId, activeRegion, toMenu]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col gap-sp-2 p-sp-2">
-      <div className="flex shrink-0 items-center gap-sp-2">
-        <button
-          type="button"
-          onClick={goBack}
-          aria-label={ui.gameOver.toMenu}
-          className="flex h-11 w-11 shrink-0 items-center justify-center border border-(--paper-line) hover:bg-(--paper-dim)"
-        >
-          <ChevronLeftIcon />
-        </button>
-        {!activeRegion && <span className="eyebrow truncate">{ui.map.chooseRegion}</span>}
-        <button type="button" className="btn btn-secondary ml-auto min-h-11 shrink-0 text-caption" onClick={() => setListOpen(true)}>
-          {ui.map.listButton}
-        </button>
-      </div>
+    <div className="flex min-h-0 flex-1 gap-sp-3 p-sp-2">
+      {/* Back/list controls are overlaid on the map pane itself rather than a separate header
+          row above it, so the pane fills the full height the screen has to give it. */}
+      <div className="relative min-h-0 flex-1 overflow-hidden border border-(--ink)" style={{ background: 'var(--map-ocean)' }}>
+        <WorldMap
+          activeRegion={activeRegion}
+          onEnterRegion={setActiveRegion}
+          selectedCountryId={selectedCountryId}
+          onSelectCountry={setSelectedCountryId}
+        />
 
-      <div className="flex min-h-0 flex-1 gap-sp-3">
-        <div className="relative min-h-0 flex-1 overflow-hidden border border-(--ink)" style={{ background: 'var(--ink-soft)' }}>
-          <WorldMap
-            activeRegion={activeRegion}
-            onEnterRegion={setActiveRegion}
-            selectedCountryId={selectedCountryId}
-            onSelectCountry={setSelectedCountryId}
-          />
-          <div className="pointer-events-none absolute left-2 top-2">
-            <RegistrationMark />
-          </div>
-          {activeRegion && (
-            <div
-              className="pointer-events-none absolute bottom-2 border border-(--paper-line) bg-(--paper) px-sp-2 py-sp-1 text-caption font-bold text-(--text-ink) shadow-sm"
-              style={{ left: 'calc(0.5rem + env(safe-area-inset-left, 0px))' }}
-            >
-              {ui.map.continents[activeRegion]}
-            </div>
+        <div className="pointer-events-none absolute left-2 top-2 flex items-center gap-sp-2">
+          <button
+            type="button"
+            onClick={goBack}
+            aria-label={activeRegion ? ui.map.backToRegions : ui.gameOver.toMenu}
+            className="pointer-events-auto flex h-11 w-11 shrink-0 items-center justify-center border border-(--paper-line) bg-(--paper) hover:bg-(--paper-dim)"
+          >
+            <ChevronLeftIcon />
+          </button>
+          {!activeRegion && (
+            <span className="truncate border border-(--paper-line) bg-(--paper) px-sp-2 py-sp-1 text-caption font-bold text-(--text-ink) shadow-sm">
+              {ui.map.chooseRegion}
+            </span>
           )}
         </div>
 
-        {selectedCountryId && <CountryDossier countryId={selectedCountryId} difficulty={difficulty} onDifficultyChange={setDifficulty} />}
+        <button
+          type="button"
+          className="btn btn-secondary absolute right-2 top-2 min-h-11 shrink-0 text-caption"
+          onClick={() => setListOpen(true)}
+        >
+          {ui.map.listButton}
+        </button>
+
+        <div className="pointer-events-none absolute bottom-2 right-2">
+          <RegistrationMark />
+        </div>
+        {activeRegion && (
+          <div
+            className="pointer-events-none absolute bottom-2 border border-(--paper-line) bg-(--paper) px-sp-2 py-sp-1 text-caption font-bold text-(--text-ink) shadow-sm"
+            style={{ left: 'calc(0.5rem + env(safe-area-inset-left, 0px))' }}
+          >
+            {ui.map.continents[activeRegion]}
+          </div>
+        )}
       </div>
 
-      {listOpen && <CountryListModal onSelect={selectFromList} onClose={() => setListOpen(false)} />}
+      {selectedCountryId ? <CountryDossier countryId={selectedCountryId} /> : activeRegion && <RegionInfo region={activeRegion} />}
+
+      {listOpen && (
+        <CountryListModal
+          onSelect={selectFromList}
+          onClose={() => setListOpen(false)}
+          regionCountryIds={activeRegion ? regionCountryIds(activeRegion) : undefined}
+        />
+      )}
     </div>
   );
 }

@@ -31,6 +31,24 @@ export const americasCountries: CountryProfile[] = [
     developmentLevel: 92,
   },
   {
+    id: 'gl',
+    name: { en: 'Greenland', ru: 'Гренландия', uz: 'Grenlandiya' },
+    description: {
+      en: 'The world’s largest island, a self-governing territory within the Kingdom of Denmark, with a small population along its ice-free coast and an economy built on fishing and Danish transfers.',
+      ru: 'Крупнейший остров в мире, самоуправляемая территория в составе Королевства Дания; немногочисленное население живёт вдоль свободного ото льда побережья, экономика держится на рыболовстве и дотациях из Дании.',
+      uz: 'Dunyodagi eng katta orol, Daniya Qirolligi tarkibidagi o‘zini o‘zi boshqaradigan hudud; muzsiz sohil bo‘ylab kam sonli aholi yashaydi, iqtisodiyoti baliqchilik va Daniyadan keladigan mablag‘larga asoslangan.',
+    },
+    flagEmoji: '🇬🇱',
+    population: 56_000,
+    areaKm2: 2_166_086,
+    resources: 55,
+    hasSeaAccess: true,
+    economyLevel: 58,
+    corruptionLevel: 9,
+    democracyLevel: 93,
+    developmentLevel: 86,
+  },
+  {
     id: 'us',
     name: { en: 'United States', ru: 'США', uz: 'AQSH' },
     description: {

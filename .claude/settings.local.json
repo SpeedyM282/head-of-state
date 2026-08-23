@@ -77,7 +77,19 @@
       "Bash(xargs -r kill)",
       "Bash(lsof -ti:5210 -sTCP:LISTEN)",
       "Bash(lsof -ti:5220 -sTCP:LISTEN)",
-      "Bash(lsof -ti:5230 -sTCP:LISTEN)"
+      "Bash(lsof -ti:5230 -sTCP:LISTEN)",
+      "Bash(npm test *)",
+      "Bash(pkill -f \"vite.*5240\")",
+      "Bash(lsof -ti:5240)",
+      "Bash(xargs kill -9)",
+      "Bash(rm -f /tmp/prezident-dev-verify.log)",
+      "Bash(lsof -ti:5241)",
+      "Bash(lsof -ti:5242)",
+      "Bash(lsof -ti:5243)",
+      "Bash(lsof -ti:5244)",
+      "Bash(xargs cat)",
+      "Bash(lsof -ti:5245)",
+      "Bash(lsof -ti:5246)"
     ]
   }
 }

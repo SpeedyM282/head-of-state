@@ -6,14 +6,19 @@ import { countries } from '../../data';
 interface Props {
   onSelect: (id: string) => void;
   onClose: () => void;
+  /** When set (an active map region), the list only shows that region's countries instead of
+   * every playable country — see WorldMap.regionCountryIds. */
+  regionCountryIds?: Set<string>;
 }
 
 /** Searchable fallback list — also the accessibility path for picking a country. */
-export function CountryListModal({ onSelect, onClose }: Props) {
+export function CountryListModal({ onSelect, onClose, regionCountryIds }: Props) {
   const lang = useLang((s) => s.lang);
   const ui = useUi();
   const [query, setQuery] = useState('');
-  const filtered = countries.filter((c) => loc(c.name, lang).toLowerCase().includes(query.trim().toLowerCase()));
+  const filtered = countries
+    .filter((c) => !regionCountryIds || regionCountryIds.has(c.id))
+    .filter((c) => loc(c.name, lang).toLowerCase().includes(query.trim().toLowerCase()));
 
   return (
     // pointer-events-none on the backdrop (only the dialog panel itself is pointer-events-auto):

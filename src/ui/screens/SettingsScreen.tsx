@@ -4,7 +4,7 @@ import { useLang, useUi } from '../../store/langStore';
 import { useGameStore } from '../../store/gameStore';
 import { useTutorialStore } from '../../store/tutorialStore';
 import { useTheme, type Theme } from '../../store/themeStore';
-import { HelpModal } from '../components/HelpModal';
+import { HelpModal, type HelpSection } from '../components/HelpModal';
 
 type SettingsView = 'menu' | 'language' | 'theme' | 'reference';
 const THEMES: Theme[] = ['light', 'dark', 'system'];
@@ -65,6 +65,12 @@ export function SettingsScreen() {
   const ui = useUi();
   const [view, setView] = useState<SettingsView>('menu');
   const [showHelp, setShowHelp] = useState(false);
+  const [helpSection, setHelpSection] = useState<HelpSection | null>(null);
+
+  function openHelp(section: HelpSection) {
+    setHelpSection(section);
+    setShowHelp(true);
+  }
 
   // "Пройти обучение заново" — an immediate action, not a setting toggle: launches the same
   // Absurdistan/easy scripted opening as the menu's tutorial prompt (see MenuScreen.startTutorial),
@@ -184,8 +190,15 @@ export function SettingsScreen() {
         <div className="flex min-h-0 flex-1 gap-sp-4 overflow-y-auto">
           <div className="flex-1">
             <p className="eyebrow mb-sp-1">{ui.settings.sectionsKicker}</p>
-            {[ui.help.stats.heading, ui.help.vector.heading, ui.help.elections.heading, ui.help.defeats.heading].map((label) => (
-              <button key={label} type="button" className="ref-item" onClick={() => setShowHelp(true)}>
+            {(
+              [
+                { section: 'stats', label: ui.help.stats.heading },
+                { section: 'vector', label: ui.help.vector.heading },
+                { section: 'elections', label: ui.help.elections.heading },
+                { section: 'defeats', label: ui.help.defeats.heading },
+              ] as const
+            ).map(({ section, label }) => (
+              <button key={section} type="button" className="ref-item" onClick={() => openHelp(section)}>
                 {label}
               </button>
             ))}
@@ -199,7 +212,7 @@ export function SettingsScreen() {
         </div>
       )}
 
-      {showHelp && <HelpModal onClose={() => setShowHelp(false)} />}
+      {showHelp && <HelpModal onClose={() => setShowHelp(false)} initialSection={helpSection ?? undefined} />}
     </div>
   );
 }

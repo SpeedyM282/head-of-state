@@ -74,9 +74,18 @@
   --gold: #0088b0;
   --gold-deep: #016082;
   --gold-tint: color-mix(in srgb, var(--gold) 12%, var(--paper));
-  /* Hover fill for map shapes — a lighter step between --paper-dim (idle) and full --gold
+  /* Dedicated map ocean/land tokens. The map's contrast (dark ocean backdrop, light land
+     silhouettes) is a fixed representational choice, not a page-background/foreground role —
+     unlike --ink-soft/--paper-dim's other uses, it can't just ride the generic ink<->paper
+     swap between themes, because that swap collapses land and ocean to nearly the same dark
+     tone (both formulas resolve to "mostly --paper" once --paper itself goes dark — see the
+     dark-mode override below, which is why --map-land needs its own explicit dark value while
+     --map-ocean can keep aliasing --ink-soft, itself already an explicit override). */
+  --map-ocean: var(--ink-soft);
+  --map-land: var(--paper-dim);
+  /* Hover fill for map shapes — a lighter step between --map-land (idle) and full --gold
      (selected), so hover reads as "the whole shape lit up" without pre-empting selection. */
-  --gold-soft: color-mix(in srgb, var(--gold) 45%, var(--paper-dim));
+  --gold-soft: color-mix(in srgb, var(--gold) 45%, var(--map-land));
   /* No separate "good news" green in the ledger palette — positive deltas read as the accent
      cyan, same as selection/active state; only negative deltas get the magenta --stamp. */
   --ok: var(--gold);
@@ -105,6 +114,10 @@
   --stamp-deep: #d82071;
   --gold: #33a9d0;
   --gold-deep: #1186ac;
+  /* --paper-dim's formula (mostly --paper, slightly tinted) stays dark in dark mode instead of
+     flipping light, so land needs an explicit, deliberately-lighter-than-ocean value here to
+     keep the map legible — see --map-land's definition above. */
+  --map-land: #4a453e;
 }
 
 /* Same palette, applied automatically when the OS is dark AND the user hasn't explicitly
@@ -121,6 +134,7 @@
     --stamp-deep: #d82071;
     --gold: #33a9d0;
     --gold-deep: #1186ac;
+    --map-land: #4a453e;
   }
 }
 
@@ -358,16 +372,6 @@ svg path[role='button']:focus-visible {
 }
 @media (hover: hover) {
   .ref-item:hover { color: var(--gold-deep); background: color-mix(in srgb, var(--ink) 4%, transparent); }
-}
-
-/* World map dark-mode: the live geography fills are tuned for a light page, so instead of
-   re-coloring every map style object per theme, invert the whole map's lightness in place.
-   invert(1) + hue-rotate(180deg) together flip lightness while leaving hue alone (double
-   negation on hue), so land/ocean go dark but the accent-colored active region stays the same
-   accent hue instead of inverting to its complementary color; brightness/contrast settle the
-   result back into the dark palette's range. Applied to .map-canvas, set on WorldMap's root. */
-[data-theme='dark'] .map-canvas {
-  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.95);
 }
 
 /* WorldMap's region zoom/pan (ZoomableGroup's center+zoom props) is a plain 2D transform

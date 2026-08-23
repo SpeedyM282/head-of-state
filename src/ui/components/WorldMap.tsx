@@ -60,6 +60,19 @@ function dropMultiPolygonParts(topology: Topology, id: string, partIndices: read
   return { ...topology, objects: { ...topology.objects, countries: { ...countriesObject, geometries } } };
 }
 
+/**
+ * Drops one whole top-level geometry (a standalone country entry in the topology) by id —
+ * unlike dropMultiPolygonParts above, this isn't for carving an exclave out of a country the
+ * game DOES use, it's for a landmass the game never assigns to any region at all and doesn't
+ * want rendered as inert background context either.
+ */
+function dropGeometry(topology: Topology, id: string): Topology {
+  const countriesObject = topology.objects.countries;
+  if (countriesObject.type !== 'GeometryCollection') return topology;
+  const geometries = countriesObject.geometries.filter((g) => g.id !== id);
+  return { ...topology, objects: { ...topology.objects, countries: { ...countriesObject, geometries } } };
+}
+
 // France (id "250"): part 0 of its 3-part MultiPolygon is French Guiana, thousands of km
 // away in South America — legally an integral part of France, not a separate country in
 // Natural Earth's data. Verified by inspection: bbox lon -54.5..-51.7, lat 2.1..5.8. Parts
@@ -72,7 +85,14 @@ const withoutFrenchGuiana = dropMultiPolygonParts(rawWorldTopology, '250', [0]);
 // by inspection: bbox lon -159.8..-154.7, lat 18.9..22.2. Part 0 (kept) is the CONUS
 // mainland; parts 6-9 (kept) are Alaska, including the Aleutians — still North America,
 // unlike Hawaii, so not dropped.
-const worldTopology = dropMultiPolygonParts(withoutFrenchGuiana, '840', [1, 2, 3, 4, 5]);
+const withoutHawaii = dropMultiPolygonParts(withoutFrenchGuiana, '840', [1, 2, 3, 4, 5]);
+// Antarctica (id "010"): not part of any map region — it used to render as ordinary
+// unclaimed background context (the same muted, non-interactive style as e.g. the parts of
+// Africa outside all 14 regions were before v0.19), showing up as an inert silhouette along
+// the bottom edge of the world overview. Dropped outright rather than left as background,
+// since a frozen, uninhabited, unplayable continent doesn't read as "map context" the way an
+// unclaimed-but-populated territory does.
+const worldTopology = dropGeometry(withoutHawaii, '010');
 
 export type RegionKey =
   | 'westernEurope'
@@ -126,6 +146,12 @@ const REGION_ISO_MAPS: Record<RegionKey, Record<string, string>> = {
   southernAfrica: SOUTHERN_AFRICA_ISO_NUMERIC_TO_ALPHA2,
 };
 
+/** Alpha-2 `CountryProfile.id` values belonging to a map region — lets MapScreen scope the
+ * country list modal to the active region instead of always listing every playable country. */
+export function regionCountryIds(region: RegionKey): Set<string> {
+  return new Set(Object.values(REGION_ISO_MAPS[region]));
+}
+
 interface RegionFrame {
   /** [lon, lat] that centers this region under this bucket's world projection scale. */
   center: [number, number];
@@ -140,12 +166,17 @@ interface RegionFrame {
  * a one-off script (not shipped) using the same d3-geo react-simple-maps itself renders with,
  * so the numbers are guaranteed to match what's actually on screen. A bucket's aspect ratio is
  * only a representative for its form factor (real viewports vary continuously) — the
- * `<ComposableMap>`'s default `preserveAspectRatio="xMidYMid meet"` letterboxes any mismatch
- * between a bucket's fixed aspect and the live container's actual aspect, so nothing is ever
- * cropped or distorted, only (mildly) letterboxed. South America is the one region whose
+ * `<ComposableMap>`'s `preserveAspectRatio="xMidYMid meet"` letterboxes any mismatch between a
+ * bucket's fixed aspect and the live container's actual aspect evenly on both sides (centered),
+ * so nothing is ever cropped or distorted, only (mildly) letterboxed. South America is the one region whose
  * hardcoded zoom was historically tightened beyond the generic fit (its N-S-elongated shape
  * leaves excess side margin under the generic formula) — that same relative tightening
- * (×1.1513) is reproduced in every bucket below, not just re-derived once.
+ * (×1.1513) is reproduced in every bucket below, not just re-derived once. North America's
+ * frame was refit after Greenland joined its member set (see isoNumericNorthAmerica.ts):
+ * Greenland's east coast sits well east of anything else in the region, which widens the
+ * fitted bbox enough that width (not height) becomes the binding dimension in every bucket —
+ * hence tabletPortrait/tabletLandscape/desktop sharing one zoom value where they used to
+ * differ, the same coincidence already visible in easternAsia's own numbers below.
  */
 type MapFrameBucket = 'phoneLandscape' | 'tabletPortrait' | 'tabletLandscape' | 'desktop';
 
@@ -166,7 +197,7 @@ const MAP_FRAMES: Record<MapFrameBucket, MapFrameConfig> = {
     regions: {
       westernEurope: { center: [8.522, 52.784], zoom: 3.737 },
       easternEurope: { center: [29.837, 46.898], zoom: 5.997 },
-      northAmerica: { center: [-93.41, 37.196], zoom: 1.983 },
+      northAmerica: { center: [-76.774, 37.24], zoom: 1.98 },
       southAmerica: { center: [-59.548, -19.343], zoom: 2.069 },
       centralAsia: { center: [64.829, 44.798], zoom: 6.89 },
       middleEast: { center: [48.598, 27.456], zoom: 3.945 },
@@ -188,7 +219,7 @@ const MAP_FRAMES: Record<MapFrameBucket, MapFrameConfig> = {
     regions: {
       westernEurope: { center: [8.522, 52.784], zoom: 6.007 },
       easternEurope: { center: [29.837, 46.898], zoom: 9.585 },
-      northAmerica: { center: [-93.41, 37.196], zoom: 3.108 },
+      northAmerica: { center: [-76.774, 37.24], zoom: 2.352 },
       southAmerica: { center: [-59.548, -19.343], zoom: 5.66 },
       centralAsia: { center: [64.829, 44.798], zoom: 8.601 },
       middleEast: { center: [48.598, 27.456], zoom: 10.302 },
@@ -210,7 +241,7 @@ const MAP_FRAMES: Record<MapFrameBucket, MapFrameConfig> = {
     regions: {
       westernEurope: { center: [8.522, 52.784], zoom: 5.327 },
       easternEurope: { center: [29.837, 46.898], zoom: 8.549 },
-      northAmerica: { center: [-93.41, 37.196], zoom: 2.827 },
+      northAmerica: { center: [-76.774, 37.24], zoom: 2.352 },
       southAmerica: { center: [-59.548, -19.343], zoom: 2.949 },
       centralAsia: { center: [64.829, 44.798], zoom: 8.601 },
       middleEast: { center: [48.598, 27.456], zoom: 5.623 },
@@ -232,7 +263,7 @@ const MAP_FRAMES: Record<MapFrameBucket, MapFrameConfig> = {
     regions: {
       westernEurope: { center: [8.522, 52.784], zoom: 4.446 },
       easternEurope: { center: [29.837, 46.898], zoom: 7.136 },
-      northAmerica: { center: [-93.41, 37.196], zoom: 2.359 },
+      northAmerica: { center: [-76.774, 37.24], zoom: 2.352 },
       southAmerica: { center: [-59.548, -19.343], zoom: 2.461 },
       centralAsia: { center: [64.829, 44.798], zoom: 8.197 },
       middleEast: { center: [48.598, 27.456], zoom: 4.694 },
@@ -299,9 +330,9 @@ const REGION_MERGED_GEOMETRY: Record<RegionKey, GeoMultiPolygon> = (() => {
 type GeographyStyle = { default: CSSProperties; hover: CSSProperties; pressed: CSSProperties };
 
 const STYLE_CONTEXT: GeographyStyle = {
-  default: { fill: 'var(--ink-soft)', stroke: 'var(--paper-line)', strokeWidth: 0.5, outline: 'none', pointerEvents: 'none' },
-  hover: { fill: 'var(--ink-soft)', stroke: 'var(--paper-line)', strokeWidth: 0.5, outline: 'none', pointerEvents: 'none' },
-  pressed: { fill: 'var(--ink-soft)', stroke: 'var(--paper-line)', strokeWidth: 0.5, outline: 'none', pointerEvents: 'none' },
+  default: { fill: 'var(--map-ocean)', stroke: 'var(--paper-line)', strokeWidth: 0.5, outline: 'none', pointerEvents: 'none' },
+  hover: { fill: 'var(--map-ocean)', stroke: 'var(--paper-line)', strokeWidth: 0.5, outline: 'none', pointerEvents: 'none' },
+  pressed: { fill: 'var(--map-ocean)', stroke: 'var(--paper-line)', strokeWidth: 0.5, outline: 'none', pointerEvents: 'none' },
 };
 /** Fully invisible and non-interactive: a region's member country while that region is NOT
  * the active one, or (once any region is active) any country outside the map's 14 regions
@@ -315,7 +346,7 @@ const STYLE_HIDDEN: GeographyStyle = {
 // Hover/pressed reuse the exact same border as default (no emphasis, no width change) —
 // only the fill shifts, so hovering never draws a new/thicker outline around the shape.
 const STYLE_SELECTABLE: GeographyStyle = {
-  default: { fill: 'var(--paper-dim)', stroke: 'var(--paper-line)', strokeWidth: 0.5, outline: 'none', cursor: 'pointer' },
+  default: { fill: 'var(--map-land)', stroke: 'var(--paper-line)', strokeWidth: 0.5, outline: 'none', cursor: 'pointer' },
   hover: { fill: 'var(--gold-soft)', stroke: 'var(--paper-line)', strokeWidth: 0.5, outline: 'none', cursor: 'pointer' },
   pressed: { fill: 'var(--gold)', stroke: 'var(--paper-line)', strokeWidth: 0.5, outline: 'none', cursor: 'pointer' },
 };
@@ -535,8 +566,9 @@ export function WorldMap({ activeRegion, onEnterRegion, selectedCountryId, onSel
   // SVG viewBox's aspect ratio, the base projection's scale, and every region's center/zoom
   // all come from the current form factor's precomputed bucket — see MAP_FRAMES above. The
   // container fills its parent (`h-full w-full`) rather than forcing a square; `ComposableMap`'s
-  // default `preserveAspectRatio="xMidYMid meet"` letterboxes any residual aspect mismatch
-  // between the bucket and the live container, so the world/region frame is never cropped.
+  // `preserveAspectRatio="xMidYMid meet"` (below) letterboxes any residual aspect mismatch
+  // between the bucket and the live container evenly on both sides, so the world/region frame
+  // is centered and never cropped.
   const viewport = useViewport();
   const bucket = MAP_FRAMES[pickMapFrameBucket(viewport)];
   const worldProjectionConfig = useMemo(
@@ -548,14 +580,15 @@ export function WorldMap({ activeRegion, onEnterRegion, selectedCountryId, onSel
   const selectableStyle = viewport.pointerFine ? STYLE_SELECTABLE : STYLE_SELECTABLE_NO_HOVER;
 
   return (
-    <div ref={containerRef} className="map-canvas relative h-full w-full" onMouseMove={handlePointerMove}>
+    <div ref={containerRef} className="relative h-full w-full" onMouseMove={handlePointerMove}>
       <ComposableMap
         projection="geoEqualEarth"
         projectionConfig={worldProjectionConfig}
         width={bucket.width}
         height={bucket.height}
+        preserveAspectRatio="xMidYMid meet"
         className="h-full w-full"
-        style={{ background: 'var(--ink-soft)' }}
+        style={{ background: 'var(--map-ocean)' }}
       >
         <ZoomableGroup
           center={view.center}

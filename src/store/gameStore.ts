@@ -5,7 +5,7 @@ import { buildContent } from '../data';
 import { GameClock, type Speed } from './clock';
 import { clearSave, loadGame, saveGame } from './persistence';
 
-type Phase = 'menu' | 'map' | 'settings' | 'playing' | 'over' | 'interTerm';
+type Phase = 'menu' | 'difficulty' | 'map' | 'settings' | 'playing' | 'over' | 'interTerm';
 
 interface GameStore {
   phase: Phase;
@@ -18,6 +18,13 @@ interface GameStore {
   speed: Speed;
   /** Whether the reforms panel is open — mirrored here so the clock can auto-pause. */
   reformsOpen: boolean;
+  /** Difficulty chosen on its own dedicated screen (see DifficultyScreen), before the map —
+   * carried here (rather than local state on the map screen) so it survives the phase change
+   * from 'difficulty' to 'map'. CountryDossier's "Choose" reads this, doesn't offer the choice
+   * itself. Defaults to 'normal', same default the old inline picker started on. */
+  pendingDifficulty: Difficulty;
+  setPendingDifficulty: (difficulty: Difficulty) => void;
+  goToDifficulty: () => void;
   goToMap: () => void;
   goToSettings: () => void;
   startGame: (countryId: string, difficulty: Difficulty) => void;
@@ -67,7 +74,10 @@ export const useGameStore = create<GameStore>((set, get) => {
     hasSave: loadGame() !== null,
     speed: 'normal',
     reformsOpen: false,
+    pendingDifficulty: 'normal',
 
+    setPendingDifficulty: (difficulty) => set({ pendingDifficulty: difficulty }),
+    goToDifficulty: () => set({ phase: 'difficulty' }),
     goToMap: () => set({ phase: 'map' }),
     goToSettings: () => set({ phase: 'settings' }),
 

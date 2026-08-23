@@ -9,15 +9,20 @@
  * Caribbean (everything north of the Colombia/Panama border) — see
  * `isoNumericSouthAmerica.ts` for the rest of the continent. Small Caribbean
  * island states (Antigua and Barbuda, Barbados, Dominica, Grenada, Saint Kitts
- * and Nevis, Saint Lucia, Saint Vincent and the Grenadines) and non-sovereign
- * territories (Greenland, Puerto Rico) have no usable shape at this resolution,
- * or aren't sovereign states, and are therefore not selectable.
+ * and Nevis, Saint Lucia, Saint Vincent and the Grenadines) have no usable
+ * shape at this resolution; Puerto Rico isn't a sovereign state. Neither is
+ * Greenland, but it's included anyway (a fictional-satire game's one real
+ * exception to "sovereign states only") — it DOES have a usable shape,
+ * unlike its neighbors above; its inclusion is also why this region's
+ * WorldMap.tsx frame is noticeably wider than a Canada/US/Mexico/Central
+ * America/Caribbean bbox alone would need, see MAP_FRAMES's comment there.
  */
 export const NORTH_AMERICA_ISO_NUMERIC_TO_ALPHA2: Record<string, string> = {
   // North America
   '124': 'ca',
   '840': 'us',
   '484': 'mx',
+  '304': 'gl',
   // Central America
   '084': 'bz',
   '320': 'gt',
