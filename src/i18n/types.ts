@@ -30,6 +30,10 @@ export interface Ui {
     subtitle: string;
     continue: string;
     difficulties: Record<Difficulty, { name: string; tagline: string }>;
+    /** Masthead kicker line above the 3px rule — «Специальный выпуск · …». */
+    kicker: string;
+    /** Colophon row under the nameplate: three short cells. */
+    colophon: { price: string; print: string; number: string };
   };
   /** Europe map / country selection screen and its drawer, between menu and playing. */
   map: {
@@ -65,6 +69,8 @@ export interface Ui {
     backToRegions: string;
     dossier: {
       population: string;
+      /** Abbreviation unit for population once it crosses a million, e.g. «млн». */
+      populationMillion: string;
       area: string;
       economy: string;
       corruption: string;
@@ -73,12 +79,31 @@ export interface Ui {
     };
     /** Primary button in the country drawer that starts the game. */
     choose: string;
+    /** Kicker above the inline country dossier rail (map screen, not the modal drawer). */
+    dossierKicker: string;
   };
-  /** Settings screen, reached from the main menu. Language selection today; more sections may be added later. */
+  /** Settings screen, reached from the main menu. A master->detail hub: a 3-row menu
+   * (Language/Theme/Reference) over local `view` state, not flat panels. */
   settings: {
-    /** Screen header, and the label of the menu button that opens it. */
+    /** Screen header, and the label of the menu button that opens it; also the menu view's nav row label. */
     title: string;
+    /** Menu view's nav row label + detail header title. */
     language: string;
+    /** Italic hint under the language choices. */
+    languageHint: string;
+    /** Menu view's nav row label + detail header title. */
+    theme: string;
+    themeOptions: { light: string; dark: string; system: string };
+    /** Trailing note next to the "system" choice, e.g. «Как в системе». */
+    themeSystemNote: string;
+    /** Italic hint under the theme choices. */
+    themeHint: string;
+    /** Menu view's "Справка" row current-value text (the row label itself is help.title). */
+    referenceValue: string;
+    /** Reference view's left-column kicker, over the list of help topics. */
+    sectionsKicker: string;
+    /** Reference view's right-column kicker, over the tutorial-replay button. */
+    tutorialKicker: string;
   };
   /** Full-screen overlay shown on phone-sized portrait viewports (see OrientationGate) —
    * the game is landscape-only on phones; this is the web fallback for orientation lock. */
@@ -88,6 +113,10 @@ export interface Ui {
   };
   main: {
     influence: string;
+    /** Right-rail caption under the influence CMYK numeral, e.g. «на реформы и решения». */
+    influenceCaption: string;
+    /** Masthead title over the dateline, e.g. «Государственная ведомость». */
+    mastheadTitle: string;
     brief: string;
     reforms: string;
     autosave: string;
@@ -140,6 +169,8 @@ export interface Ui {
   };
   trend: string;
   gameOver: {
+    /** Masthead kicker above the 3px rule, e.g. «Итоговый выпуск · По завершении срока». */
+    kicker: string;
     stampVictory: string;
     stampDefeat: string;
     survived: string;

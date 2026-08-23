@@ -31,26 +31,45 @@ export function MenuScreen() {
   }
 
   return (
-    // Phone landscape: title block and button stack sit side by side (the shape landscape
-    // gives us), so nothing needs to shrink onto one narrow column. Tablet/desktop revert to
-    // the original centered vertical stack, where there's height to spare for it.
-    <div className="flex min-h-0 flex-1 flex-row items-center justify-center gap-sp-5 text-center tablet:flex-col">
-      <div className="min-w-0">
-        <h1 className="text-display font-bold tracking-wide">{ui.menu.title}</h1>
-        <p className="mt-sp-2 text-caption opacity-70">{ui.menu.subtitle}</p>
+    // The gazette front page: masthead pinned top, subtitle+buttons pinned bottom, exactly
+    // as the 640×360 mock lays it out — this reads fine at every form factor as-is (fluid
+    // tokens grow the type/spacing), so unlike other screens there's no separate phone-
+    // landscape-vs-tablet structure here, just one column that gets more air.
+    <div className="flex min-h-0 flex-1 flex-col justify-between py-sp-2">
+      <div className="text-center">
+        <p className="eyebrow">{ui.menu.kicker}</p>
+        <div className="mt-sp-1 h-[3px] bg-(--ink)" />
+        <h1
+          className="mt-sp-1 font-bold uppercase tracking-[0.04em]"
+          style={{
+            fontSize: 'clamp(2.5rem, calc(2.5rem + 14 * (100vw - 640px) / 640), 3.375rem)',
+            lineHeight: 0.95,
+          }}
+        >
+          {ui.menu.title}
+        </h1>
+        <div className="mt-sp-1 flex items-stretch justify-center gap-0 border-y border-(--ink) py-sp-1 text-caption uppercase opacity-60">
+          <span className="px-sp-2">{ui.menu.colophon.price}</span>
+          <span className="border-x border-(--paper-line) px-sp-2">{ui.menu.colophon.print}</span>
+          <span className="px-sp-2">{ui.menu.colophon.number}</span>
+        </div>
       </div>
-      <div className="flex w-full max-w-[220px] shrink-0 flex-col gap-sp-2 tablet:max-w-xs">
-        {hasSave && (
-          <button className="btn btn-primary min-h-11" onClick={continueGame}>
-            {ui.menu.continue}
+
+      <div className="flex items-end gap-sp-5">
+        <p className="flex-1 text-label italic leading-snug opacity-[0.78]">{ui.menu.subtitle}</p>
+        <div className="flex w-[214px] shrink-0 flex-col gap-sp-1">
+          {hasSave && (
+            <button className="btn btn-primary min-h-11 text-label" onClick={continueGame}>
+              {ui.menu.continue}
+            </button>
+          )}
+          <button className="btn btn-secondary min-h-11 text-label" onClick={handlePlay}>
+            {ui.map.playCta}
           </button>
-        )}
-        <button className="btn min-h-11" onClick={handlePlay}>
-          {ui.map.playCta}
-        </button>
-        <button className="btn min-h-11 text-label opacity-80" onClick={goToSettings}>
-          {ui.settings.title}
-        </button>
+          <button className="btn btn-ghost min-h-10 text-label" onClick={goToSettings}>
+            {ui.settings.title}
+          </button>
+        </div>
       </div>
 
       {showTutorialPrompt && (

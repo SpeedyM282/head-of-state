@@ -1,5 +1,6 @@
 import type { Difficulty, GameState, Lang } from '../core/types';
 import { DEFAULT_LANG, LANGS } from '../i18n';
+import type { Theme } from './themeStore';
 
 // MVP persistence: localStorage adapter.
 // TODO(stage 4): swap the storage backend to @capacitor/preferences — only this file changes.
@@ -13,6 +14,8 @@ import { DEFAULT_LANG, LANGS } from '../i18n';
 const KEY = 'prezident.save.v3';
 const LANG_KEY = 'prezident.lang.v1';
 const TUTORIAL_KEY = 'prezident.tutorial.v1';
+const THEME_KEY = 'prezident.theme.v1';
+const THEMES: readonly Theme[] = ['light', 'dark', 'system'];
 
 export interface SaveData {
   state: GameState;
@@ -69,6 +72,23 @@ export function loadLang(): Lang {
 export function saveLang(lang: Lang): void {
   try {
     localStorage.setItem(LANG_KEY, lang);
+  } catch {
+    // ignore
+  }
+}
+
+export function loadTheme(): Theme {
+  try {
+    const raw = localStorage.getItem(THEME_KEY);
+    return raw && THEMES.includes(raw as Theme) ? (raw as Theme) : 'system';
+  } catch {
+    return 'system';
+  }
+}
+
+export function saveTheme(theme: Theme): void {
+  try {
+    localStorage.setItem(THEME_KEY, theme);
   } catch {
     // ignore
   }

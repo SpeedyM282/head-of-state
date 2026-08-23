@@ -82,6 +82,48 @@
   --ok: var(--gold);
 }
 
+/* ─── Dark mode — «Ночной выпуск» (night edition) ───
+   A pure theme, not a redesign: every component already styles from these custom properties
+   (never a raw hex), so re-skinning is just overriding the BASE hex tokens here — every
+   color-mix()-DERIVED token above (--ink-soft, --paper-dim, --paper-line, --text-faint,
+   --gold-tint, --stamp-tint, --gold-soft) recomputes for free against the new bases, since
+   color-mix() re-resolves var() at use time. Values are the handoff's reversed-by-OKLCH-
+   lightness ramp (ink<->paper swap, every accent step to its mirror) — see ARCHITECTURE.md
+   §7a. --ink-soft is the one exception that needs an explicit override rather than a free
+   recompute: its light-mode formula (color-mix ink 82%/paper 18%) is "mostly ink" by design
+   (a recessive dark surface fill, e.g. the map background, the term-progress track) — under a
+   naive base-swap that formula would flip to "mostly [new] ink", i.e. mostly LIGHT, which is
+   the opposite of what a recessive surface should do in dark mode. Applied via [data-theme]
+   (written by store/themeStore.ts), not a media query — 'system' resolves to an explicit
+   light/dark before it ever reaches the DOM, so this selector alone covers all three settings. */
+:root[data-theme='dark'] {
+  --ink: #f1eee7;
+  --paper: #1a1917;
+  --ink-soft: #242220;
+  --text-ink: #f1eee7;
+  --stamp: #ff5c97;
+  --stamp-deep: #d82071;
+  --gold: #33a9d0;
+  --gold-deep: #1186ac;
+}
+
+/* Same palette, applied automatically when the OS is dark AND the user hasn't explicitly
+   chosen a theme yet (before store/themeStore.ts's initial applyTheme() call writes a
+   concrete data-theme attribute — e.g. the very first paint). Keeps that first frame from
+   flashing light-on-dark-system. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --ink: #f1eee7;
+    --paper: #1a1917;
+    --ink-soft: #242220;
+    --text-ink: #f1eee7;
+    --stamp: #ff5c97;
+    --stamp-deep: #d82071;
+    --gold: #33a9d0;
+    --gold-deep: #1186ac;
+  }
+}
+
 html,
 body {
   background: var(--paper);
@@ -186,6 +228,146 @@ svg path[role='button']:focus-visible {
   content: ' ······································';
   color: var(--text-faint);
   letter-spacing: 2px;
+}
+
+/* Ledger row: label ‹dotted leader› value — StatRow/CountryDossier's dossier rows, replacing a
+   plain flex-justify-between gap with the gazette's register-book leader rule. The leader is a
+   dotted border (not repeated-character text like .dotted-leader above) so it stretches to
+   fill exactly the row's remaining width regardless of label/value length. */
+.led {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-sp-2);
+}
+.led-dots {
+  flex: 1;
+  min-width: var(--spacing-sp-3);
+  border-bottom: 1px dotted var(--paper-line);
+  transform: translateY(-0.2em);
+}
+
+/* CMYK "plate numeral" — the hero-figure treatment (influence points, term length survived):
+   four offset copies of the same digits fake a misregistered four-color-process print. .paper
+   is the base/key plate, drawn on its own small paper-colored chip so the numeral always reads
+   against a light ground even on a dark page (see the dark-mode override below); .plate-c/-m/-y
+   are absolutely-positioned copies in the process inks, nudged a subpixel offset and blended
+   with multiply, so their overlap reads near-black (true process-print behavior) while the
+   fringes show pure color. */
+.cmyk-num {
+  position: relative;
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+}
+.cmyk-num .paper {
+  position: relative;
+  display: inline-block;
+  background: var(--paper);
+  color: var(--text-ink);
+  padding: 0.04em 0.1em;
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--ink) 35%, transparent);
+}
+.cmyk-num .plate {
+  position: absolute;
+  inset: 0;
+  padding: 0.04em 0.1em;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  user-select: none;
+}
+.cmyk-num .plate-c { color: #00b7d6; transform: translate(-0.03em, 0.012em); }
+.cmyk-num .plate-m { color: #e2007a; transform: translate(0.025em, -0.02em); }
+.cmyk-num .plate-y { color: #d9c400; transform: translate(0, 0.03em); }
+/* The numeral keeps its ivory paper ground even in dark mode — on a dark page the chip would
+   otherwise go muddy. Scoping the --paper override to .cmyk-num (custom properties cascade to
+   descendants) flips .paper's background back to paper while the process-ink plates stay lit. */
+[data-theme='dark'] .cmyk-num {
+  --paper: #ece7db;
+}
+
+/* Settings' "master" nav rows (.set-row) and its "detail" choice rows (.lang-row) — both share
+   the same default/hover/pressed/focus-visible ladder; .lang-row adds a persistent "selected"
+   state for the active language/theme choice. .ref-item is the Reference view's plainer list
+   row (underline only, no border box). button:focus-visible above already covers all three. */
+.set-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sp-3);
+  width: 100%;
+  min-height: 54px;
+  padding: 0 var(--spacing-sp-3);
+  border: 1px solid var(--paper-line);
+  background: transparent;
+  text-align: left;
+  color: var(--text-ink);
+}
+@media (hover: hover) {
+  .set-row:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); border-color: color-mix(in srgb, var(--ink) 24%, var(--paper)); }
+}
+.set-row:active { background: color-mix(in srgb, var(--ink) 12%, transparent); }
+
+.lang-row {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0 var(--spacing-sp-3);
+  gap: var(--spacing-sp-2);
+  font-size: var(--text-label);
+  border: 1px solid var(--paper-line);
+  background: transparent;
+  text-align: left;
+  color: var(--text-ink);
+}
+@media (hover: hover) {
+  .lang-row:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+}
+.lang-row:active { background: color-mix(in srgb, var(--ink) 12%, transparent); }
+.lang-row.active {
+  border-color: var(--gold);
+  background: var(--gold-tint);
+  box-shadow: inset 3px 0 0 var(--gold);
+  font-weight: 700;
+}
+@media (hover: hover) {
+  .lang-row.active:hover { background: var(--gold-tint); }
+}
+
+/* Plain ink-bordered status label — reform nodes' "Принято" (adopted) state. Distinct from
+   .stamp (rotated, double-bordered, magenta — reserved for the loud victory/defeat/inauguration
+   announcements): this is a quiet, neutral confirmation, not an outcome to make noise about. */
+.badge {
+  display: inline-block;
+  padding: 0.1em 0.5em;
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  font-size: var(--text-caption);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.ref-item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 44px;
+  font-size: var(--text-label);
+  border-bottom: 1px solid var(--paper-line);
+  background: transparent;
+  text-align: left;
+  color: var(--text-ink);
+}
+@media (hover: hover) {
+  .ref-item:hover { color: var(--gold-deep); background: color-mix(in srgb, var(--ink) 4%, transparent); }
+}
+
+/* World map dark-mode: the live geography fills are tuned for a light page, so instead of
+   re-coloring every map style object per theme, invert the whole map's lightness in place.
+   invert(1) + hue-rotate(180deg) together flip lightness while leaving hue alone (double
+   negation on hue), so land/ocean go dark but the accent-colored active region stays the same
+   accent hue instead of inverting to its complementary color; brightness/contrast settle the
+   result back into the dark palette's range. Applied to .map-canvas, set on WorldMap's root. */
+[data-theme='dark'] .map-canvas {
+  filter: invert(1) hue-rotate(180deg) brightness(0.92) contrast(0.95);
 }
 
 /* WorldMap's region zoom/pan (ZoomableGroup's center+zoom props) is a plain 2D transform

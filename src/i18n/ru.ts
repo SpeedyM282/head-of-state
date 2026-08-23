@@ -10,6 +10,8 @@ export const ru: Ui = {
       normal: { name: 'Средняя', tagline: 'Переходный период' },
       hard: { name: 'Сложная', tagline: 'Всё сложно' },
     },
+    kicker: 'Специальный выпуск · Издаётся при каждой смене власти',
+    colophon: { price: 'Цена: одно решение', print: 'Тираж: 1 экз.', number: '№ 001' },
   },
   map: {
     playCta: 'Играть',
@@ -37,6 +39,7 @@ export const ru: Ui = {
     backToRegions: 'Регионы',
     dossier: {
       population: 'Население',
+      populationMillion: 'млн',
       area: 'Площадь',
       economy: 'Уровень экономики',
       corruption: 'Коррупция',
@@ -44,10 +47,19 @@ export const ru: Ui = {
       development: 'Развитие',
     },
     choose: 'Выбрать',
+    dossierKicker: 'Досье страны',
   },
   settings: {
     title: 'Настройки',
     language: 'Язык',
+    languageHint: 'Язык интерфейса меняется сразу.',
+    theme: 'Тема',
+    themeOptions: { light: 'Светлая', dark: 'Тёмная', system: 'Системная' },
+    themeSystemNote: 'Как в системе',
+    themeHint: '«Системная» следует настройке устройства.',
+    referenceValue: 'Правила и обучение',
+    sectionsKicker: 'Разделы',
+    tutorialKicker: 'Обучение',
   },
   orientationGate: {
     title: 'Поверните устройство',
@@ -55,6 +67,8 @@ export const ru: Ui = {
   },
   main: {
     influence: 'Влияние',
+    influenceCaption: 'на реформы и решения',
+    mastheadTitle: 'Государственная ведомость',
     brief: 'Сводка по стране',
     reforms: 'Реформы',
     autosave: 'Сохраняется автоматически. Все совпадения с реальностью случайны.',
@@ -124,6 +138,7 @@ export const ru: Ui = {
   },
   trend: 'тренд',
   gameOver: {
+    kicker: 'Итоговый выпуск · По завершении срока',
     stampVictory: 'Срок отбыт',
     stampDefeat: 'Отстранён',
     survived: 'Продержались месяцев',

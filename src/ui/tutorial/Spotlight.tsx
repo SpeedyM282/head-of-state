@@ -39,8 +39,11 @@ export function Spotlight({ rect }: { rect: AnchorRect | null }) {
 				className="fixed z-40"
 				style={{ top, left: right, right: 0, height, background: DIM }}
 			/>
+			{/* Decorative ring only — pointer-events-none so it never blocks clicks on the real
+			    element inside the cutout (steps like reformsOpen/reformsBuy require the player to
+			    actually click the spotlighted button/node to advance). */}
 			<div
-				className="fixed z-40 rounded-sm"
+				className="pointer-events-none fixed z-40 rounded-sm"
 				style={{ top, left, width, height, boxShadow: "0 0 0 2px var(--gold)" }}
 				aria-hidden
 			/>

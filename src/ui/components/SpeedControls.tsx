@@ -42,7 +42,11 @@ export function SpeedControls() {
   const setSpeed = useGameStore((s) => s.setSpeed);
   const ui = useUi();
   return (
-    <div className="flex items-center gap-sp-1" role="group" aria-label={ui.main.speed.normal}>
+    // Deliberately narrower than the app's usual 44px touch target: the footer row (see
+    // MainScreen) has no room for three 44px squares plus the "До выборов"/"Реформы" copy at
+    // the phone-landscape baseline, and Space is a full keyboard alternative to all three
+    // (see MainScreen's key handler) — see the handoff's own "≥44px for PRIMARY actions" carve-out.
+    <div className="flex items-center gap-1" role="group" aria-label={ui.main.speed.normal}>
       {OPTIONS.map((o) => {
         const active = speed === o.speed;
         const Icon = o.Icon;
@@ -53,11 +57,11 @@ export function SpeedControls() {
             onClick={() => setSpeed(o.speed)}
             aria-label={ui.main.speed[o.label]}
             aria-pressed={active}
-            className="flex h-11 w-11 shrink-0 items-center justify-center border desktop:h-9 desktop:w-9"
+            className="btn btn-secondary flex h-8 w-[38px] shrink-0 items-center justify-center py-0"
             style={{
-              borderColor: 'var(--paper-line)',
-              background: active ? 'var(--gold)' : 'var(--paper)',
-              color: active ? 'var(--ink)' : 'var(--text-ink)',
+              background: active ? 'var(--gold)' : undefined,
+              color: active ? 'var(--paper)' : undefined,
+              borderColor: active ? 'var(--gold)' : undefined,
             }}
           >
             <Icon />

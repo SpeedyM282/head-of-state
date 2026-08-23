@@ -10,6 +10,8 @@ export const en: Ui = {
       normal: { name: 'Medium', tagline: 'Transition period' },
       hard: { name: 'Hard', tagline: 'It’s complicated' },
     },
+    kicker: 'Special Edition · Published on Every Change of Power',
+    colophon: { price: 'Price: one decision', print: 'Print run: 1 copy', number: 'No. 001' },
   },
   map: {
     playCta: 'Play',
@@ -37,6 +39,7 @@ export const en: Ui = {
     backToRegions: 'Regions',
     dossier: {
       population: 'Population',
+      populationMillion: 'M',
       area: 'Area',
       economy: 'Economy level',
       corruption: 'Corruption',
@@ -44,10 +47,19 @@ export const en: Ui = {
       development: 'Development',
     },
     choose: 'Choose',
+    dossierKicker: 'Country dossier',
   },
   settings: {
     title: 'Settings',
     language: 'Language',
+    languageHint: 'The interface language changes immediately.',
+    theme: 'Theme',
+    themeOptions: { light: 'Light', dark: 'Dark', system: 'System' },
+    themeSystemNote: 'Follows system',
+    themeHint: '“System” follows your device setting.',
+    referenceValue: 'Rules and tutorial',
+    sectionsKicker: 'Sections',
+    tutorialKicker: 'Tutorial',
   },
   orientationGate: {
     title: 'Turn your device',
@@ -55,6 +67,8 @@ export const en: Ui = {
   },
   main: {
     influence: 'Influence',
+    influenceCaption: 'for reforms and decisions',
+    mastheadTitle: 'State Gazette',
     brief: 'Country brief',
     reforms: 'Reforms',
     autosave: 'Saved automatically. Any resemblance to reality is coincidental.',
@@ -124,6 +138,7 @@ export const en: Ui = {
   },
   trend: 'trend',
   gameOver: {
+    kicker: 'Final Edition · Upon Completion of Term',
     stampVictory: 'Term served',
     stampDefeat: 'Removed from office',
     survived: 'Months survived',

@@ -10,6 +10,8 @@ export const uz: Ui = {
       normal: { name: 'O‘rtacha', tagline: 'O‘tish davri' },
       hard: { name: 'Qiyin', tagline: 'Hammasi murakkab' },
     },
+    kicker: 'Maxsus son · Har bir hokimiyat almashinuvida chiqariladi',
+    colophon: { price: 'Narxi: bitta qaror', print: 'Adadi: 1 nusxa', number: '№ 001' },
   },
   map: {
     playCta: 'O‘ynash',
@@ -37,6 +39,7 @@ export const uz: Ui = {
     backToRegions: 'Regionlar',
     dossier: {
       population: 'Aholi',
+      populationMillion: 'mln',
       area: 'Maydon',
       economy: 'Iqtisodiyot darajasi',
       corruption: 'Korrupsiya',
@@ -44,10 +47,19 @@ export const uz: Ui = {
       development: 'Rivojlanish',
     },
     choose: 'Tanlash',
+    dossierKicker: 'Davlat dosyesi',
   },
   settings: {
     title: 'Sozlamalar',
     language: 'Til',
+    languageHint: 'Interfeys tili darhol o‘zgaradi.',
+    theme: 'Mavzu',
+    themeOptions: { light: 'Yorug‘', dark: 'Qorong‘i', system: 'Tizim' },
+    themeSystemNote: 'Tizimga mos',
+    themeHint: '«Tizim» qurilma sozlamasiga amal qiladi.',
+    referenceValue: 'Qoidalar va o‘qitish',
+    sectionsKicker: 'Bo‘limlar',
+    tutorialKicker: 'O‘qitish',
   },
   orientationGate: {
     title: 'Qurilmani ag‘daring',
@@ -55,6 +67,8 @@ export const uz: Ui = {
   },
   main: {
     influence: 'Ta’sir',
+    influenceCaption: 'islohotlar va qarorlar uchun',
+    mastheadTitle: 'Davlat varaqasi',
     brief: 'Mamlakat bo‘yicha ma’lumot',
     reforms: 'Islohotlar',
     autosave: 'Avtomatik saqlanadi. Voqelik bilan har qanday o‘xshashlik tasodifiy.',
@@ -124,6 +138,7 @@ export const uz: Ui = {
   },
   trend: 'tendensiya',
   gameOver: {
+    kicker: 'Yakuniy son · Muddat tugashi bilan',
     stampVictory: 'Muddat o‘taldi',
     stampDefeat: 'Lavozimdan chetlatildi',
     survived: 'Chidalgan oylar',

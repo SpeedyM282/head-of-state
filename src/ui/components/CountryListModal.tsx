@@ -16,8 +16,13 @@ export function CountryListModal({ onSelect, onClose }: Props) {
   const filtered = countries.filter((c) => loc(c.name, lang).toLowerCase().includes(query.trim().toLowerCase()));
 
   return (
-    <div className="fixed inset-0 z-20 flex items-center justify-center bg-black/60 p-sp-4" role="dialog" aria-modal="true">
-      <div className="panel flex max-h-[80dvh] w-full max-w-150 flex-col p-sp-4">
+    // pointer-events-none on the backdrop (only the dialog panel itself is pointer-events-auto):
+    // the country dossier now lives inline in MapScreen's own layout rather than a competing
+    // overlay (see CountryDossier), and selecting from this list deliberately leaves it open
+    // (see MapScreen.selectFromList) so the player can keep comparing countries — the dossier
+    // and its "Choose" button must stay clickable underneath, not blocked by this backdrop.
+    <div className="pointer-events-none fixed inset-0 z-20 flex items-center justify-center bg-black/60 p-sp-4" role="dialog" aria-modal="true">
+      <div className="panel pointer-events-auto flex max-h-[80dvh] w-full max-w-150 flex-col p-sp-4">
         <div className="flex shrink-0 items-center gap-sp-2">
           <input
             type="text"

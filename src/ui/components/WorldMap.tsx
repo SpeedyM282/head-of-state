@@ -548,7 +548,7 @@ export function WorldMap({ activeRegion, onEnterRegion, selectedCountryId, onSel
   const selectableStyle = viewport.pointerFine ? STYLE_SELECTABLE : STYLE_SELECTABLE_NO_HOVER;
 
   return (
-    <div ref={containerRef} className="relative h-full w-full" onMouseMove={handlePointerMove}>
+    <div ref={containerRef} className="map-canvas relative h-full w-full" onMouseMove={handlePointerMove}>
       <ComposableMap
         projection="geoEqualEarth"
         projectionConfig={worldProjectionConfig}

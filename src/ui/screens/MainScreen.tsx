@@ -9,6 +9,7 @@ import { VectorScale } from "../components/VectorScale";
 import { EventModal } from "../components/EventModal";
 import { ReformsPanel } from "../components/ReformsPanel";
 import { SpeedControls } from "../components/SpeedControls";
+import { CmykNumeral } from "../components/CmykNumeral";
 
 const STAT_ORDER: StatKey[] = [
 	"economy",
@@ -20,12 +21,19 @@ const STAT_ORDER: StatKey[] = [
 	"corruption",
 ];
 
+function BackIcon() {
+	return (
+		<svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+			<path d="M12 5 L7 10 L12 15" />
+		</svg>
+	);
+}
+
 /**
- * Two-panel layout at every form factor (phone-landscape designed first at 640×360, tablet and
- * desktop get the same structure with more air): left panel is the 7 stat rows, right panel is
- * everything else — vector, term/election countdown, influence, clock controls, reforms button.
- * No full-width header bar — vertical space is scarce in phone landscape, so the back button
- * lives as a small corner control instead of its own row.
+ * The gazette's turn-loop screen: a masthead (title + dateline), a two-column body (the stat
+ * ledger on the left, an influence/vector rail on the right), and a footer (election countdown,
+ * clock, reforms). Same structure at every form factor — the fluid type/spacing tokens carry
+ * the growth, not a different layout per breakpoint.
  */
 export function MainScreen() {
 	const {
@@ -77,42 +85,30 @@ export function MainScreen() {
 	// The term/election cycle: elections land at the end of each 48-month term.
 	const termLength = content.difficulty.turnsToWin;
 	const monthsUntilElection = state.term * termLength - state.turn;
-	const termProgress = Math.min(
-		1,
-		(state.turn - (state.term - 1) * termLength) / termLength,
-	);
 
 	return (
-		<div className="flex min-h-0 flex-1 flex-col gap-sp-2">
+		<div className="flex min-h-0 flex-1 flex-col gap-sp-2 p-sp-3">
+			{/* Masthead */}
+			<header className="flex shrink-0 items-baseline justify-between gap-sp-2 border-b border-(--ink) pb-sp-1">
+				<div className="flex min-w-0 items-baseline gap-sp-2">
+					<button
+						type="button"
+						onClick={toMenu}
+						aria-label={ui.gameOver.toMenu}
+						className="-mb-0.5 flex h-11 w-11 shrink-0 translate-y-1 items-center justify-center hover:bg-(--paper-dim) desktop:h-8 desktop:w-8"
+					>
+						<BackIcon />
+					</button>
+					<h1 className="truncate text-heading font-bold">{ui.main.mastheadTitle}</h1>
+				</div>
+				<p className="shrink-0 text-caption uppercase tracking-wider opacity-60">
+					{loc(content.country.name, lang)} · {month} {year} · {ui.main.term} {state.term}
+				</p>
+			</header>
+
+			{/* Body */}
 			<div className="flex min-h-0 flex-1 gap-sp-4">
-				{/* LEFT: the 7 stat rows. */}
-				<div
-					data-tutorial="stats-panel"
-					className="panel flex w-[58%] max-h-70 min-w-0 flex-col justify-center gap-0 overflow-y-auto p-sp-2 tablet:w-[55%] desktop:w-[52%]"
-				>
-					<div className="mb-sp-1 flex shrink-0 items-center gap-sp-2">
-						<button
-							type="button"
-							onClick={toMenu}
-							aria-label={ui.gameOver.toMenu}
-							className="-ml-1 flex h-11 w-11 shrink-0 items-center justify-center text-(--text-ink) hover:bg-(--paper-dim) desktop:h-8 desktop:w-8"
-						>
-							<svg
-								width="16"
-								height="16"
-								viewBox="0 0 20 20"
-								fill="none"
-								stroke="currentColor"
-								strokeWidth="2"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-								aria-hidden
-							>
-								<path d="M12 5 L7 10 L12 15" />
-							</svg>
-						</button>
-						<p className="eyebrow truncate">{ui.main.brief}</p>
-					</div>
+				<div data-tutorial="stats-panel" className="flex min-h-0 flex-1 flex-col justify-between overflow-y-auto">
 					{STAT_ORDER.map((k) => (
 						<StatRow
 							key={k}
@@ -124,69 +120,35 @@ export function MainScreen() {
 					))}
 				</div>
 
-				{/* RIGHT: identity/date/influence, term progress, vector, clock, reforms. */}
-				<div className="flex w-[42%] min-w-0 flex-col gap-sp-2 overflow-y-auto tablet:w-[45%] desktop:w-[48%]">
-					<header className="flex shrink-0 items-start justify-between gap-sp-2">
-						<div className="min-w-0">
-							<p className="eyebrow truncate">
-								{loc(content.country.name, lang)}
-							</p>
-							<p className="text-heading font-bold leading-tight">
-								{month} <span className="num">{year}</span>
-							</p>
-						</div>
-						<p className="min-w-0 shrink-0 text-right text-label">
-							<span className="eyebrow block">{ui.main.influence}</span>
-							<span className="num text-heading text-(--gold)">
-								{Math.floor(state.influence)}
-							</span>
-						</p>
-					</header>
-
-					<div className="shrink-0">
-						<div className="mb-sp-1 flex items-center justify-between text-caption uppercase tracking-wider text-(--text-faint)">
-							<span>
-								{ui.main.term} {state.term}
-							</span>
-							<span>
-								{ui.main.untilElection}:{" "}
-								<span className="num">{monthsUntilElection}</span>{" "}
-								{ui.main.monthsShort}
-							</span>
-						</div>
-						<div className="h-0.5 w-full bg-(--ink-soft)" aria-hidden>
-							<div
-								className="h-full bg-(--gold) opacity-60"
-								style={{
-									width: `${termProgress * 100}%`,
-									transition: "width 300ms",
-								}}
-							/>
-						</div>
-					</div>
-
-					<div className="shrink-0" data-tutorial="vector-scale">
+				<div className="flex w-[150px] shrink-0 flex-col items-center border-l border-(--paper-line) pl-sp-3">
+					<p className="eyebrow self-start">{ui.main.influence}</p>
+					<CmykNumeral
+						value={Math.floor(state.influence)}
+						className="mt-sp-1 font-bold leading-[0.85]"
+						style={{ fontSize: "clamp(3.5rem, calc(3.5rem + 20 * (100vw - 640px) / 640), 4.5rem)" }}
+					/>
+					<p className="mt-sp-1 text-center text-caption opacity-55">{ui.main.influenceCaption}</p>
+					<div data-tutorial="vector-scale" className="mt-auto w-full">
 						<VectorScale vector={state.vector} />
 					</div>
-
-					<div
-						className="flex shrink-0 items-center justify-between gap-sp-2"
-						data-tutorial="clock-controls"
-					>
-						<SpeedControls />
-						<p className="hidden text-right text-caption opacity-50 tablet:block">
-							{ui.main.autosave}
-						</p>
-					</div>
-
-					<button
-						className="btn min-h-11 w-full"
-						onClick={openReforms}
-						data-tutorial="reforms-button"
-					>
-						{ui.main.reforms}
-					</button>
 				</div>
+			</div>
+
+			{/* Footer */}
+			<div className="flex shrink-0 items-center gap-sp-2 border-t border-(--ink) pt-sp-1">
+				<span className="text-caption uppercase opacity-55">
+					{ui.main.untilElection} <span className="num">{monthsUntilElection}</span> {ui.main.monthsShort}
+				</span>
+				<div className="ml-auto flex items-center gap-sp-2" data-tutorial="clock-controls">
+					<SpeedControls />
+				</div>
+				<button
+					className="btn btn-primary min-h-9 shrink-0 text-label"
+					onClick={openReforms}
+					data-tutorial="reforms-button"
+				>
+					{ui.main.reforms}
+				</button>
 			</div>
 
 			{reformsOpen && <ReformsPanel onClose={closeReforms} />}

@@ -9,30 +9,38 @@ interface Props {
   danger: boolean;
 }
 
+function WarningIcon() {
+  return (
+    <svg width="11" height="11" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M10 3 L18 17 H2 Z" />
+      <path d="M10 8v4" />
+      <circle cx="10" cy="14.5" r="0.6" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+/** One register-book row: label ‹dotted leader› value trend-arrow — the ledger replaces the
+ * old progress-bar StatRow with a pure numeric register, matching the gazette's "figures in a
+ * book" register aesthetic. A row in a dangerous state (danger prop, threshold logic lives in
+ * MainScreen/data/statMeta — StatRow only reads the polarity-aware boolean) turns wholesale
+ * magenta with a warning glyph, rather than just tinting a bar. */
 export function StatRow({ statKey, value, prev, danger }: Props) {
   const ui = useUi();
   const delta = prev === null ? 0 : value - prev;
   const direction = trendDirection(delta);
   const trend = trendGlyph(direction);
-  const color = trendColor(statKey, direction);
+  const color = danger ? 'var(--stamp)' : trendColor(statKey, direction);
   return (
-    // py stays a fixed sub-token value (not p-sp-*) — the 7-row stack must fit 640×360 with no
-    // scroll, and even the smallest spacing token grows a couple px by desktop that this
-    // height-critical row can't spare.
-    <div className="flex items-center gap-sp-1 py-0.5 tablet:py-1">
-      <span className="w-24 shrink-0 truncate text-label tablet:w-40">{ui.stats[statKey]}</span>
-      <div className="h-1.5 flex-1 border border-(--paper-line) bg-(--paper-dim) tablet:h-2">
-        <div
-          className="h-full"
-          style={{
-            width: `${value}%`,
-            background: danger ? 'var(--stamp)' : 'var(--gold)',
-            transition: 'width 300ms',
-          }}
-        />
-      </div>
-      <span className="num w-7 text-right text-num tablet:w-8">{Math.round(value)}</span>
-      <span className="w-3 text-caption" style={{ color }} aria-label={`${ui.trend} ${trend}`}>
+    <div className="led py-0.5" style={{ color: danger ? 'var(--stamp)' : undefined }}>
+      {danger && <WarningIcon />}
+      <span className="shrink-0 text-label font-bold">{ui.stats[statKey]}</span>
+      <span
+        className="led-dots"
+        style={danger ? { borderColor: 'color-mix(in srgb, var(--stamp) 55%, var(--paper-line))' } : undefined}
+        aria-hidden
+      />
+      <span className="num shrink-0 text-num">{Math.round(value)}</span>
+      <span className="w-4 shrink-0 text-right text-caption" style={{ color }} aria-label={`${ui.trend} ${trend}`}>
         {trend}
       </span>
     </div>
