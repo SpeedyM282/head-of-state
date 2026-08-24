@@ -89,15 +89,11 @@ export interface Ui {
     };
     /** Primary button in the country drawer that starts the game. */
     choose: string;
-    /** Kicker above the inline country dossier rail (map screen, not the modal drawer). */
-    dossierKicker: string;
     /** The inline rail's other state: a region is active but no country picked yet — shows an
      * overview of the region (member count, summed population/area, averaged levels) instead
      * of one country's dossier. Reuses `dossier`'s population/area/economy/corruption/
      * democracy/development labels for its own rows — same concepts, aggregated. */
     regionInfo: {
-      /** Kicker above the region-overview rail, parallel to dossierKicker. */
-      kicker: string;
       /** Row label for the region's member-country count. */
       countries: string;
       /** Caption prompting the player toward the next step, in place of a country's description. */
@@ -185,9 +181,6 @@ export interface Ui {
       notEnoughInfluence: string;
       notEnoughTreasury: string;
     };
-  };
-  event: {
-    dispatch: string;
   };
   trend: string;
   gameOver: {

@@ -11,6 +11,10 @@
    sm/md/lg/xl already use. A wide (>=1280px) but coarse-pointer tablet only matches `tablet`. */
 @custom-variant tablet (@media (min-width: 768px) and (min-height: 500px));
 @custom-variant desktop (@media (min-width: 1280px) and (pointer: fine));
+/* Very short landscape phones/emulators — below this height, the event modal (its title +
+   body text sized for the 640×360 baseline) needs one type-role step down to leave room for
+   the option buttons without the whole dialog fighting its own max-h-[90dvh] scroll. */
+@custom-variant short (@media (max-height: 369px) and (orientation: landscape));
 
 /* ─── Fluid type & spacing scale ───
    Six type roles and six spacing roles, each a clamp() that interpolates linearly between its
@@ -330,6 +334,9 @@ svg path[role='button']:focus-visible {
   background: transparent;
   text-align: left;
   color: var(--text-ink);
+  /* Transparent by default so .active only swaps the color in, rather than the left indicator
+     popping into existence (see ReformsPanel's branch tabs for the same fix/reasoning). */
+  box-shadow: inset 3px 0 0 transparent;
 }
 @media (hover: hover) {
   .lang-row:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); }
@@ -345,14 +352,15 @@ svg path[role='button']:focus-visible {
   .lang-row.active:hover { background: var(--gold-tint); }
 }
 
-/* Plain ink-bordered status label — reform nodes' "Принято" (adopted) state. Distinct from
-   .stamp (rotated, double-bordered, magenta — reserved for the loud victory/defeat/inauguration
-   announcements): this is a quiet, neutral confirmation, not an outcome to make noise about. */
+/* Outlined status label — reform nodes' "Принято" (adopted) state, in the primary accent
+   (same --gold used by .btn-primary) rather than plain ink, so an owned reform reads as an
+   affirmative outcome. Distinct from .stamp (rotated, double-bordered, magenta — reserved for
+   the loud victory/defeat/inauguration announcements): this is a quieter confirmation. */
 .badge {
   display: inline-block;
   padding: 0.1em 0.5em;
-  border: 1px solid var(--ink);
-  color: var(--ink);
+  border: 1px solid var(--gold);
+  color: var(--gold-deep);
   font-size: var(--text-caption);
   font-weight: 700;
   letter-spacing: 0.06em;

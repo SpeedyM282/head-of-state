@@ -9,7 +9,6 @@ import { VectorScale } from "../components/VectorScale";
 import { EventModal } from "../components/EventModal";
 import { ReformsPanel } from "../components/ReformsPanel";
 import { SpeedControls } from "../components/SpeedControls";
-import { CmykNumeral } from "../components/CmykNumeral";
 
 const STAT_ORDER: StatKey[] = [
 	"economy",
@@ -95,7 +94,7 @@ export function MainScreen() {
 						type="button"
 						onClick={toMenu}
 						aria-label={ui.gameOver.toMenu}
-						className="-mb-0.5 flex h-11 w-11 shrink-0 translate-y-1 items-center justify-center hover:bg-(--paper-dim) desktop:h-8 desktop:w-8"
+						className="-mb-0.5 flex h-11 w-11 shrink-0 translate-y-1 items-center justify-center border border-(--paper-line) hover:bg-(--paper-dim) desktop:h-8 desktop:w-8"
 					>
 						<BackIcon />
 					</button>
@@ -122,11 +121,12 @@ export function MainScreen() {
 
 				<div className="flex w-[150px] shrink-0 flex-col items-center border-l border-(--paper-line) pl-sp-3">
 					<p className="eyebrow self-start">{ui.main.influence}</p>
-					<CmykNumeral
-						value={Math.floor(state.influence)}
-						className="mt-sp-1 font-bold leading-[0.85]"
+					<p
+						className="num mt-sp-1 leading-[0.85] text-(--text-ink)"
 						style={{ fontSize: "clamp(3.5rem, calc(3.5rem + 20 * (100vw - 640px) / 640), 4.5rem)" }}
-					/>
+					>
+						{Math.floor(state.influence)}
+					</p>
 					<p className="mt-sp-1 text-center text-caption opacity-55">{ui.main.influenceCaption}</p>
 					<div data-tutorial="vector-scale" className="mt-auto w-full">
 						<VectorScale vector={state.vector} />

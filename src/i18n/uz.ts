@@ -52,9 +52,7 @@ export const uz: Ui = {
       difficulty: 'Qiyinlik',
     },
     choose: 'Tanlash',
-    dossierKicker: 'Davlat dosyesi',
     regionInfo: {
-      kicker: 'Mintaqa haqida',
       countries: 'Davlatlar',
       hint: 'Profilini ko‘rish uchun xaritada yoki ro‘yxatdan davlatni tanlang.',
     },
@@ -142,9 +140,6 @@ export const uz: Ui = {
       notEnoughInfluence: 'ta’sir yetarli emas',
       notEnoughTreasury: 'xazina yetarli emas',
     },
-  },
-  event: {
-    dispatch: 'Shoshilinch ma’lumot',
   },
   trend: 'tendensiya',
   gameOver: {

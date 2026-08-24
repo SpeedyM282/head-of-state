@@ -52,9 +52,7 @@ export const en: Ui = {
       difficulty: 'Difficulty',
     },
     choose: 'Choose',
-    dossierKicker: 'Country dossier',
     regionInfo: {
-      kicker: 'Region overview',
       countries: 'Countries',
       hint: 'Pick a country on the map or from the list to see its profile.',
     },
@@ -142,9 +140,6 @@ export const en: Ui = {
       notEnoughInfluence: 'not enough influence',
       notEnoughTreasury: 'not enough treasury',
     },
-  },
-  event: {
-    dispatch: 'Urgent dispatch',
   },
   trend: 'trend',
   gameOver: {

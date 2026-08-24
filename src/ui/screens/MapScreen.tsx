@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useUi } from '../../store/langStore';
 import { useGameStore } from '../../store/gameStore';
-import { WorldMap, regionCountryIds, type RegionKey } from '../components/WorldMap';
+import { WorldMap, regionCountryIds, regionForCountry, type RegionKey } from '../components/WorldMap';
 import { CountryListModal } from '../components/CountryListModal';
 import { CountryDossier } from '../components/CountryDossier';
 import { RegionInfo } from '../components/RegionInfo';
@@ -33,9 +33,14 @@ export function MapScreen() {
   const [listOpen, setListOpen] = useState(false);
 
   function selectFromList(id: string) {
-    // The list stays open: picking a country shows its dossier alongside it, so the player
-    // can keep browsing/comparing other countries without reopening the list each time.
+    // Closing the list and jumping the map to the picked country's region keeps the search
+    // path in sync with clicking a shape directly — the country ends up highlighted/zoomed on
+    // the map, not just named in the dossier rail. Absurdistan (list view only, no map region)
+    // leaves activeRegion untouched, matching how it already has no map presence.
+    const region = regionForCountry(id);
+    if (region) setActiveRegion(region);
     setSelectedCountryId(id);
+    setListOpen(false);
   }
 
   // One contextual back control, same pattern as Settings' back chevron: a region exits to the

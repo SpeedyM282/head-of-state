@@ -39,7 +39,16 @@ function reasonLine(reason: ReformBlock | null, ui: Ui): string | null {
 
 function CrossIcon() {
 	return (
-		<svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
+		<svg
+			width="18"
+			height="18"
+			viewBox="0 0 20 20"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="2"
+			strokeLinecap="round"
+			aria-hidden
+		>
 			<path d="M5 5 L15 15 M15 5 L5 15" />
 		</svg>
 	);
@@ -47,7 +56,16 @@ function CrossIcon() {
 
 function LockIcon() {
 	return (
-		<svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden>
+		<svg
+			width="12"
+			height="12"
+			viewBox="0 0 20 20"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="1.6"
+			strokeLinejoin="round"
+			aria-hidden
+		>
 			<rect x="4" y="9" width="12" height="8" rx="1" />
 			<path d="M7 9 V6.5 a3 3 0 0 1 6 0 V9" />
 		</svg>
@@ -58,23 +76,62 @@ function LockIcon() {
 // style as the rest of the chrome (CrossIcon/LockIcon above).
 const BRANCH_ICONS: Record<Branch, ReactElement> = {
 	economy: (
-		<svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+		<svg
+			width="17"
+			height="17"
+			viewBox="0 0 20 20"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="1.6"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			aria-hidden
+		>
 			<circle cx="10" cy="10" r="7" />
 			<path d="M10 6.5v7M8 8.2c0-1 .8-1.7 2-1.7s2 .6 2 1.5c0 2-4 1.3-4 3.3 0 .9.9 1.5 2 1.5s2-.6 2-1.6" />
 		</svg>
 	),
 	force: (
-		<svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinejoin="round" aria-hidden>
+		<svg
+			width="17"
+			height="17"
+			viewBox="0 0 20 20"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="1.6"
+			strokeLinejoin="round"
+			aria-hidden
+		>
 			<path d="M10 3 L16 5.5 V10 c0 4-2.7 6.3-6 7.5-3.3-1.2-6-3.5-6-7.5V5.5 Z" />
 		</svg>
 	),
 	social: (
-		<svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+		<svg
+			width="17"
+			height="17"
+			viewBox="0 0 20 20"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="1.6"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			aria-hidden
+		>
 			<path d="M10 17s-6-3.7-6-8.3C4 6 5.8 4.3 8 4.3c.9 0 1.7.4 2 1 .3-.6 1.1-1 2-1 2.2 0 4 1.7 4 4.4 0 4.6-6 8.3-6 8.3Z" />
 		</svg>
 	),
 	propaganda: (
-		<svg width="17" height="17" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+		<svg
+			width="17"
+			height="17"
+			viewBox="0 0 20 20"
+			fill="none"
+			stroke="currentColor"
+			strokeWidth="1.6"
+			strokeLinecap="round"
+			strokeLinejoin="round"
+			aria-hidden
+		>
 			<path d="M3 8.5v3l11 3.5v-10Z" />
 			<path d="M14 6.5v7c1.7 0 3-1.6 3-3.5s-1.3-3.5-3-3.5Z" />
 			<path d="M6.5 12v3.5c0 .8.7 1.5 1.5 1.5s1.5-.7 1.5-1.5V13" />
@@ -87,7 +144,8 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 	const scriptedStep = useTutorialStore((s) => s.scriptedStep);
 	const lang = useLang((s) => s.lang);
 	const ui = useUi();
-	const tutorialTabsAnchor = scriptedStep === "reformsBuy" ? "reforms-tabs" : undefined;
+	const tutorialTabsAnchor =
+		scriptedStep === "reformsBuy" ? "reforms-tabs" : undefined;
 	const [activeBranch, setActiveBranch] = useState<Branch>("economy");
 	const [selectedId, setSelectedId] = useState<string | null>(null);
 	const chainScrollRef = useRef<HTMLDivElement>(null);
@@ -122,9 +180,6 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 		return (
 			<>
 				<div className="flex-1 overflow-y-auto p-sp-2">
-					<p className="eyebrow">
-						{ui.reformsPanel.tier} {r.tier + 1}
-					</p>
 					<h3 className="text-label font-bold leading-tight">
 						{loc(r.title, lang)}
 					</h3>
@@ -153,7 +208,7 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 					)}
 				</div>
 
-				<div className="shrink-0 border-t border-(--paper-line) p-sp-2">
+				<div className="shrink-0 border-t border-(--paper-line) p-sp-2 text-center">
 					{owned ? (
 						<span className="badge">{ui.reformsPanel.adopted}</span>
 					) : (
@@ -222,12 +277,14 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 								className={`flex min-h-11 flex-col items-center justify-center gap-0.5 px-0.5 py-sp-2 text-center text-micro uppercase leading-tight tracking-wide hover:opacity-80${i > 0 ? " border-t border-(--paper-line)" : ""}`}
 								style={{
 									background: active ? "var(--gold-tint)" : "transparent",
-									boxShadow: active ? "inset 3px 0 0 var(--gold)" : undefined,
+									borderLeft: `3px solid ${active ? "var(--gold)" : "transparent"}`,
 									color: active ? "var(--gold-deep)" : "var(--text-ink)",
-									fontWeight: active ? 700 : 400,
+									fontWeight: 600,
 								}}
 							>
-								<span className={active ? undefined : "text-(--gold)"}>{BRANCH_ICONS[b]}</span>
+								<span className={active ? undefined : "text-(--gold)"}>
+									{BRANCH_ICONS[b]}
+								</span>
 								{ui.branches[b]}
 							</button>
 						);
@@ -237,7 +294,10 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 				{/* Node chain — a horizontal-scrolling row of compact cards at every form factor
 				    (matching the mock's single fixed layout; only the detail pane's default node
 				    changes on branch switch, see effectiveId). */}
-				<div ref={chainScrollRef} className="flex min-w-0 flex-1 items-center overflow-x-auto overflow-y-hidden p-sp-2">
+				<div
+					ref={chainScrollRef}
+					className="flex min-w-0 flex-1 items-center overflow-x-auto overflow-y-hidden p-sp-2"
+				>
 					<div className="flex items-stretch gap-sp-2">
 						{branchReforms.map((r, i) => {
 							const reason = canBuyReformReason(state, content, r.id);
@@ -246,36 +306,49 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 							const available = reason === null;
 							const isSelected = effectiveId === r.id;
 							const opacity = owned ? 0.9 : available ? 1 : locked ? 0.5 : 0.7;
-							const isTutorialFirstNode = scriptedStep === "reformsBuy" && r.tier === 0 && available;
+							const isTutorialFirstNode =
+								scriptedStep === "reformsBuy" && r.tier === 0 && available;
 							return (
 								<div key={r.id} className="flex items-stretch">
-									{i > 0 && <div className="my-auto h-0.5 w-3 shrink-0 bg-(--paper-line)" />}
+									{i > 0 && (
+										<div className="my-auto h-0.5 w-3 shrink-0 bg-(--paper-line)" />
+									)}
 									<button
 										type="button"
 										onClick={() => setSelectedId(r.id)}
-										data-tutorial={isTutorialFirstNode ? "reforms-first-node" : undefined}
+										data-tutorial={
+											isTutorialFirstNode ? "reforms-first-node" : undefined
+										}
 										className="relative w-33 shrink-0 border border-(--paper-line) bg-(--paper) p-sp-2 text-left hover:bg-(--paper-dim)"
 										style={{
 											opacity,
 											borderColor: isSelected ? "var(--gold)" : undefined,
-											boxShadow: isSelected ? "0 0 0 2px var(--gold)" : undefined,
+											boxShadow: isSelected
+												? "0 0 0 2px var(--gold)"
+												: undefined,
 										}}
 									>
 										{locked && (
-											<span className="absolute right-1.5 top-1.5 text-(--text-faint)" aria-label={ui.reformsPanel.locked}>
+											<span
+												className="absolute right-1.5 top-1.5 text-(--text-faint)"
+												aria-label={ui.reformsPanel.locked}
+											>
 												<LockIcon />
 											</span>
 										)}
-										<p className="eyebrow">
+										<p className="eyebrow absolute left-1.5 top-1.5">
 											{ui.reformsPanel.tier} {r.tier + 1}
 										</p>
-										<p className="text-label font-bold leading-tight">{loc(r.title, lang)}</p>
+										<p className="mt-sp-3 text-label font-bold leading-tight">
+											{loc(r.title, lang)}
+										</p>
 										<div className="mt-sp-1">
 											{owned ? (
 												<span className="badge">{ui.reformsPanel.adopted}</span>
 											) : !locked ? (
 												<span className="num text-caption opacity-65">
-													{r.costInfluence} {ui.reformsPanel.costInfluence} · {r.costTreasury} {ui.reformsPanel.costTreasury}
+													{r.costInfluence} {ui.reformsPanel.costInfluence} ·{" "}
+													{r.costTreasury} {ui.reformsPanel.costTreasury}
 												</span>
 											) : null}
 										</div>

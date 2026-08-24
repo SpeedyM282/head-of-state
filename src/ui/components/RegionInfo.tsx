@@ -35,12 +35,11 @@ export function RegionInfo({ region }: Props) {
   const avgDevelopment = average(members.map((c) => c.developmentLevel));
 
   return (
-    <aside className="flex min-h-0 w-46 shrink-0 flex-col gap-sp-1 border-l border-(--paper-line) pl-sp-3 tablet:w-52">
-      <p className="eyebrow">{ui.map.regionInfo.kicker}</p>
+    <aside className="flex min-h-0 w-46 shrink-0 flex-col gap-sp-1 overflow-y-auto border-l border-(--paper-line) pl-sp-3 tablet:w-52">
       <h2 className="text-label font-bold leading-tight">{ui.map.continents[region]}</h2>
       <p className="text-caption italic leading-snug opacity-60">{ui.map.regionInfo.hint}</p>
 
-      <div className="mt-sp-1 flex min-h-0 flex-1 flex-col gap-sp-1 overflow-y-auto">
+      <div className="mt-sp-1 flex flex-col gap-sp-1">
         <LevelBar label={ui.map.regionInfo.countries} value={String(members.length)} />
         <LevelBar label={ui.map.dossier.population} value={formatPopulation(totalPopulation, ui.map.dossier.populationMillion)} />
         <LevelBar label={ui.map.dossier.area} value={`${totalArea.toLocaleString()} km²`} />

@@ -152,6 +152,24 @@ export function regionCountryIds(region: RegionKey): Set<string> {
   return new Set(Object.values(REGION_ISO_MAPS[region]));
 }
 
+/** Reverse of regionCountryIds: which region (if any) a given country belongs to. Built once —
+ * REGION_ISO_MAPS is static. Absurdistan (list view only, not part of any of the 14 map
+ * regions) is the one playable country with no entry here. */
+const COUNTRY_TO_REGION: Record<string, RegionKey> = (() => {
+  const map: Record<string, RegionKey> = {};
+  for (const region of REGION_KEYS) {
+    for (const alpha2 of Object.values(REGION_ISO_MAPS[region])) map[alpha2] = region;
+  }
+  return map;
+})();
+
+/** Used by MapScreen's country-list modal: picking a country from the full (non-region-scoped)
+ * list needs to know which region to zoom the map into, the same way clicking its shape
+ * directly on an already-active region would. */
+export function regionForCountry(countryId: string): RegionKey | undefined {
+  return COUNTRY_TO_REGION[countryId];
+}
+
 interface RegionFrame {
   /** [lon, lat] that centers this region under this bucket's world projection scale. */
   center: [number, number];

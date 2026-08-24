@@ -41,29 +41,33 @@ export function CountryDossier({ countryId }: Props) {
 
   return (
     <aside className="flex min-h-0 w-46 shrink-0 flex-col gap-sp-1 border-l border-(--paper-line) pl-sp-3 tablet:w-52">
-      <p className="eyebrow">{ui.map.dossierKicker}</p>
-      <h2 className="text-label font-bold leading-tight">{loc(country.name, lang)}</h2>
-      <p className="text-caption italic leading-snug opacity-60">{loc(country.description, lang)}</p>
+      <div className="flex min-h-0 flex-1 flex-col gap-sp-1 overflow-y-auto">
+        <h2 className="text-label font-bold leading-tight">{loc(country.name, lang)}</h2>
+        <p className="text-caption italic leading-snug opacity-60">{loc(country.description, lang)}</p>
 
-      <div className="mt-sp-1 flex min-h-0 flex-1 flex-col gap-sp-1 overflow-y-auto">
-        <LevelBar label={ui.map.dossier.population} value={formatPopulation(country.population, ui.map.dossier.populationMillion)} />
-        <LevelBar label={ui.map.dossier.area} value={`${country.areaKm2.toLocaleString()} km²`} />
-        <LevelBar label={ui.map.dossier.economy} value={String(Math.round(country.economyLevel))} />
-        <LevelBar label={ui.map.dossier.corruption} value={String(Math.round(country.corruptionLevel))} />
-        <LevelBar label={ui.map.dossier.democracy} value={String(Math.round(country.democracyLevel))} />
-        <LevelBar label={ui.map.dossier.development} value={String(Math.round(country.developmentLevel))} />
+        <div className="mt-sp-1 flex flex-col gap-sp-1">
+          <LevelBar label={ui.map.dossier.population} value={formatPopulation(country.population, ui.map.dossier.populationMillion)} />
+          <LevelBar label={ui.map.dossier.area} value={`${country.areaKm2.toLocaleString()} km²`} />
+          <LevelBar label={ui.map.dossier.economy} value={String(Math.round(country.economyLevel))} />
+          <LevelBar label={ui.map.dossier.corruption} value={String(Math.round(country.corruptionLevel))} />
+          <LevelBar label={ui.map.dossier.democracy} value={String(Math.round(country.democracyLevel))} />
+          <LevelBar label={ui.map.dossier.development} value={String(Math.round(country.developmentLevel))} />
+        </div>
+
+        <div className="mt-sp-1 shrink-0">
+          <LevelBar label={ui.map.dossier.difficulty} value={ui.menu.difficulties[pendingDifficulty].name} />
+        </div>
       </div>
 
-      <div className="mt-sp-1 shrink-0">
-        <LevelBar label={ui.map.dossier.difficulty} value={ui.menu.difficulties[pendingDifficulty].name} />
+      <div className="shrink-0 border-t border-(--paper-line) pt-sp-1">
+        <button
+          type="button"
+          className="btn btn-primary min-h-9 w-full text-label"
+          onClick={() => startGame(country.id, pendingDifficulty)}
+        >
+          {ui.map.choose}
+        </button>
       </div>
-      <button
-        type="button"
-        className="btn btn-primary min-h-9 w-full shrink-0 text-label"
-        onClick={() => startGame(country.id, pendingDifficulty)}
-      >
-        {ui.map.choose}
-      </button>
     </aside>
   );
 }

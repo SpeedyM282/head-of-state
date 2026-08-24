@@ -52,9 +52,7 @@ export const ru: Ui = {
       difficulty: 'Сложность',
     },
     choose: 'Выбрать',
-    dossierKicker: 'Досье страны',
     regionInfo: {
-      kicker: 'Обзор региона',
       countries: 'Стран',
       hint: 'Выберите страну на карте или из списка, чтобы увидеть её досье.',
     },
@@ -142,9 +140,6 @@ export const ru: Ui = {
       notEnoughInfluence: 'не хватает влияния',
       notEnoughTreasury: 'не хватает казны',
     },
-  },
-  event: {
-    dispatch: 'Срочное донесение',
   },
   trend: 'тренд',
   gameOver: {

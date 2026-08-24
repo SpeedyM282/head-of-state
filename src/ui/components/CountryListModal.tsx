@@ -18,14 +18,16 @@ export function CountryListModal({ onSelect, onClose, regionCountryIds }: Props)
   const [query, setQuery] = useState('');
   const filtered = countries
     .filter((c) => !regionCountryIds || regionCountryIds.has(c.id))
-    .filter((c) => loc(c.name, lang).toLowerCase().includes(query.trim().toLowerCase()));
+    .filter((c) => loc(c.name, lang).toLowerCase().includes(query.trim().toLowerCase()))
+    .sort((a, b) => loc(a.name, lang).localeCompare(loc(b.name, lang), lang));
 
   return (
     // pointer-events-none on the backdrop (only the dialog panel itself is pointer-events-auto):
-    // the country dossier now lives inline in MapScreen's own layout rather than a competing
-    // overlay (see CountryDossier), and selecting from this list deliberately leaves it open
-    // (see MapScreen.selectFromList) so the player can keep comparing countries — the dossier
-    // and its "Choose" button must stay clickable underneath, not blocked by this backdrop.
+    // the country dossier lives inline in MapScreen's own layout rather than a competing
+    // overlay (see CountryDossier), so while this list is open but nothing's been picked yet, a
+    // previously-selected country's dossier and "Choose" button stay clickable underneath
+    // instead of being blocked by this backdrop. Picking a country here closes the list and
+    // hands off to the map (see MapScreen.selectFromList), same as clicking its shape would.
     <div className="pointer-events-none fixed inset-0 z-20 flex items-center justify-center bg-black/60 p-sp-4" role="dialog" aria-modal="true">
       <div className="panel pointer-events-auto flex max-h-[80dvh] w-full max-w-150 flex-col p-sp-4">
         <div className="flex shrink-0 items-center gap-sp-2">
