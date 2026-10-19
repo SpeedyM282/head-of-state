@@ -7,6 +7,7 @@ import { MainScreen } from './ui/screens/MainScreen';
 import { GameOverScreen } from './ui/screens/GameOverScreen';
 import { InterTermScreen } from './ui/screens/InterTermScreen';
 import { SettingsScreen } from './ui/screens/SettingsScreen';
+import { MedalsScreen } from './ui/screens/MedalsScreen';
 import { OrientationGate } from './ui/components/OrientationGate';
 import { TutorialOverlay } from './ui/tutorial/TutorialOverlay';
 
@@ -23,6 +24,9 @@ export function App() {
   const phase = useGameStore((s) => s.phase);
   return (
     <>
+      {/* «Кабинет» corner lamp glow — every full screen except country select, where the map
+          fills the frame. Decorative; pointer-events: none. */}
+      {phase !== 'map' && <div className="lamp-glow" aria-hidden="true" />}
       {/* Phone-landscape/tablet: unconstrained width, the screens themselves fill the
           viewport. Desktop: centered canvas on the --ink backdrop, not stretched edge-to-edge.
           h-dvh (a hard cap), not min-h-dvh (a floor a taller screen could grow past) — every
@@ -39,6 +43,7 @@ export function App() {
           </Suspense>
         )}
         {phase === 'settings' && <SettingsScreen />}
+        {phase === 'medals' && <MedalsScreen />}
         {phase === 'playing' && <MainScreen />}
         {phase === 'interTerm' && <InterTermScreen />}
         {phase === 'over' && <GameOverScreen />}

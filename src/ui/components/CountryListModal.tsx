@@ -28,8 +28,8 @@ export function CountryListModal({ onSelect, onClose, regionCountryIds }: Props)
     // previously-selected country's dossier and "Choose" button stay clickable underneath
     // instead of being blocked by this backdrop. Picking a country here closes the list and
     // hands off to the map (see MapScreen.selectFromList), same as clicking its shape would.
-    <div className="pointer-events-none fixed inset-0 z-20 flex items-center justify-center bg-black/60 p-sp-4" role="dialog" aria-modal="true">
-      <div className="panel pointer-events-auto flex max-h-[80dvh] w-full max-w-150 flex-col p-sp-4">
+    <div className="scrim pointer-events-none fixed inset-0 z-20 flex items-center justify-center p-sp-4" role="dialog" aria-modal="true">
+      <div className="dialog pointer-events-auto flex max-h-[80dvh] w-full max-w-150 flex-col px-sp-4 py-sp-3">
         <div className="flex shrink-0 items-center gap-sp-2">
           <input
             type="text"
@@ -37,9 +37,9 @@ export function CountryListModal({ onSelect, onClose, regionCountryIds }: Props)
             onChange={(e) => setQuery(e.target.value)}
             placeholder={ui.map.searchPlaceholder}
             autoFocus
-            className="flex-1 border border-(--paper-line) bg-(--paper-dim) px-sp-3 py-sp-2 text-label text-(--text-ink) focus-visible:outline-2 focus-visible:outline-(--gold)"
+            className="min-h-11 flex-1 rounded-btn border border-(--line) bg-(--bg) px-sp-3 text-label text-(--text) focus-visible:outline-2 focus-visible:outline-(--accent)"
           />
-          <button type="button" className="btn min-h-11" onClick={onClose}>
+          <button type="button" className="btn btn-secondary min-h-11 text-label" onClick={onClose}>
             {ui.map.close}
           </button>
         </div>
@@ -48,7 +48,7 @@ export function CountryListModal({ onSelect, onClose, regionCountryIds }: Props)
             <button
               key={c.id}
               type="button"
-              className="flex min-h-11 w-full items-center gap-sp-2 border-b border-(--paper-line) py-sp-2 text-left hover:bg-(--paper-dim)"
+              className="press flex min-h-11 w-full items-center gap-sp-2 rounded-btn px-sp-2 text-left hover:bg-(--selected) hover:text-(--accent)"
               onClick={() => onSelect(c.id)}
             >
               <span className="text-label">{c.flagEmoji}</span>

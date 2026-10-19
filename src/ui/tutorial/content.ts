@@ -14,102 +14,80 @@ import { isDangerous } from '../../data/statMeta';
  * spotlights the union of all matched elements (e.g. the reform tabs AND the reform card). */
 export type TutorialAnchor = string | string[] | null;
 
-export type ScriptedStepId =
-  | 'welcome'
-  | 'stats'
-  | 'vector'
-  | 'clock'
-  | 'reformsOpen'
-  | 'reformsBuy'
-  | 'release';
+export type ScriptedStepId = 'stats' | 'map' | 'term' | 'defeats';
 
 export interface ScriptedStep {
   id: ScriptedStepId;
   anchor: TutorialAnchor;
+  /** Coach card heading (Spectral). */
+  title: LocalizedText;
   text: LocalizedText;
-  /** Absent = advance via the "Дальше" button. Present = advance only by completing the
-   * named action (opening the reforms panel / buying a reform) — the button is hidden. */
-  advanceOn?: 'reformsOpen' | 'reformPurchased';
 }
 
+/** The «Кабинет» opening (handoff screen 12): four coach-card steps over the main screen, each
+ * advanced by «Дальше» («Начать игру» on the last). The vector is explained separately, on the
+ * first visit to Реформы (the 'reforms-vector' tip below). */
 export const SCRIPTED_STEPS: ScriptedStep[] = [
-  {
-    id: 'welcome',
-    anchor: null,
-    text: {
-      en: 'Congratulations on your election, Your Excellency! Your one job is to stay in power until the end of your term. Everything else will sort itself out, probably.',
-      ru: 'Поздравляем с избранием, Ваше Превосходительство! Ваша единственная задача — продержаться у власти до конца срока. Остальное как-нибудь само.',
-      uz: 'Saylanganingiz bilan tabriklaymiz, Janobi Oliylari! Yagona vazifangiz — muddat oxirigacha hokimiyatda qolish. Qolgani o‘z-o‘zidan hal bo‘lar.',
-    },
-  },
   {
     id: 'stats',
     anchor: 'stats-panel',
+    title: { en: 'The country’s indicators', ru: 'Показатели страны', uz: 'Mamlakat ko‘rsatkichlari' },
     text: {
-      en: 'Here is the country in seven numbers. Everything works the usual way, except corruption — there, unfortunately, more is worse.',
-      ru: 'Вот страна в семи числах. Всё как обычно, кроме коррупции — там, увы, чем больше, тем хуже.',
-      uz: 'Mana, mamlakat yetti raqamda. Hammasi odatdagidek, faqat korrupsiyadan tashqari — u yerda, afsuski, ko‘p bo‘lsa, yomon.',
+      en: 'Seven numbers, from the economy to corruption. Keep them in balance: failing any one leads to a crisis, and success — to suspicion.',
+      ru: 'Семь чисел, от экономики до коррупции. Держите их в равновесии: провал любого ведёт к кризису, а успех — к подозрениям.',
+      uz: 'Iqtisoddan korrupsiyagacha yetti raqam. Ularni muvozanatda saqlang: birortasining barbod bo‘lishi inqirozga, muvaffaqiyat esa — shubhalarga olib keladi.',
     },
   },
   {
-    id: 'vector',
-    anchor: 'vector-scale',
+    id: 'map',
+    anchor: 'map-focus',
+    title: { en: 'The map and dispatches', ru: 'Карта и донесения', uz: 'Xarita va xabarnomalar' },
     text: {
-      en: 'Your decisions push the country between democracy and totalitarianism. The zone changes the rules of the game — sometimes without you noticing, but never without the country noticing.',
-      ru: 'Ваши решения двигают страну между демократией и тоталитаризмом. Зона меняет правила игры — иногда незаметно для вас, но не для страны.',
-      uz: 'Sizning qarorlaringiz mamlakatni demokratiya va totalitarizm o‘rtasida siljitadi. Zona o‘yin qoidalarini o‘zgartiradi — ba’zan sezmay qolasiz, lekin mamlakat albatta sezadi.',
+      en: 'This is your country. Red dots are dispatches — events awaiting your decision. Time stops while you read them.',
+      ru: 'Это ваша страна. Красные точки — донесения: события, которые ждут вашего решения. Пока вы читаете, время стоит.',
+      uz: 'Bu sizning mamlakatingiz. Qizil nuqtalar — xabarnomalar: qaroringizni kutayotgan voqealar. Siz o‘qiyotganingizda vaqt to‘xtaydi.',
     },
   },
   {
-    id: 'clock',
-    anchor: 'clock-controls',
+    id: 'term',
+    anchor: 'main-header',
+    title: { en: 'Term and elections', ru: 'Срок и выборы', uz: 'Muddat va saylov' },
     text: {
-      en: 'Time moves on its own — month after month, while you’re busy with matters of state. Pause, normal speed, or fast-forward — the choice is yours.',
-      ru: 'Время идёт само — месяц за месяцем, пока вы отвлеклись на государственные дела. Пауза, обычный ход, ускорение — выбор за вами.',
-      uz: 'Vaqt o‘z-o‘zidan o‘tadi — oy ortidan oy, siz davlat ishlariga andarmon bo‘lganingizda ham. Pauza, oddiy tezlik yoki tezlashtirish — tanlov sizniki.',
+      en: 'Up top: the month of your term, time until the election and influence. An election comes every 48 months. Influence accrues by itself — spend it on reforms, the button is at the bottom.',
+      ru: 'Сверху — месяц срока, сколько до выборов и очки влияния. Выборы — каждые 48 месяцев. Влияние копится само; тратьте его на реформы, кнопка внизу.',
+      uz: 'Yuqorida — muddat oyi, saylovgacha qolgan vaqt va ta’sir. Saylov har 48 oyda bo‘ladi. Ta’sir o‘zi to‘planadi — uni islohotlarga sarflang, tugma pastda.',
     },
   },
   {
-    id: 'reformsOpen',
-    anchor: 'reforms-button',
-    text: {
-      en: 'Take a look at Reforms — that’s where influence and treasury turn into change.',
-      ru: 'Загляните в «Реформы» — там влияние и казна превращаются в перемены.',
-      uz: '«Islohotlar»ga bir nazar tashlang — u yerda ta’sir va xazina o‘zgarishlarga aylanadi.',
-    },
-    advanceOn: 'reformsOpen',
-  },
-  {
-    id: 'reformsBuy',
-    anchor: ['reforms-tabs', 'reforms-first-node'],
-    text: {
-      en: 'Here are the branches: economy, security bloc, social policy, propaganda. Pick any affordable tier-one reform and approve it.',
-      ru: 'Вот ветви: экономика, силовой блок, соцсфера, пропаганда. Выберите любую доступную реформу первого уровня и одобрите её.',
-      uz: 'Mana tarmoqlar: iqtisodiyot, kuch tuzilmalari, ijtimoiy soha, targ‘ibot. Har qanday arzon birinchi darajali islohotni tanlang va uni qabul qiling.',
-    },
-    advanceOn: 'reformPurchased',
-  },
-  {
-    id: 'release',
+    id: 'defeats',
     anchor: null,
+    title: { en: 'How to lose', ru: 'Как проиграть', uz: 'Qanday yutqazish mumkin' },
     text: {
-      en: 'From here on, the country will let you know when something goes wrong. Good luck, Your Excellency — you’ll need it.',
-      ru: 'Дальше страна сама подскажет, если что-то пойдёт не так. Удачи, Ваше Превосходительство — она вам понадобится.',
-      uz: 'Bundan buyon biror narsa noto‘g‘ri ketsa, mamlakat o‘zi bildiradi. Omad tilaymiz, Janobi Oliylari — sizga kerak bo‘ladi.',
+      en: 'Four ways: a coup (the elites), a revolution (the people and stability), a default (an empty treasury) and a lost election. Stepping down on your own is a victory.',
+      ru: 'Четыре способа: переворот (элиты), революция (народ и стабильность), дефолт (пустая казна) и проигранные выборы. Уйти самому — тоже победа.',
+      uz: 'To‘rt yo‘l: to‘ntarish (elitalar), inqilob (xalq va barqarorlik), defolt (bo‘sh xazina) va yutqazilgan saylov. O‘z ixtiyori bilan ketish — g‘alaba.',
     },
   },
 ];
 
 /** Context a tip predicate needs beyond the current GameState/GameContent — values that
- * only make sense relative to when tutorial JIT mode started (e.g. "changed since"), so they
- * cannot be derived from a single state snapshot alone. Tracked in tutorialStore, not core. */
+ * only make sense relative to when tutorial JIT mode started (e.g. "changed since"), or that
+ * live in the UI rather than the game (is the reforms screen open). Tracked in
+ * tutorialStore/gameStore, not core. */
 export interface TipContext {
   initialZone: VectorZone;
+  reformsOpen: boolean;
 }
+
+/** Which screen a tip belongs to: 'main' tips only show on the map screen (their anchors live
+ * there), 'reforms' tips only while Реформы is open, 'any' on either. */
+export type TipScreen = 'main' | 'reforms' | 'any';
 
 export interface TutorialTip {
   id: string;
   anchor: TutorialAnchor;
+  /** Defaults to 'main'. */
+  screen?: TipScreen;
   text: LocalizedText;
   /** Pure predicate over already-observable state — no new GameState fields, no side effects. */
   predicate: (state: GameState, content: GameContent, ctx: TipContext) => boolean;
@@ -120,6 +98,17 @@ const STAT_KEYS: StatKey[] = ['economy', 'treasury', 'approval', 'eliteLoyalty',
 /** One-time, condition-triggered tips, checked in declaration order — adding a future tip
  * means adding an entry here, not touching any component. */
 export const JIT_TIPS: TutorialTip[] = [
+  {
+    id: 'reforms-vector',
+    anchor: 'vector-panel',
+    screen: 'reforms',
+    text: {
+      en: 'At the bottom is the governance vector: your decisions move the country between democracy and totalitarianism, and the zone changes the rules. “If adopted” shows where the selected reform would push it.',
+      ru: 'Внизу — вектор правления: ваши решения двигают страну между демократией и тоталитаризмом, а зона меняет правила игры. «Если принять» показывает, куда сдвинет выбранная реформа.',
+      uz: 'Pastda — boshqaruv vektori: qarorlaringiz mamlakatni demokratiya va totalitarizm o‘rtasida siljitadi, zona esa qoidalarni o‘zgartiradi. «Qabul qilinsa» tanlangan islohot uni qayerga surishini ko‘rsatadi.',
+    },
+    predicate: (_state, _content, ctx) => ctx.reformsOpen,
+  },
   {
     id: 'danger-zone',
     anchor: 'stats-panel',
@@ -135,7 +124,10 @@ export const JIT_TIPS: TutorialTip[] = [
   },
   {
     id: 'vector-zone-change',
-    anchor: 'vector-scale',
+    // Points at the vector panel while Реформы is open; on the main screen (no vector there)
+    // the card simply centers.
+    anchor: 'vector-panel',
+    screen: 'any',
     text: {
       en: 'The governance zone has changed. The rules of the game are different now — keep a closer eye on the vector.',
       ru: 'Зона правления сменилась. Правила игры теперь другие — присмотритесь к вектору повнимательнее.',

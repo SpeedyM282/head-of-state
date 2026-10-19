@@ -3,7 +3,9 @@ import {
   clearSave,
   loadGame,
   loadLang,
+  loadMedals,
   loadTutorial,
+  saveMedals,
   saveGame,
   saveLang,
   saveTutorial,
@@ -141,5 +143,27 @@ describe('persistence: tutorial (settings, independent of the game save)', () =>
   it('coerces a missing/malformed completed flag and filters non-string seenTips entries', () => {
     memoryStorage.setItem('prezident.tutorial.v1', JSON.stringify({ seenTips: ['a', 1, null, 'b'] }));
     expect(loadTutorial()).toEqual({ completed: false, seenTips: ['a', 'b'] });
+  });
+});
+
+describe('persistence: medals (meta-progression, independent of the game save)', () => {
+  it('defaults to nothing earned', () => {
+    expect(loadMedals()).toEqual({ earned: [], unseen: [], defeatsSeen: [] });
+  });
+
+  it('round-trips and survives clearing the game save', () => {
+    saveMedals({ earned: ['first-decree'], unseen: ['first-decree'], defeatsSeen: ['coup'] });
+    clearSave();
+    expect(loadMedals()).toEqual({ earned: ['first-decree'], unseen: ['first-decree'], defeatsSeen: ['coup'] });
+  });
+
+  it('drops malformed entries and unknown defeat kinds', () => {
+    localStorage.setItem('prezident.medals.v1', JSON.stringify({ earned: ['a', 3, null], unseen: 'x', defeatsSeen: ['coup', 'meteor'] }));
+    expect(loadMedals()).toEqual({ earned: ['a'], unseen: [], defeatsSeen: ['coup'] });
+  });
+
+  it('falls back to defaults on unparseable JSON', () => {
+    localStorage.setItem('prezident.medals.v1', '{oops');
+    expect(loadMedals()).toEqual({ earned: [], unseen: [], defeatsSeen: [] });
   });
 });

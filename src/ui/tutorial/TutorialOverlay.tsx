@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { vectorZone } from '../../core';
-import { loc } from '../../i18n';
+import { format, loc } from '../../i18n';
 import { useGameStore } from '../../store/gameStore';
 import { useLang, useUi } from '../../store/langStore';
 import { useTutorialStore } from '../../store/tutorialStore';
@@ -27,10 +27,7 @@ export function TutorialOverlay() {
     activeTipId,
     seenTips,
     initialZone,
-    reformsCountAtStepStart,
     advanceScripted,
-    notifyReformsOpened,
-    notifyReformPurchased,
     skip,
     captureInitialZone,
     showTip,
@@ -44,23 +41,21 @@ export function TutorialOverlay() {
     captureInitialZone(vectorZone(state.vector));
   }, [state?.seed, captureInitialZone]);
 
-  useEffect(() => {
-    if (reformsOpen) notifyReformsOpened();
-  }, [reformsOpen, notifyReformsOpened]);
-
-  useEffect(() => {
-    if (!state) return;
-    if (state.ownedReforms.length > reformsCountAtStepStart) notifyReformPurchased();
-  }, [state, reformsCountAtStepStart, notifyReformPurchased]);
-
   // JIT tips only ever evaluate once the scripted opening has released control (or was
   // skipped), and only when nothing else is already being shown — first predicate match in
-  // declaration order, one-time per id.
+  // declaration order, one-time per id — and only tips that belong to the screen currently up
+  // (main map vs Реформы), so a tip never spotlights a panel hidden behind the other screen.
   useEffect(() => {
     if (!jitEnabled || scriptedStep || activeTipId || !state || !content || !initialZone) return;
-    const tip = JIT_TIPS.find((t) => !seenTips.includes(t.id) && t.predicate(state, content, { initialZone }));
+    const screen = reformsOpen ? 'reforms' : 'main';
+    const tip = JIT_TIPS.find(
+      (t) =>
+        !seenTips.includes(t.id) &&
+        ((t.screen ?? 'main') === screen || t.screen === 'any') &&
+        t.predicate(state, content, { initialZone, reformsOpen }),
+    );
     if (tip) showTip(tip.id);
-  }, [jitEnabled, scriptedStep, activeTipId, state, content, initialZone, seenTips, showTip]);
+  }, [jitEnabled, scriptedStep, activeTipId, state, content, initialZone, reformsOpen, seenTips, showTip]);
 
   const active = scriptedStep ? (SCRIPTED_STEPS.find((s) => s.id === scriptedStep) ?? null) : null;
   const activeTip = !active && activeTipId ? (JIT_TIPS.find((t) => t.id === activeTipId) ?? null) : null;
@@ -72,7 +67,7 @@ export function TutorialOverlay() {
   // of effect mount ordering between sibling components.
   const dismissRef = useRef<() => void>(() => {});
   dismissRef.current = () => {
-    if (active && !active.advanceOn) advanceScripted();
+    if (active) advanceScripted();
     else if (activeTip) dismissActiveTip();
   };
   useEffect(() => {
@@ -88,18 +83,20 @@ export function TutorialOverlay() {
 
   if (!active && !activeTip) return null;
 
-  const text = active ? loc(active.text, lang) : activeTip ? loc(activeTip.text, lang) : '';
-  const showNext = !!active && !active.advanceOn;
+  const stepIndex = active ? SCRIPTED_STEPS.indexOf(active) : -1;
+  const isLastStep = stepIndex === SCRIPTED_STEPS.length - 1;
 
   return (
     <>
       <Spotlight rect={rect} />
       <AdvisorPanel
         rect={rect}
-        advisorLabel={ui.tutorial.advisorLabel}
-        text={text}
-        primaryLabel={showNext || !!activeTip ? ui.tutorial.next : undefined}
-        onPrimary={showNext ? advanceScripted : activeTip ? dismissActiveTip : undefined}
+        kicker={active ? format(ui.tutorial.stepKicker, { n: stepIndex + 1, total: SCRIPTED_STEPS.length }) : ui.tutorial.advisorLabel}
+        title={active ? loc(active.title, lang) : undefined}
+        text={active ? loc(active.text, lang) : activeTip ? loc(activeTip.text, lang) : ''}
+        steps={active ? { count: SCRIPTED_STEPS.length, current: stepIndex } : undefined}
+        primaryLabel={active && isLastStep ? ui.tutorial.finish : ui.tutorial.next}
+        onPrimary={active ? advanceScripted : dismissActiveTip}
         skipLabel={active ? ui.tutorial.skip : undefined}
         onSkip={active ? skip : undefined}
       />

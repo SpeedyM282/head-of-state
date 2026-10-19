@@ -27,22 +27,29 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
     "@types/d3-geo": "^3.1.1",
+    "@types/geojson": "^7946.0.16",
     "@types/node": "^26.2.0",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@types/react-simple-maps": "^3.0.6",
     "@types/topojson-client": "^3.1.5",
+    "@types/topojson-specification": "^1.0.5",
     "@vitejs/plugin-react": "^6.0.5",
     "tailwindcss": "^4.3.3",
     "typescript": "^7.0.2",
     "vite": "^8.2.1",
     "vitest": "^4.1.10"
   },
-  "overrides": {
-    "react-simple-maps": {
-      "react": "$react",
-      "react-dom": "$react-dom"
+  "packageManager": "pnpm@10.32.1",
+  "pnpm": {
+    "overrides": {
+      "d3-color": "^3.1.0"
     },
-    "d3-color": "^3.1.0"
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "react-simple-maps>react": "19",
+        "react-simple-maps>react-dom": "19"
+      }
+    }
   }
 }

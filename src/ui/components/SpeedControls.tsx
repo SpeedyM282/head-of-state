@@ -6,7 +6,7 @@ import { useGameStore } from '../../store/gameStore';
 // emoji/dingbat fallback font, coming out oversized and mis-baselined next to the other buttons.
 function PauseIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+    <svg width="11" height="11" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
       <rect x="3" y="2" width="5" height="16" />
       <rect x="12" y="2" width="5" height="16" />
     </svg>
@@ -15,7 +15,7 @@ function PauseIcon() {
 
 function PlayIcon() {
   return (
-    <svg width="13" height="13" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
+    <svg width="11" height="11" viewBox="0 0 20 20" fill="currentColor" aria-hidden>
       <path d="M4 2 L18 10 L4 18 Z" />
     </svg>
   );
@@ -23,7 +23,7 @@ function PlayIcon() {
 
 function FastForwardIcon() {
   return (
-    <svg width="15" height="13" viewBox="0 0 24 20" fill="currentColor" aria-hidden>
+    <svg width="13" height="11" viewBox="0 0 24 20" fill="currentColor" aria-hidden>
       <path d="M1 2 L12 10 L1 18 Z" />
       <path d="M11 2 L22 10 L11 18 Z" />
     </svg>
@@ -36,17 +36,17 @@ const OPTIONS: { speed: Speed; Icon: typeof PauseIcon; label: 'pause' | 'normal'
   { speed: 'fast', Icon: FastForwardIcon, label: 'fast' },
 ];
 
-/** Real-time clock controls: pause / play / fast-forward. Active speed is highlighted. */
+/** Real-time clock controls: pause / play / fast-forward. The active speed has an accent border
+ * and glyph and emits a slow ring (handoff screen 03). */
 export function SpeedControls() {
   const speed = useGameStore((s) => s.speed);
   const setSpeed = useGameStore((s) => s.setSpeed);
   const ui = useUi();
   return (
-    // Deliberately narrower than the app's usual 44px touch target: the footer row (see
-    // MainScreen) has no room for three 44px squares plus the "До выборов"/"Реформы" copy at
-    // the phone-landscape baseline, and Space is a full keyboard alternative to all three
-    // (see MainScreen's key handler) — see the handoff's own "≥44px for PRIMARY actions" carve-out.
-    <div className="flex items-center gap-1" role="group" aria-label={ui.main.speed.normal}>
+    // 36px squares (the mock's 30pt, scaled) rather than the usual 44px target: the bottom bar
+    // has no room for three 44px squares plus the clock caption and «Реформы» at the phone-
+    // landscape baseline, and Space is a full keyboard alternative (see MainScreen).
+    <div className="flex items-center gap-1.5" role="group" aria-label={ui.main.speed.normal}>
       {OPTIONS.map((o) => {
         const active = speed === o.speed;
         const Icon = o.Icon;
@@ -57,12 +57,7 @@ export function SpeedControls() {
             onClick={() => setSpeed(o.speed)}
             aria-label={ui.main.speed[o.label]}
             aria-pressed={active}
-            className="btn btn-secondary flex h-8 w-[38px] shrink-0 items-center justify-center py-0"
-            style={{
-              background: active ? 'var(--gold)' : undefined,
-              color: active ? 'var(--paper)' : undefined,
-              borderColor: active ? 'var(--gold)' : undefined,
-            }}
+            className={`press relative flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px] border ${active ? 'emit-ring border-(--accent) text-(--accent)' : 'border-(--line) text-(--text)'}`}
           >
             <Icon />
           </button>

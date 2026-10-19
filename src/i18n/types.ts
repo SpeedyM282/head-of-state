@@ -26,14 +26,19 @@ export type VictoryRankKey =
  */
 export interface Ui {
   menu: {
-    title: string;
+    /** Two-line title, «Глава / государства». */
+    title: [string, string];
     subtitle: string;
     continue: string;
     difficulties: Record<Difficulty, { name: string; tagline: string }>;
-    /** Masthead kicker line above the 3px rule — «Специальный выпуск · …». */
+    /** Kicker above the title — «Кабинет президента». */
     kicker: string;
-    /** Colophon row under the nameplate: three short cells. */
-    colophon: { price: string; print: string; number: string };
+    /** Menu list row that starts a new game. */
+    newGame: string;
+    /** «срок» in the continue row's value «Абсурдистан, срок II». */
+    termShort: string;
+    /** Footer line at the bottom-left. */
+    footer: string;
   };
   /** Dedicated screen between the main menu and the map: pick Easy/Medium/Hard before picking
    * a country, instead of choosing it inline in the country dossier (see ARCHITECTURE.md). */
@@ -93,6 +98,12 @@ export interface Ui {
      * overview of the region (member count, summed population/area, averaged levels) instead
      * of one country's dossier. Reuses `dossier`'s population/area/economy/corruption/
      * democracy/development labels for its own rows — same concepts, aggregated. */
+    /** Country card kicker, «Выбор страны». */
+    kicker: string;
+    /** Bottom-right hint, «Выберите страну на карте или из списка». */
+    hint: string;
+    /** Country card meta line pieces: «… · 447 тыс. км² · без выхода к морю · ресурсы 60». */
+    meta: { thousandKm2: string; km2: string; seaAccess: string; landlocked: string; resources: string };
     regionInfo: {
       /** Row label for the region's member-country count. */
       countries: string;
@@ -112,16 +123,12 @@ export interface Ui {
     /** Menu view's nav row label + detail header title. */
     theme: string;
     themeOptions: { light: string; dark: string; system: string };
-    /** Trailing note next to the "system" choice, e.g. «Как в системе». */
-    themeSystemNote: string;
     /** Italic hint under the theme choices. */
     themeHint: string;
     /** Menu view's "Справка" row current-value text (the row label itself is help.title). */
     referenceValue: string;
-    /** Reference view's left-column kicker, over the list of help topics. */
-    sectionsKicker: string;
-    /** Reference view's right-column kicker, over the tutorial-replay button. */
-    tutorialKicker: string;
+    /** Italic footer under the settings hub list. */
+    footer: string;
   };
   /** Full-screen overlay shown on phone-sized portrait viewports (see OrientationGate) —
    * the game is landscape-only on phones; this is the web fallback for orientation lock. */
@@ -130,11 +137,8 @@ export interface Ui {
     hint: string;
   };
   main: {
+    /** «влияние» — header label before the influence points. */
     influence: string;
-    /** Right-rail caption under the influence CMYK numeral, e.g. «на реформы и решения». */
-    influenceCaption: string;
-    /** Masthead title over the dateline, e.g. «Государственная ведомость». */
-    mastheadTitle: string;
     brief: string;
     reforms: string;
     autosave: string;
@@ -146,6 +150,28 @@ export interface Ui {
     monthsShort: string;
     /** Aria labels for the real-time clock controls. */
     speed: { pause: string; normal: string; fast: string };
+    /** «из» in the header's «Срок I · 19 из 48». */
+    of: string;
+    /** Stats panel kicker, «Показатели». */
+    statsKicker: string;
+    /** Shortened stat labels for the compact glass stats panel («Народ», «Элиты», …). */
+    statsShort: Record<StatKey, string>;
+    /** Bottom bar clock caption: running («время идёт») / paused («время стоит»). */
+    timeRunning: string;
+    timePaused: string;
+    /** Under the player's country label on the map — only for the fictional Absurdistan. */
+    bordersNote: string;
+    /** Top-right «Повестка» panel: what currently needs the ruler's attention. */
+    agenda: {
+      kicker: string;
+      calm: { title: string; flavor: string };
+      /** An event is waiting; the title is the event's own title. */
+      eventFlavor: string;
+      danger: { title: string; flavor: string };
+      election: { title: string; flavor: string };
+    };
+    /** Bottom ticker: kicker, the prefix for adopted reforms, and filler headlines. */
+    news: { kicker: string; decree: string; filler: string[] };
   };
   /** Inter-term inauguration summary shown after winning re-election. */
   interTerm: {
@@ -159,6 +185,43 @@ export interface Ui {
     heading: string;
     zones: Record<VectorZone, string>;
     scale: { democracy: string; authoritarianism: string; totalitarianism: string };
+    /** Reforms vector panel trend caption; {n} = months, {d} = absolute shift. */
+    trend: { right: string; left: string; still: string };
+    /** Reforms vector panel «Если принять» preview of the selected reform's vector effect. */
+    preview: {
+      kicker: string;
+      /** «вектор {d}» — {d} is the signed shift. */
+      shift: string;
+      toDemocracy: string;
+      toTotalitarianism: string;
+      none: string;
+      flavor: string;
+      flavorNone: string;
+    };
+  };
+  /** Medals (handoff screen 11) — names/conditions themselves are LocalizedText in data/medals.ts. */
+  medals: {
+    title: string;
+    /** Menu row value, «{n} из {total}». */
+    count: string;
+    /** Top bar meta, «получено {n} из {total}». */
+    meta: string;
+    /** Main screen bottom bar prefix, «Медаль». */
+    latest: string;
+    /** Game over line prefix, «Новые медали:». */
+    newOnGameOver: string;
+    /** Screen-reader state for a medal not yet earned. */
+    locked: string;
+  };
+  /** Event dialog chrome (handoff screen 04). */
+  event: {
+    /** Kicker prefix, «Событие». */
+    kicker: string;
+    /** Kicker suffix per event kind («донесение», «срочно», «из-за рубежа»). */
+    kinds: { random: string; triggered: string; external: string };
+    footer: string;
+    /** Stamp that lands on the chosen option. */
+    signed: string;
   };
   stats: Record<StatKey, string>;
   branches: Record<BranchKey, string>;
@@ -173,6 +236,10 @@ export interface Ui {
     approve: string;
     locked: string;
     tier: string;
+    /** Detail key-value row label, «Стоимость». */
+    cost: string;
+    /** Locked node status, «закрыто». */
+    lockedShort: string;
     effectsInstant: string;
     effectsPerMonth: string;
     /** Reason lines shown under a disabled approve button (mirror core ReformBlock). */
@@ -211,12 +278,15 @@ export interface Ui {
     };
     /** Settings screen button: resets the completed flag and seen-tips set. */
     restart: string;
+    /** Coach card kicker, «Обучение · шаг {n} из {total}». */
+    stepKicker: string;
+    /** Last scripted step's button, «Начать игру». */
+    finish: string;
   };
   /** Static «Справка» reference screen, reached from Settings — the "re-read later" layer.
    * Terse by design; sourced entirely from ui strings, not GDD prose. */
   help: {
     title: string;
-    close: string;
     stats: {
       heading: string;
       economy: string;

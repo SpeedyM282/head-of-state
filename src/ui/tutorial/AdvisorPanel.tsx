@@ -5,7 +5,7 @@ import type { AnchorRect } from './useAnchorRect';
 const MARGIN = 8; // clearance from the viewport edges
 const GAP = 10; // clearance from the spotlighted anchor
 const MIN_WIDTH = 168; // below this a side reads as unusably narrow — fall back to centered
-const PREFERRED_WIDTH = 290;
+const PREFERRED_WIDTH = 270; // the handoff's coach card width
 const BEAK = 9; // px, the rotated-square pointer's on-screen size
 
 type Side = 'left' | 'right' | 'top' | 'bottom' | 'center';
@@ -135,18 +135,25 @@ function computePlacement(rect: AnchorRect | null, vp: { width: number; height: 
  */
 export function AdvisorPanel({
   rect,
-  advisorLabel,
+  kicker,
+  title,
   text,
+  steps,
   primaryLabel,
   onPrimary,
   skipLabel,
   onSkip,
 }: {
   rect: AnchorRect | null;
-  advisorLabel: string;
+  /** «Обучение · шаг 1 из 4» for scripted steps, «Советник» for one-time tips. */
+  kicker: string;
+  /** Spectral heading — scripted steps only. */
+  title?: string;
   text: string;
-  primaryLabel?: string;
-  onPrimary?: () => void;
+  /** Step dots (scripted steps only). */
+  steps?: { count: number; current: number };
+  primaryLabel: string;
+  onPrimary: () => void;
   skipLabel?: string;
   onSkip?: () => void;
 }) {
@@ -162,44 +169,38 @@ export function AdvisorPanel({
     const h = el.scrollHeight;
     el.style.maxHeight = prevMaxHeight;
     setMeasuredHeight(h);
-  }, [rect?.top, rect?.left, rect?.width, rect?.height, text, advisorLabel, primaryLabel, skipLabel, vp.width, vp.height]);
+  }, [rect?.top, rect?.left, rect?.width, rect?.height, kicker, title, text, primaryLabel, skipLabel, vp.width, vp.height]);
 
   const { style, beak } = computePlacement(rect, vp, measuredHeight);
 
   return (
     <>
-      {beak && (
-        <div
-          className="pointer-events-none fixed z-40 rotate-45 border-solid border-(--paper-line) bg-(--paper)"
-          style={{
-            width: BEAK,
-            height: BEAK,
-            borderWidth: beak.side === 'right' || beak.side === 'bottom' ? '0 0 1px 1px' : '1px 1px 0 0',
-            ...beak.style,
-          }}
-          aria-hidden
-        />
-      )}
-      <div ref={cardRef} className="panel fixed z-40 overflow-y-auto p-sp-3" style={style} role="dialog" aria-live="polite">
-        <p className="eyebrow">{advisorLabel}</p>
-        <p className="mt-sp-1 text-body leading-relaxed">{text}</p>
-        {(primaryLabel || skipLabel) && (
-          <div className="mt-sp-3 flex items-center justify-between gap-sp-2">
-            {skipLabel ? (
-              <button type="button" className="text-caption text-(--text-faint) underline" onClick={onSkip}>
-                {skipLabel}
-              </button>
-            ) : (
-              <span />
-            )}
-            {primaryLabel && (
-              <button type="button" className="btn btn-primary min-h-9 px-sp-4 text-label" onClick={onPrimary}>
-                {primaryLabel}
-              </button>
-            )}
-          </div>
-        )}
+      <div ref={cardRef} className="dialog fixed z-40 flex flex-col gap-sp-1 overflow-y-auto rounded-card px-sp-4 py-sp-3" style={style} role="dialog" aria-live="polite">
+        <p className="eyebrow">{kicker}</p>
+        {title && <p className="font-serif text-heading leading-[1.1]">{title}</p>}
+        <p className="text-caption leading-relaxed text-(--muted)">{text}</p>
+        <div className="mt-sp-1 flex items-center gap-sp-2">
+          {steps && (
+            <span className="flex gap-1.5" aria-hidden>
+              {Array.from({ length: steps.count }, (_, i) => (
+                <span key={i} className={`h-1.5 w-1.5 rounded-full ${i === steps.current ? 'bg-(--accent)' : 'bg-(--line)'}`} />
+              ))}
+            </span>
+          )}
+          {skipLabel && (
+            <button type="button" className="press ml-auto min-h-9 text-caption font-medium text-(--muted)" onClick={onSkip}>
+              {skipLabel}
+            </button>
+          )}
+          <button type="button" className={`btn btn-primary min-h-9 px-sp-3 text-label ${skipLabel ? '' : 'ml-auto'}`} onClick={onPrimary}>
+            {primaryLabel}
+          </button>
+        </div>
       </div>
+      {/* Beak drawn after the card so it sits over the card's edge (same surface fill). */}
+      {beak && (
+        <div className="pointer-events-none fixed z-40 rotate-45 bg-(--surface)" style={{ width: BEAK + 2, height: BEAK + 2, ...beak.style }} aria-hidden />
+      )}
     </>
   );
 }

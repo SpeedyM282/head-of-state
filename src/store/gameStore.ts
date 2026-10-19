@@ -5,7 +5,21 @@ import { buildContent } from '../data';
 import { GameClock, type Speed } from './clock';
 import { clearSave, loadGame, saveGame } from './persistence';
 
-type Phase = 'menu' | 'difficulty' | 'map' | 'settings' | 'playing' | 'over' | 'interTerm';
+/** Just enough of a save to label the menu's continue row: «Абсурдистан, срок II». */
+export interface SavedGameSummary {
+  countryId: string;
+  term: number;
+}
+
+function readSavedGame(): SavedGameSummary | null {
+  const save = loadGame();
+  return save ? { countryId: save.countryId, term: save.state.term } : null;
+}
+
+/** How many past months of the vector the reforms screen trails. */
+const VECTOR_TRAIL_LENGTH = 3;
+
+type Phase = 'menu' | 'difficulty' | 'map' | 'settings' | 'medals' | 'playing' | 'over' | 'interTerm';
 
 interface GameStore {
   phase: Phase;
@@ -13,7 +27,12 @@ interface GameStore {
   state: GameState | null;
   /** Stats snapshot before the last tick — the ui renders trends from it. */
   prevStats: Stats | null;
-  hasSave: boolean;
+  /** Governance vector at the last few month ticks, oldest first (most recent last) — the
+   * reforms screen's vector trail and «за 3 мес.» trend. UI-side history, not GameState:
+   * resets on start/continue and is never saved. */
+  vectorTrail: number[];
+  /** Summary of the resumable save (menu's «Продолжить правление» row), or null if none. */
+  savedGame: SavedGameSummary | null;
   /** Player-chosen clock speed (what the controls highlight and an auto-pause resumes to). */
   speed: Speed;
   /** Whether the reforms panel is open — mirrored here so the clock can auto-pause. */
@@ -27,6 +46,7 @@ interface GameStore {
   goToDifficulty: () => void;
   goToMap: () => void;
   goToSettings: () => void;
+  goToMedals: () => void;
   startGame: (countryId: string, difficulty: Difficulty) => void;
   continueGame: () => void;
   buyReform: (reformId: string) => void;
@@ -55,6 +75,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       const { state, content } = get();
       if (!state || !content || state.pendingEventId || state.outcome || state.awaitingInauguration) return;
       const prevStats = state.stats;
+      const vectorTrail = [...get().vectorTrail, state.vector].slice(-VECTOR_TRAIL_LENGTH);
       const next = tick(state, content).state;
       saveGame({ state: next, difficulty: content.difficulty.id, countryId: content.country.id });
       // An event auto-pauses time until the player answers; a result or a won election
@@ -62,7 +83,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       if (next.pendingEventId) clock.setAutoPaused('event', true);
       if (next.outcome || next.awaitingInauguration) clock.stop();
       const phase = next.outcome ? 'over' : next.awaitingInauguration ? 'interTerm' : 'playing';
-      set({ state: next, prevStats, phase, hasSave: true });
+      set({ state: next, prevStats, vectorTrail, phase, savedGame: { countryId: content.country.id, term: next.term } });
     },
   });
 
@@ -71,7 +92,8 @@ export const useGameStore = create<GameStore>((set, get) => {
     content: null,
     state: null,
     prevStats: null,
-    hasSave: loadGame() !== null,
+    vectorTrail: [],
+    savedGame: readSavedGame(),
     speed: 'normal',
     reformsOpen: false,
     pendingDifficulty: 'normal',
@@ -80,6 +102,7 @@ export const useGameStore = create<GameStore>((set, get) => {
     goToDifficulty: () => set({ phase: 'difficulty' }),
     goToMap: () => set({ phase: 'map' }),
     goToSettings: () => set({ phase: 'settings' }),
+    goToMedals: () => set({ phase: 'medals' }),
 
     startGame: (countryId, difficulty) => {
       const content = buildContent(countryId, difficulty);
@@ -89,7 +112,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       clock.setAutoPaused('event', false);
       clock.setAutoPaused('reforms', false);
       clock.setAutoPaused('tutorial', false);
-      set({ phase: 'playing', content, state, prevStats: null, hasSave: false, speed: 'normal', reformsOpen: false });
+      set({ phase: 'playing', content, state, prevStats: null, vectorTrail: [], savedGame: null, speed: 'normal', reformsOpen: false });
     },
 
     continueGame: () => {
@@ -101,7 +124,7 @@ export const useGameStore = create<GameStore>((set, get) => {
       clock.setAutoPaused('tutorial', false);
       clock.setAutoPaused('event', !!save.state.pendingEventId);
       const phase = save.state.outcome ? 'over' : save.state.awaitingInauguration ? 'interTerm' : 'playing';
-      set({ phase, content, state: save.state, prevStats: null, speed: 'normal', reformsOpen: false });
+      set({ phase, content, state: save.state, prevStats: null, vectorTrail: [], speed: 'normal', reformsOpen: false });
     },
 
     buyReform: (reformId) => {
@@ -153,7 +176,7 @@ export const useGameStore = create<GameStore>((set, get) => {
 
     toMenu: () => {
       clock.stop();
-      set({ phase: 'menu', hasSave: loadGame() !== null });
+      set({ phase: 'menu', savedGame: readSavedGame() });
     },
   };
 });

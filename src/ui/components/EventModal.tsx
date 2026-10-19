@@ -1,46 +1,98 @@
+import { useEffect, useState } from 'react';
 import { loc } from '../../i18n';
 import { useLang, useUi } from '../../store/langStore';
 import { useGameStore } from '../../store/gameStore';
 import { useTutorialStore } from '../../store/tutorialStore';
-import { EffectSummaryLine } from '../effectFormat';
+import { EffectInline } from '../effectFormat';
 
-export function EventModal() {
+/** How long the «Подписано» stamp shows on the chosen option before the answer applies and the
+ * dialog closes (the stamp thump itself is ~0.8s). Zero under reduced motion. */
+const SIGN_DELAY_MS = 750;
+
+function prefersReducedMotion(): boolean {
+  return typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+/**
+ * «Кабинет» event dialog (handoff screen 04): kicker «Событие · …», Spectral title, the event
+ * text as an italic quote, stacked option rows with their effects on the right, and a footer.
+ * Picking an option thumps the «Подписано» stamp onto it, then the answer applies.
+ *
+ * `onMinimize`: tapping the scrim tucks the event into its map pin (MainScreen); the event
+ * stays pending, so the clock stays auto-paused until it is answered.
+ */
+export function EventModal({ onMinimize }: { onMinimize?: () => void }) {
   const { state, content, answerEvent } = useGameStore();
   const lang = useLang((s) => s.lang);
   const ui = useUi();
   const scriptedStep = useTutorialStore((s) => s.scriptedStep);
   const activeTipId = useTutorialStore((s) => s.activeTipId);
+  // The chosen option, keyed by event id so a following event always starts unpicked.
+  const [picked, setPicked] = useState<{ eventId: string; index: number } | null>(null);
+
+  const pendingId = state?.pendingEventId ?? null;
+  const pickedIndex = picked && picked.eventId === pendingId ? picked.index : null;
+
+  useEffect(() => {
+    if (!picked || picked.eventId !== pendingId) return;
+    const timer = setTimeout(() => answerEvent(picked.index), prefersReducedMotion() ? 0 : SIGN_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [picked, pendingId, answerEvent]);
+
   // The tutorial overlay (scripted steps or a one-time tip) takes priority — its "first event"
   // tip is intentionally shown while an event is pending (see tutorial/content.ts), so this
-  // modal must step aside rather than stack underneath the advisor overlay.
+  // modal must step aside rather than stack underneath the coach card.
   if (scriptedStep || activeTipId) return null;
-  if (!state?.pendingEventId || !content) return null;
-  const event = content.events.find((e) => e.id === state.pendingEventId);
+  if (!pendingId || !content) return null;
+  const event = content.events.find((e) => e.id === pendingId);
   if (!event) return null;
-  // Odd option counts (most commonly 3) get their last option spread across both columns of
-  // the phone-landscape 2-column grid, instead of leaving one cell empty.
-  const lastOptionSpans = event.options.length % 2 === 1;
 
   return (
-    <div className="fixed inset-0 z-20 flex items-center justify-center bg-(--ink)/55 p-sp-3" role="dialog" aria-modal="true">
-      <div className="panel flex max-h-[90dvh] w-full max-w-[27.5rem] flex-col border-(--ink) p-sp-3 shadow-lg">
+    <div
+      className="scrim fixed inset-0 z-20 flex items-center justify-center p-sp-3"
+      role="dialog"
+      aria-modal="true"
+      onClick={(e) => {
+        if (e.target === e.currentTarget && pickedIndex === null) onMinimize?.();
+      }}
+    >
+      <div className="dialog flex max-h-[92dvh] w-full max-w-[420px] flex-col gap-sp-2 px-sp-4 py-sp-3 tablet:max-w-[520px]">
         {/* Text scrolls internally if it's long; the options below stay pinned and visible. */}
-        <div className="min-h-0 overflow-y-auto">
-          <h2 className="text-heading font-bold short:text-body">{loc(event.title, lang)}</h2>
-          <p className="mt-sp-2 text-body leading-relaxed short:text-label">{loc(event.text, lang)}</p>
+        <div className="flex min-h-0 flex-col gap-sp-1 overflow-y-auto">
+          <p className="eyebrow">
+            {ui.event.kicker} · {ui.event.kinds[event.kind]}
+          </p>
+          <h2 className="font-serif text-display leading-[1.05] short:text-heading">{loc(event.title, lang)}</h2>
+          <p className="flavor text-label short:text-caption">{loc(event.text, lang)}</p>
         </div>
-        <div className="mt-sp-2 grid shrink-0 grid-cols-2 gap-sp-2">
-          {event.options.map((opt, i) => (
-            <button
-              key={i}
-              className={`btn btn-secondary flex min-h-11 flex-col items-center gap-0.5 text-center text-label ${lastOptionSpans && i === event.options.length - 1 ? 'col-span-2' : ''}`}
-              onClick={() => answerEvent(i)}
-            >
-              <span className="block">{loc(opt.text, lang)}</span>
-              <EffectSummaryLine effects={opt.effects} ui={ui} />
-            </button>
-          ))}
+
+        <div className="flex shrink-0 flex-col gap-1.5">
+          {event.options.map((opt, i) => {
+            const chosen = pickedIndex === i;
+            return (
+              <button
+                key={i}
+                type="button"
+                disabled={pickedIndex !== null}
+                className={`option-row relative min-h-10 px-sp-3 py-sp-2 ${chosen ? 'selected' : ''} ${pickedIndex !== null && !chosen ? 'opacity-60' : ''}`}
+                onClick={() => setPicked({ eventId: event.id, index: i })}
+              >
+                {chosen && <span className="halo" aria-hidden />}
+                <span className="min-w-0 flex-1 text-label leading-tight">{loc(opt.text, lang)}</span>
+                <span className="max-w-[55%] shrink-0 text-right text-caption font-normal leading-snug text-(--muted)">
+                  <EffectInline effects={opt.effects} ui={ui} lang={lang} />
+                </span>
+                {chosen && (
+                  <span className="stamp stamp-accent thump absolute right-[30%] -top-3 bg-(--surface) text-caption" aria-live="polite">
+                    {ui.event.signed}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
+
+        <p className="shrink-0 text-caption text-(--muted)">{ui.event.footer}</p>
       </div>
     </div>
   );

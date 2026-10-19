@@ -23,3 +23,14 @@ OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
 TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
 THIS SOFTWARE.
 ```
+
+# src/assets/fonts/
+
+Spectral (300, 400, 400 italic) and Golos Text (variable 400–500), WOFF2, latin /
+latin-ext / cyrillic / cyrillic-ext subsets, as served by Google Fonts.
+
+- **Spectral** — Copyright 2017 The Spectral Project Authors (Production Type).
+- **Golos Text** — Copyright 2020 The Golos Text Project Authors (Paratype).
+- Both licensed under the **SIL Open Font License 1.1** (https://openfontlicense.org).
+- **Vendored** so the UI fonts load offline in the Capacitor build. `fonts.css` maps each
+  subset by `unicode-range`, so the browser only downloads the subsets a page needs.

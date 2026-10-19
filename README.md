@@ -11,11 +11,11 @@ React 18 · TypeScript (strict) · Vite · Zustand · Tailwind v4 · Vitest · C
 ## Команды
 
 ```bash
-npm install        # зависимости
-npm run dev        # дев-сервер
-npm test           # тесты, включая автоигрока (смотри статистику в выводе)
-npm run typecheck  # проверка типов
-npm run build      # прод-сборка
+pnpm install       # зависимости (менеджер пакетов — pnpm, см. packageManager в package.json)
+pnpm dev           # дев-сервер
+pnpm test          # тесты, включая автоигрока (смотри статистику в выводе)
+pnpm typecheck     # проверка типов
+pnpm build         # прод-сборка
 ```
 
 ## Статус

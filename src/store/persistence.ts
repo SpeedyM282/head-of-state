@@ -1,4 +1,4 @@
-import type { Difficulty, GameState, Lang } from '../core/types';
+import type { DefeatKind, Difficulty, GameState, Lang } from '../core/types';
 import { DEFAULT_LANG, LANGS } from '../i18n';
 import type { Theme } from './themeStore';
 
@@ -15,6 +15,8 @@ const KEY = 'prezident.save.v3';
 const LANG_KEY = 'prezident.lang.v1';
 const TUTORIAL_KEY = 'prezident.tutorial.v1';
 const THEME_KEY = 'prezident.theme.v1';
+const MEDALS_KEY = 'prezident.medals.v1';
+const DEFEAT_KINDS: readonly DefeatKind[] = ['coup', 'revolution', 'default', 'elections'];
 const THEMES: readonly Theme[] = ['light', 'dark', 'system'];
 
 export interface SaveData {
@@ -29,6 +31,19 @@ export interface TutorialData {
   completed: boolean;
   seenTips: string[];
 }
+
+/** Medals progress — meta-progression across every game, separate from SaveData (a new game
+ * or «Играть снова» never takes medals away). */
+export interface MedalsData {
+  /** Earned medal ids, in the order they were earned. */
+  earned: string[];
+  /** Earned but not yet looked at on the Медали screen (they get a halo there). */
+  unseen: string[];
+  /** Every defeat kind the player has suffered, across games («Коллекционер катастроф»). */
+  defeatsSeen: DefeatKind[];
+}
+
+const DEFAULT_MEDALS: MedalsData = { earned: [], unseen: [], defeatsSeen: [] };
 
 const DEFAULT_TUTORIAL: TutorialData = { completed: false, seenTips: [] };
 
@@ -113,5 +128,32 @@ export function saveTutorial(data: TutorialData): void {
     localStorage.setItem(TUTORIAL_KEY, JSON.stringify(data));
   } catch {
     // Storage full or unavailable — tutorial state just won't persist across reloads.
+  }
+}
+
+function stringList(v: unknown): string[] {
+  return Array.isArray(v) ? v.filter((x): x is string => typeof x === 'string') : [];
+}
+
+export function loadMedals(): MedalsData {
+  try {
+    const raw = localStorage.getItem(MEDALS_KEY);
+    if (!raw) return DEFAULT_MEDALS;
+    const parsed = JSON.parse(raw) as Partial<Record<keyof MedalsData, unknown>>;
+    return {
+      earned: stringList(parsed.earned),
+      unseen: stringList(parsed.unseen),
+      defeatsSeen: stringList(parsed.defeatsSeen).filter((d): d is DefeatKind => (DEFEAT_KINDS as readonly string[]).includes(d)),
+    };
+  } catch {
+    return DEFAULT_MEDALS;
+  }
+}
+
+export function saveMedals(data: MedalsData): void {
+  try {
+    localStorage.setItem(MEDALS_KEY, JSON.stringify(data));
+  } catch {
+    // Storage full or unavailable — medals just won't persist across reloads.
   }
 }

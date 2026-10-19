@@ -8,10 +8,11 @@ import {
   type KeyboardEvent,
   type MouseEvent as ReactMouseEvent,
 } from 'react';
-import { ComposableMap, Geographies, Geography, ZoomableGroup, useMapContext } from 'react-simple-maps';
-import { merge } from 'topojson-client';
+import { ComposableMap, Geographies, Geography, ZoomableGroup, useMapContext, useZoomPanContext } from 'react-simple-maps';
+import { feature, merge } from 'topojson-client';
 import type { GeometryObject, MultiPolygon as TopoMultiPolygon, Polygon as TopoPolygon, Topology } from 'topojson-specification';
-import type { MultiPolygon as GeoMultiPolygon } from 'geojson';
+import type { Feature, Geometry, MultiPolygon as GeoMultiPolygon } from 'geojson';
+import { mainlandCentroid } from '../map/geo';
 import { loc } from '../../i18n';
 import { useLang, useUi } from '../../store/langStore';
 import { countries } from '../../data';
@@ -345,6 +346,30 @@ const REGION_MERGED_GEOMETRY: Record<RegionKey, GeoMultiPolygon> = (() => {
   return result;
 })();
 
+/** Every country in the vendored topology as a GeoJSON feature (id = ISO numeric) — the
+ * main screen's CountryMap draws the whole world around the player's country from these. */
+export const WORLD_FEATURES: Feature<Geometry>[] = (() => {
+  const countriesObject = worldTopology.objects.countries;
+  if (countriesObject.type !== 'GeometryCollection') return [];
+  return feature(worldTopology, countriesObject).features;
+})();
+
+const ALPHA2_TO_NUMERIC: Record<string, string> = (() => {
+  const map: Record<string, string> = {};
+  for (const region of REGION_KEYS) {
+    for (const [numericId, alpha2] of Object.entries(REGION_ISO_MAPS[region])) map[alpha2] = numericId;
+  }
+  return map;
+})();
+
+/** The map shape of a playable country by its alpha-2 `CountryProfile.id`; null for
+ * Absurdistan (fictional, no shape) or any id without one. */
+export function countryFeature(countryId: string): Feature<Geometry> | null {
+  const numericId = ALPHA2_TO_NUMERIC[countryId];
+  if (!numericId) return null;
+  return WORLD_FEATURES.find((f) => String(f.id) === numericId) ?? null;
+}
+
 type GeographyStyle = { default: CSSProperties; hover: CSSProperties; pressed: CSSProperties };
 
 const STYLE_CONTEXT: GeographyStyle = {
@@ -368,10 +393,13 @@ const STYLE_SELECTABLE: GeographyStyle = {
   hover: { fill: 'var(--gold-soft)', stroke: 'var(--paper-line)', strokeWidth: 0.5, outline: 'none', cursor: 'pointer' },
   pressed: { fill: 'var(--gold)', stroke: 'var(--paper-line)', strokeWidth: 0.5, outline: 'none', cursor: 'pointer' },
 };
+// Selected: a soft accent tint with an accent border, not a solid fill — the accent dot and
+// ring of SelectedMarker sit on top and must stay readable (handoff screen 02).
+const SELECTED_FILL = 'color-mix(in srgb, var(--accent) 28%, var(--map-land))';
 const STYLE_SELECTED: GeographyStyle = {
-  default: { fill: 'var(--gold)', stroke: 'var(--gold)', strokeWidth: 1.25, outline: 'none', cursor: 'pointer' },
-  hover: { fill: 'var(--gold)', stroke: 'var(--gold)', strokeWidth: 1.25, outline: 'none', cursor: 'pointer' },
-  pressed: { fill: 'var(--gold)', stroke: 'var(--gold)', strokeWidth: 1.25, outline: 'none', cursor: 'pointer' },
+  default: { fill: SELECTED_FILL, stroke: 'var(--accent)', strokeWidth: 1, outline: 'none', cursor: 'pointer' },
+  hover: { fill: SELECTED_FILL, stroke: 'var(--accent)', strokeWidth: 1, outline: 'none', cursor: 'pointer' },
+  pressed: { fill: SELECTED_FILL, stroke: 'var(--accent)', strokeWidth: 1, outline: 'none', cursor: 'pointer' },
 };
 /** Same as STYLE_SELECTABLE but hover === default — used on coarse (touch) pointers, where
  * react-simple-maps' onMouseEnter/onMouseLeave fire from taps and would otherwise leave a
@@ -535,6 +563,31 @@ interface Props {
  * projection, see MAP_FRAMES) and it splits into its individual, selectable countries. A
  * "‹ Regions" affordance (rendered by the parent) zooms back out.
  */
+/**
+ * «Кабинет» selected-country marker (handoff screen 02): an accent dot with a 40pt ring and two
+ * rings pulsing out of it, at the country's mainland centroid. Lives inside <ZoomableGroup>
+ * (needs the live projection), so every size is divided by the current zoom `k` to stay a
+ * constant on-screen size whatever the region zoom.
+ */
+function SelectedMarker({ countryId }: { countryId: string }) {
+  const { projection } = useMapContext();
+  const { k } = useZoomPanContext();
+  const shape = useMemo(() => countryFeature(countryId), [countryId]);
+  if (!shape) return null;
+  const point = projection(mainlandCentroid(shape));
+  if (!point) return null;
+  const [x, y] = point;
+  const s = 1 / (k || 1);
+  return (
+    <g transform={`translate(${x} ${y}) scale(${s})`} pointerEvents="none" aria-hidden>
+      <circle r={20} fill="none" stroke="var(--accent)" strokeOpacity={0.5} strokeWidth={1} />
+      <circle className="ping" r={20} fill="none" stroke="var(--accent)" strokeWidth={1} />
+      <circle className="ping ping-late" r={20} fill="none" stroke="var(--accent)" strokeWidth={1} />
+      <circle r={4} fill="var(--accent)" className="marker-dot" />
+    </g>
+  );
+}
+
 export function WorldMap({ activeRegion, onEnterRegion, selectedCountryId, onSelectCountry }: Props) {
   const lang = useLang((s) => s.lang);
   const ui = useUi();
@@ -648,6 +701,8 @@ export function WorldMap({ activeRegion, onEnterRegion, selectedCountryId, onSel
             }
           </Geographies>
 
+          {activeRegion !== null && selectedCountryId && <SelectedMarker countryId={selectedCountryId} />}
+
           {activeRegion === null && (
             <RegionOverlay labels={regionLabels} selectableStyle={selectableStyle} onEnterRegion={onEnterRegion} />
           )}
@@ -656,7 +711,7 @@ export function WorldMap({ activeRegion, onEnterRegion, selectedCountryId, onSel
 
       <div
         ref={tooltipRef}
-        className="pointer-events-none absolute left-0 top-0 whitespace-nowrap border border-(--paper-line) bg-(--paper) px-sp-2 py-sp-1 text-caption font-bold text-(--text-ink) shadow-sm"
+        className="glass pointer-events-none absolute left-0 top-0 whitespace-nowrap rounded-chip px-sp-2 py-sp-1 text-caption font-medium text-(--text)"
         style={{ opacity: hoverLabel ? 1 : 0, transition: 'opacity 100ms ease' }}
       >
         {hoverLabel}

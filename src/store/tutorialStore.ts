@@ -3,14 +3,11 @@ import type { VectorZone } from '../core';
 import { loadTutorial, saveTutorial } from './persistence';
 import { useGameStore } from './gameStore';
 
-export type ScriptedStepId =
-  | 'welcome'
-  | 'stats'
-  | 'vector'
-  | 'clock'
-  | 'reformsOpen'
-  | 'reformsBuy'
-  | 'release';
+export type ScriptedStepId = 'stats' | 'map' | 'term' | 'defeats';
+
+/** The scripted opening, in order (mirrors ui/tutorial/content.ts's SCRIPTED_STEPS). Every
+ * step advances with «Дальше»; advancing past the last releases control. */
+export const SCRIPTED_ORDER: readonly ScriptedStepId[] = ['stats', 'map', 'term', 'defeats'];
 
 const initial = loadTutorial();
 
@@ -29,19 +26,12 @@ interface TutorialStore {
   initialZone: VectorZone | null;
   /** The one-time tip currently being shown, if any. */
   activeTipId: string | null;
-  /** ownedReforms.length captured on entering 'reformsBuy', so a purchase can be detected as
-   * "the count grew" without core exposing a dedicated purchase event. */
-  reformsCountAtStepStart: number;
 
   /** Starts the scripted opening — call right after startGame('absurdistan', 'easy'). */
   beginScripted: () => void;
-  /** Advances a "Дальше"-driven step (welcome/stats/vector/clock/release). No-op otherwise —
-   * reformsOpen/reformsBuy only advance via the notify* actions below. */
+  /** «Дальше»: the next step, or — on the last — completes the tutorial, enables JIT tips and
+   * persists. No-op when the opening isn't running. */
   advanceScripted: () => void;
-  /** Call when the reforms panel opens while on the 'reformsOpen' step. */
-  notifyReformsOpened: () => void;
-  /** Call when ownedReforms grows while on the 'reformsBuy' step. */
-  notifyReformPurchased: () => void;
   /** Abandons the scripted opening (or answers the first-launch prompt with "I'll figure it
    * out") — marks the flag completed and persists, but leaves JIT tips enabled: skipping the
    * guided walkthrough doesn't opt out of the lighter one-line contextual tips. */
@@ -61,50 +51,24 @@ export const useTutorialStore = create<TutorialStore>((set, get) => ({
   jitEnabled: false,
   initialZone: null,
   activeTipId: null,
-  reformsCountAtStepStart: 0,
 
   beginScripted: () => {
-    set({ scriptedStep: 'welcome', jitEnabled: false, activeTipId: null });
+    set({ scriptedStep: SCRIPTED_ORDER[0], jitEnabled: false, activeTipId: null });
     useGameStore.getState().setTutorialPaused(true);
   },
 
   advanceScripted: () => {
     const step = get().scriptedStep;
-    switch (step) {
-      case 'welcome':
-        set({ scriptedStep: 'stats' });
-        break;
-      case 'stats':
-        set({ scriptedStep: 'vector' });
-        break;
-      case 'vector':
-        set({ scriptedStep: 'clock' });
-        break;
-      case 'clock':
-        set({ scriptedStep: 'reformsOpen' });
-        break;
-      case 'release': {
-        const seenTips = get().seenTips;
-        set({ scriptedStep: null, jitEnabled: true, completed: true });
-        saveTutorial({ completed: true, seenTips });
-        useGameStore.getState().setTutorialPaused(false);
-        break;
-      }
-      default:
-        break; // reformsOpen / reformsBuy / not running: advance only via the action hooks
+    if (!step) return;
+    const next = SCRIPTED_ORDER[SCRIPTED_ORDER.indexOf(step) + 1];
+    if (next) {
+      set({ scriptedStep: next });
+      return;
     }
-  },
-
-  notifyReformsOpened: () => {
-    if (get().scriptedStep !== 'reformsOpen') return;
-    const ownedCount = useGameStore.getState().state?.ownedReforms.length ?? 0;
-    set({ scriptedStep: 'reformsBuy', reformsCountAtStepStart: ownedCount });
-  },
-
-  notifyReformPurchased: () => {
-    if (get().scriptedStep !== 'reformsBuy') return;
-    set({ scriptedStep: 'release' });
-    useGameStore.getState().closeReforms();
+    const seenTips = get().seenTips;
+    set({ scriptedStep: null, jitEnabled: true, completed: true });
+    saveTutorial({ completed: true, seenTips });
+    useGameStore.getState().setTutorialPaused(false);
   },
 
   skip: () => {

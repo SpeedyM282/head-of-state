@@ -1,4 +1,7 @@
 @import 'tailwindcss';
+/* Spectral (serif: headlines, numbers, flavor) + Golos Text (sans: interface) — vendored
+   OFL woff2 subsets so the Capacitor build works offline; see src/assets/NOTICE.md. */
+@import './assets/fonts/fonts.css';
 
 /* ─── Responsive form factors ───
    Three form factors, mobile-first: unprefixed utilities target phone-landscape (the primary
@@ -45,108 +48,150 @@
   --spacing-sp-5: clamp(1.5rem, calc(1.5rem + 12 * (100vw - 640px) / 640), 2.25rem);
   --spacing-sp-6: clamp(2rem, calc(2rem + 16 * (100vw - 640px) / 640), 3rem);
 
-  /* One documented, non-fluid exception: VectorScale's three zone-label words don't fit side
-     by side at any fluid --text-caption size on a 640px panel. Named (not an arbitrary [0.55rem]
+  /* One documented, non-fluid exception: the vector panel's tape labels (VectorPanel) and the
+     reform chain's «УРОВЕНЬ N» kicker are smaller than any fluid role (Golos 7.5–8pt in the mock). Named (not an arbitrary [0.55rem]
      bracket value) so it's still a real theme scale entry — just deliberately a step, not one of
      the six clamp() roles above. */
   --text-micro: 0.55rem;
   --text-micro-lg: 0.6rem;
+
+  /* «Кабинет» families — font-sans / font-serif utilities. */
+  --font-sans: 'Golos Text', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'Spectral', Georgia, 'Times New Roman', serif;
+
+  /* iOS-like corner radii (handoff → Corner radii): rounded-dialog / -card / -tile / -row /
+     -btn / -chip. Fixed px, not fluid — radii read the same at every scale. */
+  --radius-dialog: 18px;
+  --radius-card: 16px;
+  --radius-tile: 14px;
+  --radius-row: 12px;
+  --radius-btn: 10px;
+  --radius-chip: 8px;
 }
 
-/* ─── Design tokens: Государственная ведомость (newsprint ledger) ───
-   Paper-white gazette page, near-black ink rules/text, and a two-color CMYK accent pair (cyan =
-   affirmative/selected, magenta = negative/danger) in place of the old dark-cabinet gold/red
-   pair. Variable NAMES are kept as-is (--ink/--gold/--stamp/--ok) even though their hues
-   changed, so every existing consumer (WorldMap's geography styles, focus rings, the
-   trend/effect color helpers, buttons, ...) re-skins for free without a project-wide rename —
-   "gold" and "stamp" are now historical names for the accent/danger roles, not literal colors.
-   Neutral and tint steps are derived via color-mix rather than hand-picked hex, since the
-   Broadsheet reference stylesheet the design mock links to (a styles.css under its broadsheet
-   asset folder) isn't part of the handoff bundle — these approximate its neutral-300/400/500 and
-   accent tint/deep ramps from the two base hexes the handoff's README does specify. */
+/* ─── Design tokens: «Кабинет» ───
+   Calm, minimal cabinet: warm paper background, white (light) / slate (dark) surfaces, one
+   accent (ink blue by day, lamp amber by night) and a separate warning red so corruption and
+   negative deltas never blend with the accent. Values are the handoff's token table verbatim
+   (design_handoff_kabinet_native/README.md → Design tokens), one token per role with a light
+   and a dark value — see ARCHITECTURE.md §7a.
+
+   The role tokens (--bg/--surface/--text/--muted/--line/--accent/--warning/...) are the source
+   of truth. The older names (--paper/--ink/--gold/--stamp/...) are kept below as ALIASES of
+   those roles so every not-yet-migrated consumer (WorldMap's geography styles, the trend/effect
+   color helpers, focus rings, ...) re-skins for free — "gold" now means "accent" and "stamp"
+   means "warning". New code should use the role names. */
 :root {
-  --ink: #201e1d;
-  --ink-soft: color-mix(in srgb, var(--ink) 82%, var(--paper));
-  --paper: #f3f2f2;
-  --paper-dim: color-mix(in srgb, var(--ink) 6%, var(--paper));
-  --paper-line: color-mix(in srgb, var(--ink) 16%, var(--paper));
-  --text-ink: #201e1d;
-  --text-faint: color-mix(in srgb, var(--ink) 55%, var(--paper));
-  --stamp: #d6006c;
-  --stamp-deep: #9c0b53;
-  --stamp-tint: color-mix(in srgb, var(--stamp) 12%, var(--paper));
-  --gold: #0088b0;
-  --gold-deep: #016082;
-  --gold-tint: color-mix(in srgb, var(--gold) 12%, var(--paper));
-  /* Dedicated map ocean/land tokens. The map's contrast (dark ocean backdrop, light land
-     silhouettes) is a fixed representational choice, not a page-background/foreground role —
-     unlike --ink-soft/--paper-dim's other uses, it can't just ride the generic ink<->paper
-     swap between themes, because that swap collapses land and ocean to nearly the same dark
-     tone (both formulas resolve to "mostly --paper" once --paper itself goes dark — see the
-     dark-mode override below, which is why --map-land needs its own explicit dark value while
-     --map-ocean can keep aliasing --ink-soft, itself already an explicit override). */
-  --map-ocean: var(--ink-soft);
-  --map-land: var(--paper-dim);
-  /* Hover fill for map shapes — a lighter step between --map-land (idle) and full --gold
-     (selected), so hover reads as "the whole shape lit up" without pre-empting selection. */
-  --gold-soft: color-mix(in srgb, var(--gold) 45%, var(--map-land));
-  /* No separate "good news" green in the ledger palette — positive deltas read as the accent
-     cyan, same as selection/active state; only negative deltas get the magenta --stamp. */
-  --ok: var(--gold);
+  --bg: #f6f3ec;
+  --surface: #ffffff;
+  --text: #1a1d22;
+  --muted: #6b7078;
+  --line: #dcd7cc;
+  --accent: #27477a;
+  --on-accent: #ffffff;
+  --warning: #b0463a;
+  /* Chosen option / node fill — the accent at 7% (8% in dark). */
+  --selected: rgba(39, 71, 122, 0.07);
+  --scrim: rgba(26, 29, 34, 0.42);
+  /* Corner lamp glow — see .lamp-glow. */
+  --glow: rgba(214, 160, 70, 0.16);
+  /* Map veil (dims the map around the player's country); alpha is applied per use. */
+  --veil-rgb: 246, 243, 236;
+  /* Floating glass panels over the map. Light: translucent white + soft shadow, no border. */
+  --glass: rgba(255, 255, 255, 0.9);
+  --glass-border: transparent;
+  --glass-shadow: 0 8px 24px rgba(26, 29, 34, 0.12);
+  /* Cards and dialogs. Light lifts with a shadow; dark (below) swaps it for a 1px line border. */
+  --card-border: transparent;
+  --card-shadow: 0 10px 30px rgba(26, 29, 34, 0.12);
+  --dialog-shadow: 0 18px 50px rgba(26, 29, 34, 0.22);
+  /* Vector-scale zone bands: democracy / authoritarianism / totalitarianism. */
+  --zone-dem: color-mix(in srgb, var(--accent) 14%, transparent);
+  --zone-auth: color-mix(in srgb, var(--accent) 25%, transparent);
+  --zone-tot: color-mix(in srgb, var(--warning) 16%, transparent);
+  /* Map fills: a quiet, low-contrast grey land on a paper ocean — the handoff's grayscale
+     map treatment, drawn as vectors instead of a filtered bitmap. */
+  --map-ocean: color-mix(in srgb, var(--text) 4%, var(--bg));
+  --map-land: color-mix(in srgb, var(--text) 15%, var(--bg));
+
+  /* ─── Legacy aliases (see header comment) ─── */
+  --paper: var(--bg);
+  --ink: var(--text);
+  --text-ink: var(--text);
+  --text-faint: var(--muted);
+  --paper-line: var(--line);
+  --paper-dim: color-mix(in srgb, var(--text) 5%, var(--bg));
+  --ink-soft: color-mix(in srgb, var(--text) 10%, var(--bg));
+  --gold: var(--accent);
+  --gold-deep: color-mix(in srgb, var(--accent) 80%, var(--text));
+  --gold-tint: var(--selected);
+  --gold-soft: color-mix(in srgb, var(--accent) 35%, var(--map-land));
+  --stamp: var(--warning);
+  --stamp-deep: color-mix(in srgb, var(--warning) 80%, var(--text));
+  --stamp-tint: color-mix(in srgb, var(--warning) 10%, transparent);
+  --ok: var(--accent);
 }
 
-/* ─── Dark mode — «Ночной выпуск» (night edition) ───
-   A pure theme, not a redesign: every component already styles from these custom properties
-   (never a raw hex), so re-skinning is just overriding the BASE hex tokens here — every
-   color-mix()-DERIVED token above (--ink-soft, --paper-dim, --paper-line, --text-faint,
-   --gold-tint, --stamp-tint, --gold-soft) recomputes for free against the new bases, since
-   color-mix() re-resolves var() at use time. Values are the handoff's reversed-by-OKLCH-
-   lightness ramp (ink<->paper swap, every accent step to its mirror) — see ARCHITECTURE.md
-   §7a. --ink-soft is the one exception that needs an explicit override rather than a free
-   recompute: its light-mode formula (color-mix ink 82%/paper 18%) is "mostly ink" by design
-   (a recessive dark surface fill, e.g. the map background, the term-progress track) — under a
-   naive base-swap that formula would flip to "mostly [new] ink", i.e. mostly LIGHT, which is
-   the opposite of what a recessive surface should do in dark mode. Applied via [data-theme]
-   (written by store/themeStore.ts), not a media query — 'system' resolves to an explicit
-   light/dark before it ever reaches the DOM, so this selector alone covers all three settings. */
+/* ─── Dark theme («лампа») ───
+   Same layout and text; only the base role values change. Every color-mix()/var()-derived
+   token above recomputes against these, since custom properties re-resolve per declaration.
+   Applied via [data-theme] (written by store/themeStore.ts — 'system' is resolved to an
+   explicit light/dark before it reaches the DOM). */
 :root[data-theme='dark'] {
-  --ink: #f1eee7;
-  --paper: #1a1917;
-  --ink-soft: #242220;
-  --text-ink: #f1eee7;
-  --stamp: #ff5c97;
-  --stamp-deep: #d82071;
-  --gold: #33a9d0;
-  --gold-deep: #1186ac;
-  /* --paper-dim's formula (mostly --paper, slightly tinted) stays dark in dark mode instead of
-     flipping light, so land needs an explicit, deliberately-lighter-than-ocean value here to
-     keep the map legible — see --map-land's definition above. */
-  --map-land: #4a453e;
+  --bg: #111418;
+  --surface: #1a1e24;
+  --text: #e9e4da;
+  --muted: #8a8f98;
+  --line: #2a2f37;
+  --accent: #e0a458;
+  --on-accent: #111418;
+  --warning: #d77a6a;
+  --selected: rgba(224, 164, 88, 0.08);
+  --scrim: rgba(5, 6, 8, 0.62);
+  --glow: rgba(224, 164, 88, 0.2);
+  --veil-rgb: 17, 20, 24;
+  --glass: rgba(26, 30, 36, 0.9);
+  --glass-border: var(--line);
+  --glass-shadow: none;
+  --card-border: var(--line);
+  --card-shadow: none;
+  --dialog-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+  --map-ocean: #0d1013;
+  --map-land: #262b33;
 }
 
-/* Same palette, applied automatically when the OS is dark AND the user hasn't explicitly
-   chosen a theme yet (before store/themeStore.ts's initial applyTheme() call writes a
-   concrete data-theme attribute — e.g. the very first paint). Keeps that first frame from
-   flashing light-on-dark-system. */
+/* Same dark values for the very first paint when the OS is dark and themeStore hasn't written
+   data-theme yet — keeps that frame from flashing light. Mirrors the block above. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    --ink: #f1eee7;
-    --paper: #1a1917;
-    --ink-soft: #242220;
-    --text-ink: #f1eee7;
-    --stamp: #ff5c97;
-    --stamp-deep: #d82071;
-    --gold: #33a9d0;
-    --gold-deep: #1186ac;
-    --map-land: #4a453e;
+    --bg: #111418;
+    --surface: #1a1e24;
+    --text: #e9e4da;
+    --muted: #8a8f98;
+    --line: #2a2f37;
+    --accent: #e0a458;
+    --on-accent: #111418;
+    --warning: #d77a6a;
+    --selected: rgba(224, 164, 88, 0.08);
+    --scrim: rgba(5, 6, 8, 0.62);
+    --glow: rgba(224, 164, 88, 0.2);
+    --veil-rgb: 17, 20, 24;
+    --glass: rgba(26, 30, 36, 0.9);
+    --glass-border: var(--line);
+    --glass-shadow: none;
+    --card-border: var(--line);
+    --card-shadow: none;
+    --dialog-shadow: 0 18px 50px rgba(0, 0, 0, 0.5);
+    --map-ocean: #0d1013;
+    --map-land: #262b33;
   }
 }
 
 html,
 body {
-  background: var(--paper);
-  color: var(--text-ink);
-  font-family: Georgia, 'Times New Roman', serif;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
   -webkit-tap-highlight-color: transparent;
   /* Belt-and-suspenders against any single element's rounding/transform pushing a horizontal
      scrollbar onto the page — every wide element (map, tables) scrolls internally instead. */
@@ -164,79 +209,165 @@ button:disabled {
 /* Keyboard-focus ring on every button, not just .btn — several icon-only controls (back/close
    buttons, reform branch tabs) aren't styled with .btn. */
 button:focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
 }
 /* WorldMap's country/region shapes are keyboard-focusable SVG <path role="button"> elements,
    not real <button>s (react-simple-maps' <Geography>) — same focus ring, reached separately. */
 svg path[role='button']:focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
 
+/* Kicker / section label: Golos 500, uppercase, wide tracking, muted. */
 .eyebrow {
+  font-family: var(--font-sans);
   font-size: var(--text-caption);
+  font-weight: 500;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--text-faint);
+  color: var(--muted);
 }
 
-/* Panel background now matches the page background (--paper on --paper) — on a printed-ledger
-   page, a "panel" reads via its rule/border and a faint lift, not a boxed card; the shadow is
-   kept just heavy enough for true overlays (modals, the advisor popup) to feel raised above the
-   page beneath them. */
-.panel {
-  background: var(--paper);
-  color: var(--text-ink);
-  border: 1px solid var(--paper-line);
-  box-shadow: 0 1px 3px rgba(32, 30, 29, 0.12);
+/* Italic flavor / quote line — Spectral italic, always muted. */
+.flavor {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.35;
+  color: var(--muted);
 }
 
+/* Generic raised container (kept for existing consumers): a surface card. */
+.panel,
+.card {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--card-shadow);
+}
+
+/* Modal dialog (event, help): surface, radius 18, heavier lift. */
+.dialog {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-dialog);
+  box-shadow: var(--dialog-shadow);
+}
+
+/* Floating glass panel over the map (header, stats, agenda, bottom bar). */
+.glass {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.scrim {
+  background: var(--scrim);
+}
+
+/* Big numbers and stat values: Spectral with tabular figures. */
 .num {
+  font-family: var(--font-serif);
   font-variant-numeric: tabular-nums;
-  font-family: 'Courier New', ui-monospace, monospace;
-  font-weight: 700;
+  font-weight: 400;
 }
 
+/* Stamp: thin border, uppercase Golos, rotated −9°. Warning by default («Срок отбыт»,
+   «Отстранён»); .stamp-accent for «Подписано». */
 .stamp {
   display: inline-block;
-  padding: var(--spacing-sp-1) var(--spacing-sp-2);
-  border: 3px double var(--stamp);
-  color: var(--stamp);
-  font-weight: 700;
-  letter-spacing: 0.12em;
+  padding: 0.3em 0.7em;
+  border: 1.5px solid var(--warning);
+  border-radius: var(--radius-chip);
+  color: var(--warning);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  letter-spacing: 0.16em;
   text-transform: uppercase;
-  transform: rotate(-3deg);
+  transform: rotate(-9deg);
   user-select: none;
 }
+.stamp-accent {
+  border-color: var(--accent);
+  color: var(--accent);
+}
 
-/* Base .btn is the "secondary" look (bordered, paper fill) — .btn-secondary is an explicit
-   alias of the same values so components can name the mock's three-variant intent (primary/
-   secondary/ghost) without a behavioral difference from the bare class. */
+/* Buttons. Base .btn is the secondary look (transparent, 1px line border); .btn-primary is the
+   accent fill. Pressed state dims to 85% and scales to 0.98 (handoff → Interactions). */
 .btn {
-  border: 1px solid var(--paper-line);
-  background: var(--paper);
-  color: var(--text-ink);
-  padding: var(--spacing-sp-2) var(--spacing-sp-3);
-  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sp-1);
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-btn);
+  background: transparent;
+  color: var(--text);
+  padding: 0 1.125rem;
+  font-family: var(--font-sans);
+  font-weight: 500;
   cursor: pointer;
   text-align: center;
+  transition: opacity 120ms ease, transform 120ms ease, background-color 120ms ease;
 }
-.btn:active { transform: translateY(1px); }
-.btn:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
-/* Primary CTA fill is the affirmative accent (cyan), matching the mock's use of the same accent
-   for selection/active state everywhere else — not the danger/magenta --stamp role. */
-.btn-primary { background: var(--gold); color: var(--paper); border-color: transparent; font-weight: 700; letter-spacing: 0.06em; }
-.btn-secondary { background: var(--paper); color: var(--text-ink); border-color: var(--paper-line); }
-.btn-ghost { background: transparent; color: var(--text-ink); border-color: transparent; }
+.btn:active:not(:disabled) { opacity: 0.85; transform: scale(0.98); }
+.btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn-primary { background: var(--accent); color: var(--on-accent); border-color: transparent; }
+.btn-secondary { background: transparent; color: var(--text); border-color: var(--line); }
+.btn-ghost { background: transparent; color: var(--text); border-color: transparent; }
 .btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Option row (event choices etc.): 1px line border, surface fill in light / transparent in
+   dark; .selected = accent border + selected fill + accent text. */
+.option-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sp-2);
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-btn);
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  text-align: left;
+  transition: opacity 120ms ease, transform 120ms ease, border-color 120ms ease;
+}
+:root[data-theme='dark'] .option-row { background: transparent; }
+.option-row:active:not(:disabled) { opacity: 0.85; transform: scale(0.98); }
+.option-row.selected {
+  border-color: var(--accent);
+  background: var(--selected);
+  color: var(--accent);
+}
 
 /* Desktop-only hover feedback — (hover: hover) is true only for pointers that can actually
    hover (mice/trackpads), so this never sticks on a tap the way a plain :hover would on touch. */
 @media (hover: hover) {
-  .btn:not(:disabled):hover { background: var(--paper-dim); }
-  .btn-primary:not(:disabled):hover { background: var(--gold-deep); }
-  .btn-ghost:not(:disabled):hover { background: var(--paper-dim); }
+  .btn:not(:disabled):hover { background: var(--selected); }
+  .btn-primary:not(:disabled):hover { background: color-mix(in srgb, var(--accent) 88%, var(--text)); }
+  .btn-ghost:not(:disabled):hover { background: var(--selected); }
+  .option-row:not(:disabled):hover { border-color: color-mix(in srgb, var(--accent) 50%, var(--line)); }
+}
+
+/* Corner lamp glow: a radial gradient at 86% x / 8% y fading to transparent at 42%, breathing
+   on a 7s loop. Sits over the background on every full screen except country select. */
+.lamp-glow {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(circle at 86% 8%, var(--glow), transparent 42%);
+  animation: hs-breathe 7s ease-in-out infinite;
+}
+@keyframes hs-breathe {
+  0%, 100% { opacity: 0.15; }
+  50% { opacity: 1; }
 }
 
 .dotted-leader {
@@ -264,92 +395,96 @@ svg path[role='button']:focus-visible {
   transform: translateY(-0.2em);
 }
 
-/* CMYK "plate numeral" — the hero-figure treatment (influence points, term length survived):
-   four offset copies of the same digits fake a misregistered four-color-process print. .paper
-   is the base/key plate, drawn on its own small paper-colored chip so the numeral always reads
-   against a light ground even on a dark page (see the dark-mode override below); .plate-c/-m/-y
-   are absolutely-positioned copies in the process inks, nudged a subpixel offset and blended
-   with multiply, so their overlap reads near-black (true process-print behavior) while the
-   fringes show pure color. */
-.cmyk-num {
-  position: relative;
-  display: inline-block;
-  font-variant-numeric: tabular-nums;
+/* Generic pressed feedback for custom rows/buttons that aren't .btn (menu list rows, grouped
+   list rows, choice rows): dim to 85% and scale to 0.98 (handoff → Interactions). */
+.press {
+  transition: opacity 120ms ease, transform 120ms ease, background-color 120ms ease;
 }
-.cmyk-num .paper {
-  position: relative;
-  display: inline-block;
-  background: var(--paper);
-  color: var(--text-ink);
-  padding: 0.04em 0.1em;
-  box-shadow: 0 1px 3px color-mix(in srgb, var(--ink) 35%, transparent);
-}
-.cmyk-num .plate {
-  position: absolute;
-  inset: 0;
-  padding: 0.04em 0.1em;
-  mix-blend-mode: multiply;
-  pointer-events: none;
-  user-select: none;
-}
-.cmyk-num .plate-c { color: #00b7d6; transform: translate(-0.03em, 0.012em); }
-.cmyk-num .plate-m { color: #e2007a; transform: translate(0.025em, -0.02em); }
-.cmyk-num .plate-y { color: #d9c400; transform: translate(0, 0.03em); }
-/* The numeral keeps its ivory paper ground even in dark mode — on a dark page the chip would
-   otherwise go muddy. Scoping the --paper override to .cmyk-num (custom properties cascade to
-   descendants) flips .paper's background back to paper while the process-ink plates stay lit. */
-[data-theme='dark'] .cmyk-num {
-  --paper: #ece7db;
+.press:active:not(:disabled) { opacity: 0.85; transform: scale(0.98); }
+
+/* Stamp thump: lands once — scale 2.4 at −16° → 0.92 → 1.04 → 1 at −9°, fading in. */
+.thump { animation: hs-thump 0.8s ease-out both; }
+@keyframes hs-thump {
+  0% { opacity: 0; transform: scale(2.4) rotate(-16deg); }
+  60% { opacity: 1; transform: scale(0.92) rotate(-9deg); }
+  80% { transform: scale(1.04) rotate(-9deg); }
+  100% { opacity: 1; transform: scale(1) rotate(-9deg); }
 }
 
-/* Settings' "master" nav rows (.set-row) and its "detail" choice rows (.lang-row) — both share
-   the same default/hover/pressed/focus-visible ladder; .lang-row adds a persistent "selected"
-   state for the active language/theme choice. .ref-item is the Reference view's plainer list
-   row (underline only, no border box). button:focus-visible above already covers all three. */
-.set-row {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sp-3);
-  width: 100%;
-  min-height: 54px;
-  padding: 0 var(--spacing-sp-3);
-  border: 1px solid var(--paper-line);
-  background: transparent;
-  text-align: left;
-  color: var(--text-ink);
+/* Menu's «Новая игра →» arrow nudges 4px right and back. */
+.nudge { animation: hs-nudge 1.6s ease-in-out infinite; }
+@keyframes hs-nudge {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
 }
-@media (hover: hover) {
-  .set-row:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); border-color: color-mix(in srgb, var(--ink) 24%, var(--paper)); }
-}
-.set-row:active { background: color-mix(in srgb, var(--ink) 12%, transparent); }
 
-.lang-row {
+/* iOS inset grouped list (settings hub): one surface card; rows separate by their height, not
+   dividers (handoff → Lines). */
+.grouped {
+  background: var(--surface);
+  border: 1px solid var(--card-border);
+  border-radius: var(--radius-card);
+  padding: 0 var(--spacing-sp-3);
+}
+.grouped-row {
   display: flex;
   align-items: center;
-  min-height: 44px;
-  padding: 0 var(--spacing-sp-3);
   gap: var(--spacing-sp-2);
-  font-size: var(--text-label);
-  border: 1px solid var(--paper-line);
+  width: 100%;
   background: transparent;
+  color: var(--text);
   text-align: left;
-  color: var(--text-ink);
-  /* Transparent by default so .active only swaps the color in, rather than the left indicator
-     popping into existence (see ReformsPanel's branch tabs for the same fix/reasoning). */
-  box-shadow: inset 3px 0 0 transparent;
 }
 @media (hover: hover) {
-  .lang-row:hover { background: color-mix(in srgb, var(--ink) 5%, transparent); }
+  .grouped-row:hover { color: var(--accent); }
 }
-.lang-row:active { background: color-mix(in srgb, var(--ink) 12%, transparent); }
-.lang-row.active {
-  border-color: var(--gold);
-  background: var(--gold-tint);
-  box-shadow: inset 3px 0 0 var(--gold);
-  font-weight: 700;
+
+/* Choice row (language, difficulty): bordered, radius 12; .active = accent border + selected
+   fill + accent text. */
+.choice-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sp-2);
+  min-height: 46px;
+  padding: 0 var(--spacing-sp-3);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-row);
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  font-weight: 500;
 }
 @media (hover: hover) {
-  .lang-row.active:hover { background: var(--gold-tint); }
+  .choice-row:not(.active):hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+}
+.choice-row.active {
+  border-color: var(--accent);
+  background: var(--selected);
+  color: var(--accent);
+}
+
+/* Settings → Тема previews: each re-scopes the role tokens to one theme regardless of the
+   active one (custom properties cascade to descendants). Values mirror :root / dark above. */
+.theme-preview-light {
+  --bg: #f6f3ec;
+  --text: #1a1d22;
+  --line: #dcd7cc;
+  --accent: #27477a;
+  --warning: #b0463a;
+}
+.theme-preview-dark {
+  --bg: #111418;
+  --text: #e9e4da;
+  --line: #2a2f37;
+  --accent: #e0a458;
+  --warning: #d77a6a;
+}
+
+/* Theme picker radio's selected dot beats (scale 1 → 1.4). */
+.beat { animation: hs-beat 2.4s ease-in-out infinite; }
+@keyframes hs-beat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.4); }
 }
 
 /* Outlined status label — reform nodes' "Принято" (adopted) state, in the primary accent
@@ -367,19 +502,143 @@ svg path[role='button']:focus-visible {
   text-transform: uppercase;
 }
 
-.ref-item {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  min-height: 44px;
-  font-size: var(--text-label);
-  border-bottom: 1px solid var(--paper-line);
-  background: transparent;
-  text-align: left;
-  color: var(--text-ink);
+/* ─── Map screens motion (handoff → Motion) ─── */
+
+/* Rings pulsing out of a country dot (scale .3 → 2.2, fading). SVG circles scale around their
+   own box; .ping-late starts the second ring half a cycle later. */
+.ping {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: hs-ping 2.6s ease-out infinite;
 }
-@media (hover: hover) {
-  .ref-item:hover { color: var(--gold-deep); background: color-mix(in srgb, var(--ink) 4%, transparent); }
+.ping-late { animation-delay: 1.3s; }
+@keyframes hs-ping {
+  0% { transform: scale(0.3); opacity: 0.9; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+/* Dark theme: the selected dot gets a soft 12pt glow. */
+:root[data-theme='dark'] .marker-dot { filter: drop-shadow(0 0 6px var(--accent)); }
+
+/* Main screen: the map drifts very slowly around the player's country (1 → 1.04). */
+.map-drift {
+  transform-box: view-box;
+  animation: hs-drift2 24s ease-in-out infinite alternate;
+}
+@keyframes hs-drift2 {
+  from { transform: scale(1); }
+  to { transform: scale(1.04); }
+}
+
+/* HTML pulsing ring (event pin, country marker on the main map): an absolutely positioned
+   circle that scales out from its center. */
+.ring-pulse {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 1px solid currentColor;
+  animation: hs-ping 2.6s ease-out infinite;
+}
+.ring-pulse.fast { animation-duration: 2s; }
+
+/* «время идёт…» — the three dots type out in 4 steps over 1.8s. */
+.typing-dots {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  white-space: nowrap;
+  animation: hs-dots 1.8s steps(4, end) infinite;
+}
+@keyframes hs-dots {
+  from { width: 0; }
+  to { width: 1.1em; }
+}
+
+/* The active speed button emits a ring (scale 1 → 1.4, fading). */
+.emit-ring::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  border: 1px solid var(--accent);
+  animation: hs-ring 2s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes hs-ring {
+  0% { opacity: 0.8; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.4); }
+}
+
+/* Stat change: «+2» / «−8» pops next to the value (scale .6 → 1.25 → 1, rises 16pt, fades).
+   Sits just left of the value rather than above it (the mock's spot) so it never covers the
+   previous row in the dense stats panel. */
+.stat-pop {
+  position: absolute;
+  right: 2.4em;
+  top: -0.15em;
+  pointer-events: none;
+  animation: hs-pop 3.6s ease-out both;
+}
+@keyframes hs-pop {
+  0% { opacity: 0; transform: translateY(8px) scale(0.6); }
+  10% { opacity: 1; transform: translateY(0) scale(1.25); }
+  18% { transform: translateY(0) scale(1); }
+  65% { opacity: 1; transform: translateY(-8px); }
+  85%, 100% { opacity: 0; transform: translateY(-16px); }
+}
+/* Bars ease to their new value in ~0.35s. */
+.meter-fill { transition: width 350ms ease-out; }
+
+/* Halo: a ring that grows out of the chosen option / selected reform node (box-shadow 0 → 7pt,
+   fading), in the element's current color. */
+.halo {
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: hs-halo 2.4s ease-out infinite;
+}
+@keyframes hs-halo {
+  0% { box-shadow: 0 0 0 0 currentColor; opacity: 0.55; }
+  100% { box-shadow: 0 0 0 7px currentColor; opacity: 0; }
+}
+
+/* A small accent dot flowing down a reform-chain connector, from the owned level to the
+   selected one. */
+.flow-dot {
+  position: absolute;
+  left: -2px;
+  top: 0;
+  width: 5px;
+  height: 5px;
+  border-radius: 9999px;
+  background: var(--accent);
+  animation: hs-flow 1.8s ease-in infinite;
+}
+@keyframes hs-flow {
+  0% { transform: translateY(-4px); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: translateY(10px); opacity: 0; }
+}
+
+/* Vector pointer: slides from its last position to the new one when the value changes. */
+.vector-pointer { transition: left 1.6s ease-in-out; }
+
+/* Tutorial spotlight ring halo — slightly quicker than the option/node halo. */
+.spot-halo { animation-duration: 2.2s; }
+
+/* A newly earned medal's halo runs a few cycles, then stops (handoff → Motion). */
+.medal-halo { animation-iteration-count: 4; }
+
+/* Ticker marquee: the headline run is rendered twice and scrolled by half its width — a
+   seamless loop. */
+.marquee {
+  display: inline-block;
+  white-space: nowrap;
+  animation: hs-marq 44s linear infinite;
+}
+@keyframes hs-marq {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
 }
 
 /* WorldMap's region zoom/pan (ZoomableGroup's center+zoom props) is a plain 2D transform
@@ -394,6 +653,8 @@ svg path[role='button']:focus-visible {
 
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
+  /* Show the static END state: pulse rings and stat pops end invisible, so hide them. */
+  .ping, .ring-pulse, .emit-ring::after, .stat-pop, .halo, .flow-dot { display: none; }
 }
 
 /* Safe-area clearance for the outermost layout — phones are landscape-only in this app (see

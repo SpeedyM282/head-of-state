@@ -1,5 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { useGameStore } from '../../src/store/gameStore';
 import { useTutorialStore } from '../../src/store/tutorialStore';
 import { loadTutorial } from '../../src/store/persistence';
 
@@ -32,7 +31,6 @@ beforeEach(() => {
     jitEnabled: false,
     initialZone: null,
     activeTipId: null,
-    reformsCountAtStepStart: 0,
   });
 });
 
@@ -41,38 +39,26 @@ afterEach(() => {
 });
 
 describe('tutorialStore: scripted opening', () => {
-  it('beginScripted starts at "welcome" with JIT disabled', () => {
+  it('beginScripted starts at the first step with JIT disabled', () => {
     useTutorialStore.getState().beginScripted();
     const s = useTutorialStore.getState();
-    expect(s.scriptedStep).toBe('welcome');
+    expect(s.scriptedStep).toBe('stats');
     expect(s.jitEnabled).toBe(false);
   });
 
-  it('advanceScripted walks the "Дальше"-driven steps in order up to reformsOpen', () => {
+  it('advanceScripted walks the four steps in order', () => {
     const { beginScripted, advanceScripted } = useTutorialStore.getState();
     beginScripted();
-    advanceScripted(); // welcome -> stats
-    expect(useTutorialStore.getState().scriptedStep).toBe('stats');
-    advanceScripted(); // stats -> vector
-    expect(useTutorialStore.getState().scriptedStep).toBe('vector');
-    advanceScripted(); // vector -> clock
-    expect(useTutorialStore.getState().scriptedStep).toBe('clock');
-    advanceScripted(); // clock -> reformsOpen
-    expect(useTutorialStore.getState().scriptedStep).toBe('reformsOpen');
+    advanceScripted();
+    expect(useTutorialStore.getState().scriptedStep).toBe('map');
+    advanceScripted();
+    expect(useTutorialStore.getState().scriptedStep).toBe('term');
+    advanceScripted();
+    expect(useTutorialStore.getState().scriptedStep).toBe('defeats');
   });
 
-  it('is a no-op on reformsOpen/reformsBuy — those only advance via the notify* actions', () => {
-    useTutorialStore.setState({ scriptedStep: 'reformsOpen' });
-    useTutorialStore.getState().advanceScripted();
-    expect(useTutorialStore.getState().scriptedStep).toBe('reformsOpen');
-
-    useTutorialStore.setState({ scriptedStep: 'reformsBuy' });
-    useTutorialStore.getState().advanceScripted();
-    expect(useTutorialStore.getState().scriptedStep).toBe('reformsBuy');
-  });
-
-  it('on "release" completes the tutorial, enables JIT, and persists', () => {
-    useTutorialStore.setState({ scriptedStep: 'release', seenTips: ['danger-zone'] });
+  it('advancing past the last step completes the tutorial, enables JIT, and persists', () => {
+    useTutorialStore.setState({ scriptedStep: 'defeats', seenTips: ['danger-zone'] });
     useTutorialStore.getState().advanceScripted();
     const s = useTutorialStore.getState();
     expect(s.scriptedStep).toBeNull();
@@ -80,48 +66,18 @@ describe('tutorialStore: scripted opening', () => {
     expect(s.completed).toBe(true);
     expect(loadTutorial()).toEqual({ completed: true, seenTips: ['danger-zone'] });
   });
-});
 
-describe('tutorialStore: notifyReformsOpened / notifyReformPurchased', () => {
-  it('notifyReformsOpened is a no-op outside the reformsOpen step', () => {
-    useTutorialStore.setState({ scriptedStep: 'stats' });
-    useTutorialStore.getState().notifyReformsOpened();
-    expect(useTutorialStore.getState().scriptedStep).toBe('stats');
-  });
-
-  it('notifyReformsOpened advances to reformsBuy and snapshots the owned-reform count', () => {
-    useGameStore.getState().startGame('absurdistan', 'easy');
-    useGameStore.setState((s) => ({ state: s.state ? { ...s.state, ownedReforms: ['a', 'b'] } : s.state }));
-    useTutorialStore.setState({ scriptedStep: 'reformsOpen' });
-
-    useTutorialStore.getState().notifyReformsOpened();
-
+  it('is a no-op when the opening is not running', () => {
+    useTutorialStore.getState().advanceScripted();
     const s = useTutorialStore.getState();
-    expect(s.scriptedStep).toBe('reformsBuy');
-    expect(s.reformsCountAtStepStart).toBe(2);
-  });
-
-  it('notifyReformPurchased is a no-op outside the reformsBuy step', () => {
-    useTutorialStore.setState({ scriptedStep: 'reformsOpen' });
-    useTutorialStore.getState().notifyReformPurchased();
-    expect(useTutorialStore.getState().scriptedStep).toBe('reformsOpen');
-  });
-
-  it('notifyReformPurchased advances to release and closes the reforms panel', () => {
-    useGameStore.getState().startGame('absurdistan', 'easy');
-    useGameStore.getState().openReforms();
-    useTutorialStore.setState({ scriptedStep: 'reformsBuy' });
-
-    useTutorialStore.getState().notifyReformPurchased();
-
-    expect(useTutorialStore.getState().scriptedStep).toBe('release');
-    expect(useGameStore.getState().reformsOpen).toBe(false);
+    expect(s.scriptedStep).toBeNull();
+    expect(s.completed).toBe(false);
   });
 });
 
 describe('tutorialStore: skip', () => {
   it('abandons the scripted opening, marks completed, but leaves JIT enabled', () => {
-    useTutorialStore.setState({ scriptedStep: 'vector' });
+    useTutorialStore.setState({ scriptedStep: 'map' });
     useTutorialStore.getState().skip();
     const s = useTutorialStore.getState();
     expect(s.scriptedStep).toBeNull();

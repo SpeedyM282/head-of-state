@@ -9,6 +9,12 @@ describe('signed', () => {
     expect(signed(4)).toBe('+4');
     expect(signed(-10)).toBe('−10');
   });
+
+  it('uses the locale decimal separator when given a language', () => {
+    expect(signed(0.4, 'ru')).toBe('+0,4');
+    expect(signed(-0.4, 'en')).toBe('−0.4');
+    expect(signed(0.4)).toBe('+0.4');
+  });
 });
 
 describe('targetLabel', () => {
@@ -31,9 +37,9 @@ describe('effectColor — one formatter, shared by reforms and event cards', () 
     expect(effectColor({ target: 'corruption', delta: -8 })).toBe('var(--ok)');
   });
 
-  it('treats the vector as neutral regardless of sign', () => {
-    expect(effectColor({ target: 'vector', delta: 5 })).toBe('var(--gold)');
-    expect(effectColor({ target: 'vector', delta: -5 })).toBe('var(--gold)');
+  it('treats the vector as neutral (muted) regardless of sign', () => {
+    expect(effectColor({ target: 'vector', delta: 5 })).toBe('var(--muted)');
+    expect(effectColor({ target: 'vector', delta: -5 })).toBe('var(--muted)');
   });
 
   it('treats influence like a normal (non-inverted) stat', () => {

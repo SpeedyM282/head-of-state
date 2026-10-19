@@ -1,4 +1,4 @@
-import type { Effect, EffectTarget } from '../core/types';
+import type { Effect, EffectTarget, Lang } from '../core/types';
 import type { Ui } from '../i18n';
 import { isInverted } from '../data/statMeta';
 
@@ -9,9 +9,11 @@ export function targetLabel(target: EffectTarget, ui: Ui): string {
   return ui.stats[target];
 }
 
-/** "+4" / "−10" — the sign as typed, not the stat's good/bad polarity. */
-export function signed(delta: number): string {
-  return `${delta > 0 ? '+' : '−'}${Math.abs(delta)}`;
+/** "+4" / "−10" — the sign as typed, not the stat's good/bad polarity. With `lang`, the
+ * number uses that locale's decimal separator («+0,4» in ru/uz). */
+export function signed(delta: number, lang?: Lang): string {
+  const abs = Math.abs(delta);
+  return `${delta > 0 ? '+' : '−'}${lang ? abs.toLocaleString(lang) : abs}`;
 }
 
 /**
@@ -20,42 +22,26 @@ export function signed(delta: number): string {
  * a positive delta to read as bad.
  */
 export function effectColor(e: Effect): string {
-  if (e.target === 'vector') return 'var(--gold)';
+  if (e.target === 'vector') return 'var(--muted)';
   const inverted = e.target !== 'influence' && isInverted(e.target);
   const bad = inverted ? e.delta > 0 : e.delta < 0;
   return bad ? 'var(--stamp)' : 'var(--ok)';
 }
 
-/** Vertical effect list — used by the reforms detail pane. */
-export function EffectLines({ effects, ui }: { effects: Effect[]; ui: Ui }) {
-  return (
-    <ul className="mt-sp-1">
-      {effects.map((e, i) => (
-        <li key={i} className="flex items-center justify-between gap-sp-3 py-0.5 text-caption">
-          <span className="text-(--text-faint)">{targetLabel(e.target, ui)}</span>
-          <span className="num" style={{ color: effectColor(e) }}>{signed(e.delta)}</span>
-        </li>
-      ))}
-    </ul>
-  );
-}
-
 /**
- * Compact single-line effect summary — used on event option cards, e.g.
- * «Одобрение +4 · Казна −10 · Вектор +5». Root is a <span> (not <p>) so it stays valid
- * nested inside a <button>.
+ * «Кабинет» inline effect summary — «казна −8 · экономика +2»: lowercase muted labels, deltas
+ * colored by good/bad. Used on event option rows and the reforms detail rows.
  */
-export function EffectSummaryLine({ effects, ui }: { effects: Effect[]; ui: Ui }) {
-  if (effects.length === 0) return null;
+export function EffectInline({ effects, ui, lang }: { effects: Effect[]; ui: Ui; lang?: Lang }) {
   return (
-    <span className="mt-sp-1 block text-caption leading-relaxed text-(--text-faint)">
+    <>
       {effects.map((e, i) => (
         <span key={i}>
           {i > 0 && ' · '}
-          {targetLabel(e.target, ui)}{' '}
-          <span className="num" style={{ color: effectColor(e) }}>{signed(e.delta)}</span>
+          <span className="lowercase">{targetLabel(e.target, ui)}</span>{' '}
+          <span style={{ color: effectColor(e) }}>{signed(e.delta, lang)}</span>
         </span>
       ))}
-    </span>
+    </>
   );
 }

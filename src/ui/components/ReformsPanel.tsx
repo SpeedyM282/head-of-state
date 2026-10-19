@@ -1,370 +1,198 @@
-import { useEffect, useRef, useState, type ReactElement } from "react";
-import { canBuyReformReason } from "../../core";
-import type { ReformBlock } from "../../core";
-import type { Reform } from "../../core/types";
-import { loc } from "../../i18n";
-import type { Ui } from "../../i18n";
-import { useLang, useUi } from "../../store/langStore";
-import { useGameStore } from "../../store/gameStore";
-import { useTutorialStore } from "../../store/tutorialStore";
-import { EffectLines } from "../effectFormat";
+import { useState, type ReactNode } from 'react';
+import { canBuyReformReason } from '../../core';
+import type { ReformBlock } from '../../core';
+import type { Reform } from '../../core/types';
+import { loc } from '../../i18n';
+import type { Ui } from '../../i18n';
+import { useLang, useUi } from '../../store/langStore';
+import { useGameStore } from '../../store/gameStore';
+import { EffectInline } from '../effectFormat';
+import { TopBar } from './TopBar';
+import { VectorPanel } from './VectorPanel';
 
-const BRANCHES = ["economy", "force", "social", "propaganda"] as const;
+const BRANCHES = ['economy', 'force', 'social', 'propaganda'] as const;
 type Branch = (typeof BRANCHES)[number];
 
 /** The reform the detail pane shows when the player hasn't tapped a node yet: the next
  * actionable one in the chain (first not-yet-owned tier), or the last tier once the whole
  * branch is owned. Keeps the pane populated by default. */
-function nextReformId(
-	reforms: Reform[],
-	ownedReforms: string[],
-): string | null {
-	if (reforms.length === 0) return null;
-	const nextUnowned = reforms.find((r) => !ownedReforms.includes(r.id));
-	return (nextUnowned ?? reforms[reforms.length - 1]).id;
+function nextReformId(reforms: Reform[], ownedReforms: string[]): string | null {
+  if (reforms.length === 0) return null;
+  const nextUnowned = reforms.find((r) => !ownedReforms.includes(r.id));
+  return (nextUnowned ?? reforms[reforms.length - 1]).id;
 }
 
 function reasonLine(reason: ReformBlock | null, ui: Ui): string | null {
-	switch (reason) {
-		case "needsPrevious":
-			return ui.reformsPanel.reason.needsPrevious;
-		case "notEnoughInfluence":
-			return ui.reformsPanel.reason.notEnoughInfluence;
-		case "notEnoughTreasury":
-			return ui.reformsPanel.reason.notEnoughTreasury;
-		default:
-			return null;
-	}
+  switch (reason) {
+    case 'needsPrevious':
+      return ui.reformsPanel.reason.needsPrevious;
+    case 'notEnoughInfluence':
+      return ui.reformsPanel.reason.notEnoughInfluence;
+    case 'notEnoughTreasury':
+      return ui.reformsPanel.reason.notEnoughTreasury;
+    default:
+      return null;
+  }
 }
 
-function CrossIcon() {
-	return (
-		<svg
-			width="18"
-			height="18"
-			viewBox="0 0 20 20"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			aria-hidden
-		>
-			<path d="M5 5 L15 15 M15 5 L5 15" />
-		</svg>
-	);
-}
-
-function LockIcon() {
-	return (
-		<svg
-			width="12"
-			height="12"
-			viewBox="0 0 20 20"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.6"
-			strokeLinejoin="round"
-			aria-hidden
-		>
-			<rect x="4" y="9" width="12" height="8" rx="1" />
-			<path d="M7 9 V6.5 a3 3 0 0 1 6 0 V9" />
-		</svg>
-	);
-}
-
-// One duotone-style stroke icon per branch, for the always-on-left rail — same austere line
-// style as the rest of the chrome (CrossIcon/LockIcon above).
-const BRANCH_ICONS: Record<Branch, ReactElement> = {
-	economy: (
-		<svg
-			width="17"
-			height="17"
-			viewBox="0 0 20 20"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.6"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			aria-hidden
-		>
-			<circle cx="10" cy="10" r="7" />
-			<path d="M10 6.5v7M8 8.2c0-1 .8-1.7 2-1.7s2 .6 2 1.5c0 2-4 1.3-4 3.3 0 .9.9 1.5 2 1.5s2-.6 2-1.6" />
-		</svg>
-	),
-	force: (
-		<svg
-			width="17"
-			height="17"
-			viewBox="0 0 20 20"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.6"
-			strokeLinejoin="round"
-			aria-hidden
-		>
-			<path d="M10 3 L16 5.5 V10 c0 4-2.7 6.3-6 7.5-3.3-1.2-6-3.5-6-7.5V5.5 Z" />
-		</svg>
-	),
-	social: (
-		<svg
-			width="17"
-			height="17"
-			viewBox="0 0 20 20"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.6"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			aria-hidden
-		>
-			<path d="M10 17s-6-3.7-6-8.3C4 6 5.8 4.3 8 4.3c.9 0 1.7.4 2 1 .3-.6 1.1-1 2-1 2.2 0 4 1.7 4 4.4 0 4.6-6 8.3-6 8.3Z" />
-		</svg>
-	),
-	propaganda: (
-		<svg
-			width="17"
-			height="17"
-			viewBox="0 0 20 20"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="1.6"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			aria-hidden
-		>
-			<path d="M3 8.5v3l11 3.5v-10Z" />
-			<path d="M14 6.5v7c1.7 0 3-1.6 3-3.5s-1.3-3.5-3-3.5Z" />
-			<path d="M6.5 12v3.5c0 .8.7 1.5 1.5 1.5s1.5-.7 1.5-1.5V13" />
-		</svg>
-	),
-};
-
+/**
+ * «Кабинет» reforms screen (handoff screen 05): a full-screen view over the main screen with
+ * the branch rail, the branch's level chain, the selected level's detail with «Принять», and
+ * the governance vector panel along the bottom (the vector lives here, not on the main screen).
+ */
 export function ReformsPanel({ onClose }: { onClose: () => void }) {
-	const { state, content, buyReform } = useGameStore();
-	const scriptedStep = useTutorialStore((s) => s.scriptedStep);
-	const lang = useLang((s) => s.lang);
-	const ui = useUi();
-	const tutorialTabsAnchor =
-		scriptedStep === "reformsBuy" ? "reforms-tabs" : undefined;
-	const [activeBranch, setActiveBranch] = useState<Branch>("economy");
-	const [selectedId, setSelectedId] = useState<string | null>(null);
-	const chainScrollRef = useRef<HTMLDivElement>(null);
+  const { state, content, buyReform, vectorTrail } = useGameStore();
+  const lang = useLang((s) => s.lang);
+  const ui = useUi();
+  const [activeBranch, setActiveBranch] = useState<Branch>('economy');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
-	// Switching branch resets the chain's scroll position and clears the manual selection —
-	// the detail pane falls back to the new branch's next actionable node (see effectiveId).
-	useEffect(() => {
-		if (chainScrollRef.current) chainScrollRef.current.scrollLeft = 0;
-	}, [activeBranch]);
+  if (!state || !content) return null;
 
-	if (!state || !content) return null;
+  const branchReforms = content.reforms.filter((r) => r.branch === activeBranch).sort((a, b) => a.tier - b.tier);
+  const effectiveId = selectedId ?? nextReformId(branchReforms, state.ownedReforms);
+  const selected = effectiveId ? (branchReforms.find((r) => r.id === effectiveId) ?? null) : null;
+  const cost = (r: Reform) => `${r.costInfluence} ${ui.reformsPanel.costInfluence} · ${r.costTreasury} ${ui.reformsPanel.costTreasury}`;
 
-	const branchReforms = content.reforms
-		.filter((r) => r.branch === activeBranch)
-		.sort((a, b) => a.tier - b.tier);
+  function selectBranch(b: Branch) {
+    setActiveBranch(b);
+    setSelectedId(null);
+  }
 
-	const effectiveId =
-		selectedId ?? nextReformId(branchReforms, state.ownedReforms);
-	const selected = effectiveId
-		? (branchReforms.find((r) => r.id === effectiveId) ?? null)
-		: null;
+  const previewShift = selected ? (selected.instant.find((e) => e.target === 'vector')?.delta ?? 0) : null;
 
-	function selectBranch(b: Branch) {
-		setActiveBranch(b);
-		setSelectedId(null);
-	}
+  return (
+    <div
+      className="fixed inset-0 z-10 flex flex-col gap-sp-3 overflow-hidden bg-(--bg) py-sp-3"
+      style={{ paddingLeft: 'max(var(--spacing-sp-5), env(safe-area-inset-left))', paddingRight: 'max(var(--spacing-sp-5), env(safe-area-inset-right))' }}
+    >
+      <div className="lamp-glow" aria-hidden />
+      <TopBar
+        title={ui.reformsPanel.title}
+        onBack={onClose}
+        backLabel={ui.reformsPanel.close}
+        meta={
+          <>
+            <span className="lowercase">{ui.reformsPanel.influencePoints}</span>{' '}
+            <span className="num text-num text-(--text)">{Math.floor(state.influence)}</span>
+            {' · '}
+            <span className="lowercase">{ui.reformsPanel.treasury}</span> <span className="num text-num text-(--text)">{Math.round(state.stats.treasury)}</span>
+          </>
+        }
+      />
 
-	function renderDetail(r: Reform) {
-		const reason = canBuyReformReason(state!, content!, r.id);
-		const owned = reason === "owned";
-		const line = reasonLine(reason, ui);
-		return (
-			<>
-				<div className="flex-1 overflow-y-auto p-sp-2">
-					<h3 className="text-label font-bold leading-tight">
-						{loc(r.title, lang)}
-					</h3>
+      <div className="relative flex min-h-0 flex-1 gap-sp-3">
+        {/* Branch rail. */}
+        <nav className="flex w-[116px] shrink-0 flex-col gap-0.5" aria-label={ui.reformsPanel.title}>
+          {BRANCHES.map((b) => {
+            const active = b === activeBranch;
+            return (
+              <button
+                key={b}
+                type="button"
+                aria-pressed={active}
+                onClick={() => selectBranch(b)}
+                className={`press min-h-9 rounded-btn px-2.5 text-left text-label font-medium ${active ? 'bg-(--selected) text-(--accent)' : ''}`}
+              >
+                {ui.branches[b]}
+              </button>
+            );
+          })}
+        </nav>
 
-					<p className="mt-sp-1 text-caption leading-snug opacity-62">
-						{loc(r.description, lang)}
-					</p>
+        {/* Level chain. */}
+        <div className="flex w-[226px] shrink-0 flex-col overflow-y-auto pb-1 tablet:w-[280px]">
+          {branchReforms.map((r, i) => {
+            const reason = canBuyReformReason(state, content, r.id);
+            const owned = reason === 'owned';
+            const locked = reason === 'needsPrevious';
+            const isSelected = effectiveId === r.id;
+            const prevOwned = i > 0 && state.ownedReforms.includes(branchReforms[i - 1].id);
+            return (
+              <div key={r.id} className="flex flex-col">
+                {i > 0 && (
+                  <div className="relative ml-[18px] h-2 w-px shrink-0 bg-(--line)" aria-hidden>
+                    {prevOwned && isSelected && !owned && <span className="flow-dot" />}
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setSelectedId(r.id)}
+                  aria-pressed={isSelected}
+                  className={`press relative flex flex-col gap-0.5 rounded-row border px-sp-3 py-1 text-left ${isSelected ? 'border-(--accent) bg-(--selected) text-(--accent)' : 'border-(--line)'}`}
+                  style={{ opacity: locked && !isSelected ? 0.45 : 1 }}
+                >
+                  {isSelected && <span className="halo" aria-hidden />}
+                  <span className="text-micro uppercase leading-none tracking-[0.12em] text-(--muted)">
+                    {ui.reformsPanel.tier} {r.tier + 1}
+                  </span>
+                  <span className="flex items-baseline gap-sp-2">
+                    <span className="min-w-0 flex-1 truncate text-label font-medium leading-tight">{loc(r.title, lang)}</span>
+                    <span className={`shrink-0 whitespace-nowrap text-caption ${owned ? 'text-(--accent)' : 'text-(--muted)'}`}>
+                      {owned ? `✓ ${ui.reformsPanel.adopted}` : locked ? ui.reformsPanel.lockedShort : cost(r)}
+                    </span>
+                  </span>
+                </button>
+              </div>
+            );
+          })}
+        </div>
 
-					<p className="eyebrow mt-sp-2">
-						{ui.reformsPanel.influencePoints}:{" "}
-						<span className="num text-(--gold)">{r.costInfluence}</span>
-						{" · "}
-						{ui.reformsPanel.treasury}:{" "}
-						<span className="num text-(--gold)">{r.costTreasury}</span>
-					</p>
+        {/* Detail. */}
+        {selected && renderDetail(selected, activeBranch)}
+      </div>
 
-					<div className="mt-sp-2">
-						<p className="eyebrow">{ui.reformsPanel.effectsInstant}</p>
-						<EffectLines effects={r.instant} ui={ui} />
-					</div>
-					{r.perTurn.length > 0 && (
-						<div className="mt-sp-2">
-							<p className="eyebrow">{ui.reformsPanel.effectsPerMonth}</p>
-							<EffectLines effects={r.perTurn} ui={ui} />
-						</div>
-					)}
-				</div>
+      <VectorPanel vector={state.vector} trail={vectorTrail} previewShift={previewShift} />
+    </div>
+  );
 
-				<div className="shrink-0 border-t border-(--paper-line) p-sp-2 text-center">
-					{owned ? (
-						<span className="badge">{ui.reformsPanel.adopted}</span>
-					) : (
-						<>
-							<button
-								type="button"
-								className="btn btn-primary min-h-9 w-full text-label"
-								disabled={reason !== null}
-								onClick={() => buyReform(r.id)}
-							>
-								{ui.reformsPanel.approve}
-							</button>
-							{line && (
-								<p className="mt-sp-1 text-center text-caption text-(--stamp)">
-									{line}
-								</p>
-							)}
-						</>
-					)}
-				</div>
-			</>
-		);
-	}
+  function renderDetail(r: Reform, branch: Branch) {
+    const reason = canBuyReformReason(state!, content!, r.id);
+    const owned = reason === 'owned';
+    const line = reasonLine(reason, ui);
+    return (
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-sp-1">
+        {/* Text scrolls; «Принять» stays pinned below it. */}
+        <div className="flex min-h-0 flex-col gap-1 overflow-y-auto">
+          <p className="eyebrow truncate">
+            {ui.reformsPanel.tier} {r.tier + 1} · {ui.branches[branch]}
+          </p>
+          <h3 className="font-serif text-heading leading-[1.05]">{loc(r.title, lang)}</h3>
+          <p className="flavor text-caption">{loc(r.description, lang)}</p>
+          <dl className="mt-0.5 flex flex-col text-caption">
+            <DetailRow label={ui.reformsPanel.cost}>{cost(r)}</DetailRow>
+            <DetailRow label={ui.reformsPanel.effectsInstant}>
+              <EffectInline effects={r.instant} ui={ui} lang={lang} />
+            </DetailRow>
+            {r.perTurn.length > 0 && (
+              <DetailRow label={ui.reformsPanel.effectsPerMonth}>
+                <EffectInline effects={r.perTurn} ui={ui} lang={lang} />
+              </DetailRow>
+            )}
+          </dl>
+        </div>
+        <div className="shrink-0">
+          {owned ? (
+            <span className="stamp stamp-accent text-caption">{ui.reformsPanel.adopted}</span>
+          ) : (
+            <>
+              <button type="button" className="btn btn-primary min-h-9 w-full text-label" disabled={reason !== null} onClick={() => buyReform(r.id)}>
+                {ui.reformsPanel.approve}
+              </button>
+              {line && <p className="mt-1 text-center text-caption text-(--warning)">{line}</p>}
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+}
 
-	return (
-		<div className="safe-area-x fixed inset-0 z-10 flex flex-col bg-(--paper)">
-			<header className="flex shrink-0 items-baseline gap-sp-2 border-b border-(--ink) px-sp-3 py-sp-1">
-				<h2 className="text-heading font-bold">{ui.reformsPanel.title}</h2>
-				<p className="eyebrow flex-1 truncate">
-					{ui.reformsPanel.influencePoints}:{" "}
-					<span className="num text-(--gold)">
-						{Math.floor(state.influence)}
-					</span>
-					{" · "}
-					{ui.reformsPanel.treasury}:{" "}
-					<span className="num text-(--gold)">
-						{Math.round(state.stats.treasury)}
-					</span>
-				</p>
-				<button
-					type="button"
-					aria-label={ui.reformsPanel.close}
-					onClick={onClose}
-					className="flex h-11 w-11 shrink-0 items-center justify-center text-(--text-ink) hover:bg-(--paper-dim)"
-				>
-					<CrossIcon />
-				</button>
-			</header>
-
-			<div className="flex min-h-0 flex-1">
-				{/* Branch rail — always a left icon column, at every form factor (see the
-				    redesign's "same structure everywhere" philosophy in ARCHITECTURE.md §7a). */}
-				<nav
-					className="flex w-[78px] shrink-0 flex-col border-r border-(--ink)"
-					aria-label={ui.reformsPanel.title}
-					data-tutorial={tutorialTabsAnchor}
-				>
-					{BRANCHES.map((b, i) => {
-						const active = b === activeBranch;
-						return (
-							<button
-								key={b}
-								type="button"
-								aria-pressed={active}
-								onClick={() => selectBranch(b)}
-								className={`flex min-h-11 flex-col items-center justify-center gap-0.5 px-0.5 py-sp-2 text-center text-micro uppercase leading-tight tracking-wide hover:opacity-80${i > 0 ? " border-t border-(--paper-line)" : ""}`}
-								style={{
-									background: active ? "var(--gold-tint)" : "transparent",
-									borderLeft: `3px solid ${active ? "var(--gold)" : "transparent"}`,
-									color: active ? "var(--gold-deep)" : "var(--text-ink)",
-									fontWeight: 600,
-								}}
-							>
-								<span className={active ? undefined : "text-(--gold)"}>
-									{BRANCH_ICONS[b]}
-								</span>
-								{ui.branches[b]}
-							</button>
-						);
-					})}
-				</nav>
-
-				{/* Node chain — a horizontal-scrolling row of compact cards at every form factor
-				    (matching the mock's single fixed layout; only the detail pane's default node
-				    changes on branch switch, see effectiveId). */}
-				<div
-					ref={chainScrollRef}
-					className="flex min-w-0 flex-1 items-center overflow-x-auto overflow-y-hidden p-sp-2"
-				>
-					<div className="flex items-stretch gap-sp-2">
-						{branchReforms.map((r, i) => {
-							const reason = canBuyReformReason(state, content, r.id);
-							const owned = reason === "owned";
-							const locked = reason === "needsPrevious";
-							const available = reason === null;
-							const isSelected = effectiveId === r.id;
-							const opacity = owned ? 0.9 : available ? 1 : locked ? 0.5 : 0.7;
-							const isTutorialFirstNode =
-								scriptedStep === "reformsBuy" && r.tier === 0 && available;
-							return (
-								<div key={r.id} className="flex items-stretch">
-									{i > 0 && (
-										<div className="my-auto h-0.5 w-3 shrink-0 bg-(--paper-line)" />
-									)}
-									<button
-										type="button"
-										onClick={() => setSelectedId(r.id)}
-										data-tutorial={
-											isTutorialFirstNode ? "reforms-first-node" : undefined
-										}
-										className="relative w-33 shrink-0 border border-(--paper-line) bg-(--paper) p-sp-2 text-left hover:bg-(--paper-dim)"
-										style={{
-											opacity,
-											borderColor: isSelected ? "var(--gold)" : undefined,
-											boxShadow: isSelected
-												? "0 0 0 2px var(--gold)"
-												: undefined,
-										}}
-									>
-										{locked && (
-											<span
-												className="absolute right-1.5 top-1.5 text-(--text-faint)"
-												aria-label={ui.reformsPanel.locked}
-											>
-												<LockIcon />
-											</span>
-										)}
-										<p className="eyebrow absolute left-1.5 top-1.5">
-											{ui.reformsPanel.tier} {r.tier + 1}
-										</p>
-										<p className="mt-sp-3 text-label font-bold leading-tight">
-											{loc(r.title, lang)}
-										</p>
-										<div className="mt-sp-1">
-											{owned ? (
-												<span className="badge">{ui.reformsPanel.adopted}</span>
-											) : !locked ? (
-												<span className="num text-caption opacity-65">
-													{r.costInfluence} {ui.reformsPanel.costInfluence} ·{" "}
-													{r.costTreasury} {ui.reformsPanel.costTreasury}
-												</span>
-											) : null}
-										</div>
-									</button>
-								</div>
-							);
-						})}
-					</div>
-				</div>
-
-				{selected && (
-					<aside className="flex w-52 shrink-0 flex-col overflow-hidden border-l border-(--ink)">
-						{renderDetail(selected)}
-					</aside>
-				)}
-			</div>
-		</div>
-	);
+function DetailRow({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <div className="flex items-baseline gap-sp-2 py-1">
+      <dt className="shrink-0 text-(--muted)">{label}</dt>
+      <dd className="ml-auto text-right">{children}</dd>
+    </div>
+  );
 }
