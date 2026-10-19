@@ -47,7 +47,7 @@ export function Spotlight({ rect }: { rect: AnchorRect | null }) {
 			    actually click the spotlighted button/node to advance). */}
 			<div
 				className="pointer-events-none fixed z-40 rounded-card text-(--accent)"
-				style={{ top, left, width, height, boxShadow: `0 0 0 2px var(--accent), 0 0 0 200vmax ${DIM}` }}
+				style={{ top, left, width, height, boxShadow: `0 0 0 var(--spot-ring) var(--accent), 0 0 0 200vmax ${DIM}` }}
 				aria-hidden
 			>
 				<span className="halo spot-halo" />

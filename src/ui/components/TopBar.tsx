@@ -16,7 +16,7 @@ export function TopBar({ title, onBack, backLabel, meta, action }: { title: stri
         <span aria-hidden>←</span>
       </button>
       <h1 className="min-w-0 flex-1 truncate font-serif text-heading leading-tight">{title}</h1>
-      {meta && <div className="shrink-0 text-caption text-(--muted)">{meta}</div>}
+      {meta && <div className="shrink-0 text-caption text-(--muted) desktop:text-dp-19">{meta}</div>}
       {action && <div className="shrink-0">{action}</div>}
     </div>
   );

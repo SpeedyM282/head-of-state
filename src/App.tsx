@@ -34,7 +34,7 @@ export function App() {
           height to shrink against; min-h-dvh let that assumption silently fail (content taller
           than the viewport grew the shell instead of scrolling inside it) whenever something
           deeper in the chain forgot its own min-h-0 — see CountryDossier's aside for one. */}
-      <div className="safe-area-x relative mx-auto flex h-dvh flex-col py-1 tablet:py-3 desktop:max-w-[1150px] desktop:py-6">
+      <div className="safe-area-x relative mx-auto flex h-dvh flex-col py-1 tablet:py-3 desktop:py-0">
         {phase === 'menu' && <MenuScreen />}
         {phase === 'difficulty' && <DifficultyScreen />}
         {phase === 'map' && (

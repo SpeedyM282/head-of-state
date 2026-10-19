@@ -46,35 +46,33 @@ export function MenuScreen() {
   return (
     // «Кабинет» menu (handoff screen 01): title block on the left, a ruled menu list on the
     // right, footer pinned bottom-left. The right column takes a fixed width; extra width on
-    // wider screens goes to the gap between the columns, never to the text.
-    <div className="flex min-h-0 flex-1 gap-sp-5 px-sp-6 py-sp-4">
+    // wider screens goes to the gap between the columns, never to the text. Desktop (1920×1080
+    // canvas): kicker at 120/120, title 150, menu column 640 wide at x 1140, top 250.
+    <div className="flex min-h-0 flex-1 gap-sp-5 px-sp-6 py-sp-4 desktop:pb-dp-72 desktop:pt-sp-6">
       <div className="flex min-w-0 flex-1 flex-col">
         <p className="eyebrow">{ui.menu.kicker}</p>
-        <h1
-          className="mt-sp-5 font-serif font-light"
-          // The menu title is the one display size above --text-display (46pt on the 640pt
-          // canvas); a one-off clamp rather than a seventh global role.
-          style={{ fontSize: 'clamp(2.875rem, calc(2.875rem + 14 * (100vw - 640px) / 640), 3.75rem)', lineHeight: 1 }}
-        >
+        {/* The menu title is the one display size above --text-display (46pt mobile, 150 desktop);
+            a one-off size rather than a seventh global role. */}
+        <h1 className="mt-sp-5 font-serif text-[clamp(2.875rem,calc(2.875rem+14*(100vw-640px)/640),3.75rem)] leading-none font-light desktop:mt-dp-56 desktop:text-dp-150 desktop:leading-[0.95]">
           {ui.menu.title[0]}
           <br />
           {ui.menu.title[1]}
         </h1>
-        <p className="flavor mt-sp-4 max-w-[280px] text-label">{ui.menu.subtitle}</p>
-        <p className="mt-auto pt-sp-3 text-caption text-(--muted)">{ui.menu.footer}</p>
+        <p className="flavor mt-sp-4 max-w-[280px] text-label desktop:mt-dp-56 desktop:max-w-dp-700 desktop:text-dp-32">{ui.menu.subtitle}</p>
+        <p className="mt-auto pt-sp-3 text-caption text-(--muted) desktop:text-dp-19">{ui.menu.footer}</p>
       </div>
 
-      <nav className="flex w-[240px] shrink-0 flex-col justify-center">
-        <div className="flex flex-col">
+      <nav className="flex w-[240px] shrink-0 flex-col justify-center desktop:w-dp-640 desktop:justify-start desktop:pt-dp-130">
+        <div className="flex flex-col desktop:gap-dp-8">
           <MenuRow onClick={handlePlay} accent trailing={<span className="nudge inline-block" aria-hidden>→</span>}>
             {ui.menu.newGame}
           </MenuRow>
           {continueValue && (
-            <MenuRow onClick={continueGame} trailing={<span className="min-w-0 text-right text-caption text-(--muted)">{continueValue}</span>}>
+            <MenuRow onClick={continueGame} trailing={<span className="min-w-0 text-right text-caption text-(--muted) desktop:text-dp-20">{continueValue}</span>}>
               {ui.menu.continue}
             </MenuRow>
           )}
-          <MenuRow onClick={goToMedals} trailing={<span className="text-caption text-(--muted)">{format(ui.medals.count, { n: earnedCount, total: MEDALS.length })}</span>}>
+          <MenuRow onClick={goToMedals} trailing={<span className="text-caption text-(--muted) desktop:text-dp-20">{format(ui.medals.count, { n: earnedCount, total: MEDALS.length })}</span>}>
             {ui.medals.title}
           </MenuRow>
           <MenuRow onClick={goToSettings}>{ui.settings.title}</MenuRow>
@@ -83,7 +81,7 @@ export function MenuScreen() {
 
       {showTutorialPrompt && (
         <div className="scrim fixed inset-0 z-30 flex items-center justify-center p-sp-3" role="dialog" aria-modal="true">
-          <div className="dialog w-full max-w-xs p-sp-4">
+          <div className="dialog w-full max-w-xs p-sp-4 desktop:max-w-dp-600">
             <p className="font-serif text-heading leading-tight">{ui.tutorial.prompt.title}</p>
             <div className="mt-sp-4 flex flex-col gap-sp-2">
               <button type="button" className="btn btn-primary min-h-11 text-label" onClick={startTutorial}>
@@ -107,7 +105,7 @@ function MenuRow({ children, onClick, trailing, accent }: { children: ReactNode;
     <button
       type="button"
       onClick={onClick}
-      className={`press flex min-h-11 w-full items-center justify-between gap-sp-2 py-sp-3 text-left text-label font-medium ${accent ? 'text-(--accent)' : ''}`}
+      className={`press flex min-h-11 w-full items-center justify-between gap-sp-2 py-sp-3 text-left text-label font-medium desktop:py-dp-24 desktop:text-dp-36 ${accent ? 'text-(--accent)' : ''}`}
     >
       <span className="whitespace-nowrap">{children}</span>
       {trailing}

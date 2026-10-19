@@ -32,15 +32,15 @@ export function RegionInfo({ region }: { region: RegionKey }) {
 
   return (
     <>
-      <h2 className="font-serif text-heading leading-none">{ui.map.continents[region]}</h2>
-      <p className="text-caption leading-normal text-(--muted)">{meta}</p>
-      <div className="mt-0.5 flex flex-col gap-sp-1">
+      <h2 className="font-serif text-heading leading-none desktop:text-dp-64">{ui.map.continents[region]}</h2>
+      <p className="text-caption leading-normal text-(--muted) desktop:text-dp-18 desktop:leading-[1.45]">{meta}</p>
+      <div className="mt-0.5 flex flex-col gap-sp-1 desktop:mt-dp-6 desktop:gap-dp-20">
         <MeterRow label={ui.map.dossier.economy} value={Math.round(average(members.map((c) => c.economyLevel)))} />
         <MeterRow label={ui.map.dossier.corruption} value={Math.round(average(members.map((c) => c.corruptionLevel)))} warning />
         <MeterRow label={ui.map.dossier.democracy} value={Math.round(average(members.map((c) => c.democracyLevel)))} />
         <MeterRow label={ui.map.dossier.development} value={Math.round(average(members.map((c) => c.developmentLevel)))} />
       </div>
-      <p className="flavor text-caption">{ui.map.regionInfo.hint}</p>
+      <p className="flavor text-caption desktop:text-dp-23">{ui.map.regionInfo.hint}</p>
     </>
   );
 }

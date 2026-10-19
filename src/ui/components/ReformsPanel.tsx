@@ -63,7 +63,7 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 
   return (
     <div
-      className="fixed inset-0 z-10 flex flex-col gap-sp-3 overflow-hidden bg-(--bg) py-sp-3"
+      className="fixed inset-0 z-10 flex flex-col gap-sp-3 overflow-hidden bg-(--bg) py-sp-3 desktop:gap-dp-56 desktop:pb-dp-48 desktop:pt-sp-4"
       style={{ paddingLeft: 'max(var(--spacing-sp-5), env(safe-area-inset-left))', paddingRight: 'max(var(--spacing-sp-5), env(safe-area-inset-right))' }}
     >
       <div className="lamp-glow" aria-hidden />
@@ -81,9 +81,9 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
         }
       />
 
-      <div className="relative flex min-h-0 flex-1 gap-sp-3">
+      <div className="relative flex min-h-0 flex-1 gap-sp-3 desktop:gap-dp-60">
         {/* Branch rail. */}
-        <nav className="flex w-[116px] shrink-0 flex-col gap-0.5" aria-label={ui.reformsPanel.title}>
+        <nav className="flex w-[116px] shrink-0 flex-col gap-0.5 desktop:w-dp-280 desktop:gap-dp-6" aria-label={ui.reformsPanel.title}>
           {BRANCHES.map((b) => {
             const active = b === activeBranch;
             return (
@@ -92,7 +92,7 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
                 type="button"
                 aria-pressed={active}
                 onClick={() => selectBranch(b)}
-                className={`press min-h-9 rounded-btn px-2.5 text-left text-label font-medium ${active ? 'bg-(--selected) text-(--accent)' : ''}`}
+                className={`press min-h-9 rounded-btn px-2.5 text-left text-label font-medium desktop:px-dp-22 desktop:py-dp-20 desktop:text-dp-23 ${active ? 'bg-(--selected) text-(--accent)' : ''}`}
               >
                 {ui.branches[b]}
               </button>
@@ -101,7 +101,7 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
         </nav>
 
         {/* Level chain. */}
-        <div className="flex w-[226px] shrink-0 flex-col overflow-y-auto pb-1 tablet:w-[280px]">
+        <div className="flex w-[226px] shrink-0 flex-col overflow-y-auto pb-1 tablet:w-[280px] desktop:w-dp-560">
           {branchReforms.map((r, i) => {
             const reason = canBuyReformReason(state, content, r.id);
             const owned = reason === 'owned';
@@ -111,7 +111,7 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
             return (
               <div key={r.id} className="flex flex-col">
                 {i > 0 && (
-                  <div className="relative ml-[18px] h-2 w-px shrink-0 bg-(--line)" aria-hidden>
+                  <div className="relative ml-[18px] h-2 w-px shrink-0 bg-(--line) desktop:ml-[calc(var(--dp)*44)] desktop:h-dp-24 desktop:w-dp-2" aria-hidden>
                     {prevOwned && isSelected && !owned && <span className="flow-dot" />}
                   </div>
                 )}
@@ -119,7 +119,7 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
                   type="button"
                   onClick={() => setSelectedId(r.id)}
                   aria-pressed={isSelected}
-                  className={`press relative flex flex-col gap-0.5 rounded-row border px-sp-3 py-1 text-left ${isSelected ? 'border-(--accent) bg-(--selected) text-(--accent)' : 'border-(--line)'}`}
+                  className={`press relative flex flex-col gap-0.5 rounded-row border px-sp-3 py-1 text-left desktop:gap-dp-10 desktop:px-dp-26 desktop:py-dp-22 ${isSelected ? 'border-(--accent) bg-(--selected) text-(--accent)' : 'border-(--line)'}`}
                   style={{ opacity: locked && !isSelected ? 0.45 : 1 }}
                 >
                   {isSelected && <span className="halo" aria-hidden />}
@@ -127,7 +127,7 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
                     {ui.reformsPanel.tier} {r.tier + 1}
                   </span>
                   <span className="flex items-baseline gap-sp-2">
-                    <span className="min-w-0 flex-1 truncate text-label font-medium leading-tight">{loc(r.title, lang)}</span>
+                    <span className="min-w-0 flex-1 truncate text-label font-medium leading-tight desktop:text-dp-23">{loc(r.title, lang)}</span>
                     <span className={`shrink-0 whitespace-nowrap text-caption ${owned ? 'text-(--accent)' : 'text-(--muted)'}`}>
                       {owned ? `✓ ${ui.reformsPanel.adopted}` : locked ? ui.reformsPanel.lockedShort : cost(r)}
                     </span>
@@ -151,15 +151,15 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
     const owned = reason === 'owned';
     const line = reasonLine(reason, ui);
     return (
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-sp-1">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-sp-1 desktop:gap-dp-16 desktop:pl-dp-20 desktop:pt-dp-6">
         {/* Text scrolls; «Принять» stays pinned below it. */}
-        <div className="flex min-h-0 flex-col gap-1 overflow-y-auto">
+        <div className="flex min-h-0 flex-col gap-1 overflow-y-auto desktop:gap-dp-16">
           <p className="eyebrow truncate">
             {ui.reformsPanel.tier} {r.tier + 1} · {ui.branches[branch]}
           </p>
-          <h3 className="font-serif text-heading leading-[1.05]">{loc(r.title, lang)}</h3>
-          <p className="flavor text-caption">{loc(r.description, lang)}</p>
-          <dl className="mt-0.5 flex flex-col text-caption">
+          <h3 className="font-serif text-heading leading-[1.05] desktop:text-dp-52">{loc(r.title, lang)}</h3>
+          <p className="flavor text-caption desktop:max-w-dp-640 desktop:text-dp-24">{loc(r.description, lang)}</p>
+          <dl className="mt-0.5 flex flex-col text-caption desktop:grid desktop:grid-cols-[calc(var(--dp)*200)_1fr] desktop:gap-x-dp-24 desktop:gap-y-dp-14 desktop:text-dp-19">
             <DetailRow label={ui.reformsPanel.cost}>{cost(r)}</DetailRow>
             <DetailRow label={ui.reformsPanel.effectsInstant}>
               <EffectInline effects={r.instant} ui={ui} lang={lang} />
@@ -176,7 +176,7 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
             <span className="stamp stamp-accent text-caption">{ui.reformsPanel.adopted}</span>
           ) : (
             <>
-              <button type="button" className="btn btn-primary min-h-9 w-full text-label" disabled={reason !== null} onClick={() => buyReform(r.id)}>
+              <button type="button" className="btn btn-primary min-h-9 w-full text-label desktop:w-dp-320" disabled={reason !== null} onClick={() => buyReform(r.id)}>
                 {ui.reformsPanel.approve}
               </button>
               {line && <p className="mt-1 text-center text-caption text-(--warning)">{line}</p>}
@@ -190,9 +190,10 @@ export function ReformsPanel({ onClose }: { onClose: () => void }) {
 
 function DetailRow({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <div className="flex items-baseline gap-sp-2 py-1">
+    // Desktop: the row dissolves into the parent 200 / 1fr grid (label column, value column).
+    <div className="flex items-baseline gap-sp-2 py-1 desktop:contents">
       <dt className="shrink-0 text-(--muted)">{label}</dt>
-      <dd className="ml-auto text-right">{children}</dd>
+      <dd className="ml-auto text-right desktop:ml-0 desktop:text-left">{children}</dd>
     </div>
   );
 }

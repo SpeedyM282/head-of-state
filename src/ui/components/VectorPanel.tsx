@@ -9,7 +9,7 @@ const TRAIL_OPACITY = [0.4, 0.2, 0.12];
 function Pointer({ at, opacity = 1, className = '' }: { at: number; opacity?: number; className?: string }) {
   return (
     <span
-      className={`absolute -top-0.5 h-0 w-0 -translate-x-1/2 border-x-[5px] border-t-[7px] border-x-transparent border-t-(--accent) ${className}`}
+      className={`absolute -top-0.5 h-0 w-0 -translate-x-1/2 border-x-[5px] border-t-[7px] border-x-transparent border-t-(--accent) desktop:top-0 desktop:border-x-[calc(var(--dp)*10)] desktop:border-t-[calc(var(--dp)*16)] ${className}`}
       style={{ left: `${Math.max(0, Math.min(100, at))}%`, opacity }}
       aria-hidden
     />
@@ -37,21 +37,21 @@ export function VectorPanel({ vector, trail, previewShift }: { vector: number; t
   const shift = previewShift !== null && previewShift !== 0 ? previewShift : null;
 
   return (
-    <section data-tutorial="vector-panel" className="card flex min-h-[62px] shrink-0 items-center gap-sp-3 px-sp-3 py-sp-2">
-      <div className="flex min-w-0 flex-[1.7] flex-col gap-1">
+    <section data-tutorial="vector-panel" className="card flex min-h-[62px] shrink-0 items-center gap-sp-3 px-sp-3 py-sp-2 desktop:h-dp-168 desktop:gap-dp-48 desktop:rounded-dp-28 desktop:px-dp-44 desktop:py-0">
+      <div className="flex min-w-0 flex-[1.7] flex-col gap-1 desktop:flex-1 desktop:gap-dp-10">
         <div className="flex items-baseline gap-sp-2">
           <p className="eyebrow whitespace-nowrap">{ui.vector.heading}</p>
-          <span className="truncate font-serif text-label leading-none">{ui.vector.zones[zone]}</span>
+          <span className="truncate font-serif text-label leading-none desktop:text-dp-30">{ui.vector.zones[zone]}</span>
         </div>
-        <div className="relative mt-1 h-3.5">
-          <div className="absolute inset-x-0 top-1 flex h-2.5 overflow-hidden rounded-[3px]">
+        <div className="relative mt-1 h-3.5 desktop:mt-dp-4 desktop:h-dp-36">
+          <div className="absolute inset-x-0 top-1 flex h-2.5 overflow-hidden rounded-[3px] desktop:top-dp-16 desktop:h-dp-20 desktop:rounded-dp-6">
             <span className="flex-1 bg-(--zone-dem)" />
             <span className="flex-1 bg-(--zone-auth)" />
             <span className="flex-1 bg-(--zone-tot)" />
           </div>
           <div
-            className="absolute inset-x-0 top-1 h-2.5 opacity-45"
-            style={{ background: 'repeating-linear-gradient(90deg, var(--muted) 0 1px, transparent 1px 11px)' }}
+            className="absolute inset-x-0 top-1 h-2.5 opacity-45 desktop:top-dp-16 desktop:h-dp-20"
+            style={{ background: 'repeating-linear-gradient(90deg, var(--muted) 0 1px, transparent 1px var(--tick-gap))' }}
             aria-hidden
           />
           {[...trail].reverse().map((v, i) => (
@@ -59,21 +59,21 @@ export function VectorPanel({ vector, trail, previewShift }: { vector: number; t
           ))}
           <Pointer at={vector} className="vector-pointer" />
         </div>
-        <div className="flex items-baseline justify-between gap-sp-2 text-micro text-(--muted)">
+        <div className="flex items-baseline justify-between gap-sp-2 text-micro text-(--muted) desktop:text-dp-15">
           <span>{ui.vector.scale.democracy}</span>
-          {trend && <span className="flavor truncate text-micro-lg">{trend}</span>}
+          {trend && <span className="flavor truncate text-micro-lg desktop:text-dp-19">{trend}</span>}
           <span>{ui.vector.scale.totalitarianism}</span>
         </div>
       </div>
 
-      <span className="h-9 w-px shrink-0 bg-(--line)" aria-hidden />
+      <span className="h-9 w-px shrink-0 bg-(--line) desktop:h-dp-88" aria-hidden />
 
-      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5 desktop:w-dp-420 desktop:flex-none desktop:gap-dp-10">
         <p className="eyebrow">{p.kicker}</p>
-        <p className="truncate text-caption font-medium text-(--accent)">
+        <p className="truncate text-caption font-medium text-(--accent) desktop:text-dp-23">
           {shift !== null ? `${format(p.shift, { d: signed(shift) })} · ${shift < 0 ? p.toDemocracy : p.toTotalitarianism}` : p.none}
         </p>
-        <p className="flavor truncate text-caption">{shift !== null ? p.flavor : p.flavorNone}</p>
+        <p className="flavor truncate text-caption desktop:text-dp-19">{shift !== null ? p.flavor : p.flavorNone}</p>
       </div>
     </section>
   );

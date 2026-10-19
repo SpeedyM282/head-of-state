@@ -61,14 +61,15 @@ export function MapScreen() {
         onEnterRegion={setActiveRegion}
         selectedCountryId={selectedCountryId}
         onSelectCountry={setSelectedCountryId}
+        zoomControlClassName="bottom-dp-80 right-dp-80"
       />
 
       {/* Floating chrome, inset by the safe area (landscape phones: notch on the left/right). */}
       <div
-        className="pointer-events-none absolute inset-0 px-sp-5 py-sp-4"
+        className="pointer-events-none absolute inset-0 px-sp-5 py-sp-4 desktop:pt-dp-72"
         style={{ paddingLeft: 'max(var(--spacing-sp-5), env(safe-area-inset-left))', paddingRight: 'max(var(--spacing-sp-5), env(safe-area-inset-right))' }}
       >
-        <div className="card pointer-events-auto flex max-h-full w-[232px] flex-col gap-sp-1 overflow-y-auto px-sp-3 py-sp-3 tablet:w-[260px]">
+        <div className="card pointer-events-auto flex max-h-full w-[232px] flex-col gap-sp-1 overflow-y-auto px-sp-3 py-sp-3 tablet:w-[260px] desktop:max-h-[calc(100%-var(--dp)*72)] desktop:w-dp-600 desktop:gap-dp-22 desktop:rounded-dp-30 desktop:px-dp-44 desktop:py-dp-40">
           <div className="flex items-center gap-sp-2">
             <button
               type="button"
@@ -94,19 +95,28 @@ export function MapScreen() {
           )}
         </div>
 
+        {/* Phone: a «Списком» pill. Desktop: a search field look-alike (480×64) that opens the
+            same searchable list. */}
         <button
           type="button"
-          className="glass press pointer-events-auto absolute top-sp-4 min-h-11 rounded-btn px-sp-3 text-label font-medium"
+          className="glass press pointer-events-auto absolute top-sp-4 min-h-11 rounded-btn px-sp-3 text-label font-medium desktop:hidden"
           style={{ right: 'max(var(--spacing-sp-5), env(safe-area-inset-right))' }}
           onClick={() => setListOpen(true)}
         >
           {ui.map.listButton}
         </button>
-
-        <p
-          className="absolute bottom-sp-4 text-caption text-(--muted)"
-          style={{ right: 'max(var(--spacing-sp-5), env(safe-area-inset-right))' }}
+        <button
+          type="button"
+          className="glass press pointer-events-auto absolute right-dp-80 top-dp-72 hidden h-dp-64 w-dp-480 items-center gap-dp-14 rounded-dp-18 px-dp-24 text-left text-(--muted) desktop:flex"
+          onClick={() => setListOpen(true)}
         >
+          <span className="text-dp-22" aria-hidden>
+            ⌕
+          </span>
+          <span className="text-dp-19">{ui.map.searchPill}</span>
+        </button>
+
+        <p className="absolute bottom-sp-4 right-[max(var(--spacing-sp-5),env(safe-area-inset-right))] text-caption text-(--muted) desktop:bottom-dp-96 desktop:left-dp-80 desktop:right-auto desktop:text-dp-19">
           {ui.map.hint}
         </p>
       </div>

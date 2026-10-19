@@ -26,26 +26,24 @@ export function GameOverScreen() {
 
   return (
     // «Кабинет» term summary (handoff screen 06): verdict on the left, months-in-power and the
-    // actions in a ruled right column.
-    <div className="flex min-h-0 flex-1 flex-col gap-sp-3 px-sp-6 py-sp-4">
+    // actions in a ruled right column. Desktop: kicker at 120, stamp 190, verdict 120px, right
+    // column 560 wide from top 300.
+    <div className="flex min-h-0 flex-1 flex-col gap-sp-3 px-sp-6 py-sp-4 desktop:pt-sp-6">
       <p className="eyebrow shrink-0">{ui.gameOver.kicker}</p>
 
-      <div className="flex min-h-0 flex-1 items-center gap-sp-5">
+      <div className="flex min-h-0 flex-1 items-center gap-sp-5 desktop:mt-dp-30 desktop:items-start">
         <div className="min-w-0 flex-1">
-          <span className="stamp thump text-caption">
+          <span className="stamp stamp-lg thump text-caption">
             {o.result === 'victory' ? ui.gameOver.stampVictory : ui.gameOver.stampDefeat}
           </span>
-          <h1
-            className="mt-sp-4 font-serif font-light"
-            // Verdict is a one-off size between --text-display and the menu title (40pt on the
-            // 640pt canvas).
-            style={{ fontSize: 'clamp(2.5rem, calc(2.5rem + 12 * (100vw - 640px) / 640), 3.25rem)', lineHeight: 1 }}
-          >
+          {/* Verdict: a one-off size between --text-display and the menu title (40pt mobile,
+              120 desktop). */}
+          <h1 className="mt-sp-4 font-serif text-[clamp(2.5rem,calc(2.5rem+12*(100vw-640px)/640),3.25rem)] leading-none font-light desktop:mt-dp-90 desktop:max-w-dp-1000 desktop:text-dp-120">
             {copy.title}
           </h1>
-          <p className="flavor mt-sp-3 max-w-[340px] text-label">{copy.text}</p>
+          <p className="flavor mt-sp-3 max-w-[340px] text-label desktop:mt-dp-50 desktop:max-w-dp-860 desktop:text-dp-32">{copy.text}</p>
           {newMedals.length > 0 && (
-            <p className="mt-sp-3 max-w-[360px] text-caption text-(--muted)">
+            <p className="mt-sp-3 max-w-[360px] text-caption text-(--muted) desktop:mt-dp-40 desktop:max-w-dp-860 desktop:text-dp-21">
               {ui.medals.newOnGameOver}{' '}
               <span className="text-(--text)">
                 {newMedals
@@ -57,16 +55,13 @@ export function GameOverScreen() {
           )}
         </div>
 
-        <div className="flex w-[200px] shrink-0 flex-col gap-sp-1 self-stretch border-l border-(--line) pl-sp-4 justify-center">
+        <div className="flex w-[200px] shrink-0 flex-col justify-center gap-sp-1 self-stretch border-l border-(--line) pl-sp-4 desktop:mt-dp-110 desktop:w-dp-560 desktop:justify-start desktop:gap-dp-20 desktop:self-auto desktop:pl-dp-64">
           <p className="eyebrow">{ui.gameOver.survived}</p>
-          <p
-            className="num font-light tabular-nums"
-            // Hero number (72pt on the canvas) — far above any type role.
-            style={{ fontSize: 'clamp(4.5rem, calc(4.5rem + 16 * (100vw - 640px) / 640), 5.5rem)', lineHeight: 1 }}
-          >
+          {/* Hero number (72pt mobile, 220 desktop) — far above any type role. */}
+          <p className="num text-[clamp(4.5rem,calc(4.5rem+16*(100vw-640px)/640),5.5rem)] leading-none font-light tabular-nums desktop:text-dp-220">
             {months}
           </p>
-          <div className="mt-sp-2 flex flex-col gap-sp-1">
+          <div className="mt-sp-2 flex flex-col gap-sp-1 desktop:gap-dp-16">
             <button className="btn btn-primary min-h-11 text-label" onClick={() => startGame(content.country.id, content.difficulty.id)}>
               {ui.gameOver.playAgain}
             </button>

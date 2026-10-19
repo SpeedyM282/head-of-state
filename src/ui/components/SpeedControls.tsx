@@ -46,7 +46,7 @@ export function SpeedControls() {
     // 36px squares (the mock's 30pt, scaled) rather than the usual 44px target: the bottom bar
     // has no room for three 44px squares plus the clock caption and «Реформы» at the phone-
     // landscape baseline, and Space is a full keyboard alternative (see MainScreen).
-    <div className="flex items-center gap-1.5" role="group" aria-label={ui.main.speed.normal}>
+    <div className="flex items-center gap-1.5 desktop:gap-dp-10" role="group" aria-label={ui.main.speed.normal}>
       {OPTIONS.map((o) => {
         const active = speed === o.speed;
         const Icon = o.Icon;
@@ -57,7 +57,7 @@ export function SpeedControls() {
             onClick={() => setSpeed(o.speed)}
             aria-label={ui.main.speed[o.label]}
             aria-pressed={active}
-            className={`press relative flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px] border ${active ? 'emit-ring border-(--accent) text-(--accent)' : 'border-(--line) text-(--text)'}`}
+            className={`press relative flex h-9 w-9 shrink-0 items-center justify-center rounded-[9px] border desktop:size-dp-60 desktop:rounded-dp-16 [&>svg]:desktop:size-dp-20 ${active ? 'emit-ring border-(--accent) text-(--accent)' : 'border-(--line) text-(--text)'}`}
           >
             <Icon />
           </button>

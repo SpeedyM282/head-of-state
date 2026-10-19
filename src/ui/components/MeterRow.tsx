@@ -22,12 +22,12 @@ export function MeterRow({ label, value, warning = false, size = 'card', popOnCh
   const pct = Math.max(0, Math.min(100, value));
   const pop = useChangePop(value, popOnChange);
   return (
-    <div className="relative flex flex-col gap-1">
+    <div className={`relative flex flex-col gap-1 ${size === 'card' ? 'desktop:gap-dp-8' : 'desktop:gap-dp-6'}`}>
       <div className="flex items-baseline justify-between gap-sp-2">
-        <span className={`truncate text-caption leading-none ${warning ? 'text-(--warning)' : 'text-(--muted)'}`}>{label}</span>
-        <span className={`num shrink-0 leading-none ${size === 'card' ? 'text-label' : 'text-num'} ${warning ? 'text-(--warning)' : ''}`}>{value}</span>
+        <span className={`truncate text-caption leading-none ${size === 'compact' ? 'desktop:text-dp-16' : ''} ${warning ? 'text-(--warning)' : 'text-(--muted)'}`}>{label}</span>
+        <span className={`num shrink-0 leading-none ${size === 'card' ? 'text-label desktop:text-dp-30' : 'text-num'} ${warning ? 'text-(--warning)' : ''}`}>{value}</span>
       </div>
-      <div className="h-0.5 overflow-hidden rounded-xs bg-(--line)">
+      <div className="h-0.5 overflow-hidden rounded-xs bg-(--line) desktop:h-dp-4">
         <div className="meter-fill h-full" style={{ width: `${pct}%`, background: warning ? 'var(--warning)' : 'var(--accent)' }} />
       </div>
       {pop && (

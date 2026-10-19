@@ -56,17 +56,17 @@ export function EventModal({ onMinimize }: { onMinimize?: () => void }) {
         if (e.target === e.currentTarget && pickedIndex === null) onMinimize?.();
       }}
     >
-      <div className="dialog flex max-h-[92dvh] w-full max-w-[420px] flex-col gap-sp-2 px-sp-4 py-sp-3 tablet:max-w-[520px]">
+      <div className="dialog flex max-h-[92dvh] w-full max-w-[420px] flex-col gap-sp-2 px-sp-4 py-sp-3 tablet:max-w-[520px] desktop:max-w-dp-840 desktop:gap-dp-16 desktop:px-dp-56 desktop:py-dp-48">
         {/* Text scrolls internally if it's long; the options below stay pinned and visible. */}
         <div className="flex min-h-0 flex-col gap-sp-1 overflow-y-auto">
           <p className="eyebrow">
             {ui.event.kicker} · {ui.event.kinds[event.kind]}
           </p>
           <h2 className="font-serif text-display leading-[1.05] short:text-heading">{loc(event.title, lang)}</h2>
-          <p className="flavor text-label short:text-caption">{loc(event.text, lang)}</p>
+          <p className="flavor text-label short:text-caption desktop:mb-dp-8 desktop:text-dp-26">{loc(event.text, lang)}</p>
         </div>
 
-        <div className="flex shrink-0 flex-col gap-1.5">
+        <div className="flex shrink-0 flex-col gap-1.5 desktop:gap-dp-12">
           {event.options.map((opt, i) => {
             const chosen = pickedIndex === i;
             return (
@@ -78,12 +78,12 @@ export function EventModal({ onMinimize }: { onMinimize?: () => void }) {
                 onClick={() => setPicked({ eventId: event.id, index: i })}
               >
                 {chosen && <span className="halo" aria-hidden />}
-                <span className="min-w-0 flex-1 text-label leading-tight">{loc(opt.text, lang)}</span>
+                <span className="min-w-0 flex-1 text-label leading-tight desktop:text-dp-22">{loc(opt.text, lang)}</span>
                 <span className="max-w-[55%] shrink-0 text-right text-caption font-normal leading-snug text-(--muted)">
                   <EffectInline effects={opt.effects} ui={ui} lang={lang} />
                 </span>
                 {chosen && (
-                  <span className="stamp stamp-accent thump absolute right-[30%] -top-3 bg-(--surface) text-caption" aria-live="polite">
+                  <span className="stamp stamp-accent thump absolute right-[30%] -top-3 bg-(--surface) text-caption desktop:top-[calc(var(--dp)*-18)] desktop:text-dp-15" aria-live="polite">
                     {ui.event.signed}
                   </span>
                 )}

@@ -3,7 +3,8 @@ import { geoContains, geoEqualEarth, geoPath, type GeoProjection } from 'd3-geo'
 import type { Feature, Geometry } from 'geojson';
 import { WORLD_FEATURES, countryFeature } from './WorldMap';
 import { hashUnit, mainlandCentroid, mainlandFeature } from '../map/geo';
-import { useViewport } from '../hooks/useViewport';
+import { desktopScale, useViewport } from '../hooks/useViewport';
+import { ZoomControl } from './ZoomControl';
 
 /** Absurdistan is fictional and has no shape in the topology: it is drawn as the mock's dashed
  * ellipse («границы условные») at this made-up spot, over open water. */
@@ -13,6 +14,8 @@ const ABSURDISTAN_ZOOM = 2.6;
 /** Cap on how far a small country is magnified (relative to the world fit) — the 110m
  * topology turns blocky past this. */
 const MAX_COUNTRY_ZOOM = 14;
+/** Wheel-notch / button zoom step (2^0.2 ≈ ×1.15, d3-zoom's default wheel delta). */
+const ZOOM_STEP = 1.15;
 /** Player pan/pinch zoom range on top of the framed view. */
 const MAX_PAN_ZOOM = 4;
 /** How far past the screen edge the player may drag the map, as a share of the screen. */
@@ -49,6 +52,8 @@ interface Frame {
   countryPath: string | null;
   /** The country's marker point in screen space (before the player's pan/zoom). */
   point: [number, number];
+  /** Map magnification relative to the whole world fitting the screen — the zoom readout's base. */
+  zoom: number;
   /** Map-space pin spot for an event id: inside the country when it is big enough on screen. */
   pinFor: (eventId: string) => [number, number] | null;
 }
@@ -57,10 +62,12 @@ interface Frame {
  * places it (center ≈ 64% x / 48% y — a touch lower than the mock's 42% so the label clears
  * the agenda panel, which runs taller at our type sizes), rotated onto the central meridian so countries that
  * cross ±180° (Russia, Fiji…) stay in one piece. */
-function buildFrame(countryId: string, w: number, h: number): Frame {
+function buildFrame(countryId: string, w: number, h: number, desktop: boolean): Frame {
   const shape = countryFeature(countryId);
   const center = shape ? mainlandCentroid(shape) : ABSURDISTAN_CENTER;
-  const box = { cx: w * 0.64, cy: h * 0.48, bw: w * 0.34, bh: h * 0.4 };
+  // Desktop centres the country a little left of mobile (mock: 1000×480 on 1920×1080) — its side
+  // panels are proportionally narrower.
+  const box = desktop ? { cx: w * 0.52, cy: h * 0.44, bw: w * 0.3, bh: h * 0.4 } : { cx: w * 0.64, cy: h * 0.48, bw: w * 0.34, bh: h * 0.4 };
 
   const worldScale = geoEqualEarth().fitSize([w, h], { type: 'Sphere' }).scale();
   const projection: GeoProjection = geoEqualEarth().rotate([-center[0], 0]);
@@ -89,27 +96,40 @@ function buildFrame(countryId: string, w: number, h: number): Frame {
     if (d) paths.push({ key: String(f.id ?? i), d });
   });
   const point: [number, number] = [box.cx, box.cy];
-  return { paths, countryPath: shape ? path(shape) : null, point, pinFor: (id) => pinInside(id, shape, projection, point, w) };
+  return {
+    paths,
+    countryPath: shape ? path(shape) : null,
+    point,
+    zoom: projection.scale() / worldScale,
+    pinFor: (id) => pinInside(id, shape, projection, point, w, h),
+  };
 }
 
 /** Minimum on-screen distance (as a share of screen width) between the country marker and an
  * event pin — closer than this they overlap, and the pin falls back to an outside spot. */
 const PIN_MIN_GAP = 0.07;
+/** Half-height (share of screen height) of the band right of the marker where the country
+ * label sits — pins are never placed there. */
+const PIN_LABEL_BAND = 0.08;
 
 /** A stable spot for an event pin inside the player's country: up to 24 hash-seeded
  * candidates across the country's on-screen bounds, the first that is on land of that country
  * and clear of the marker. Absurdistan uses its ellipse. Null when the country is too small. */
-function pinInside(id: string, shape: Feature<Geometry> | null, projection: GeoProjection, point: [number, number], w: number): [number, number] | null {
+function pinInside(id: string, shape: Feature<Geometry> | null, projection: GeoProjection, point: [number, number], w: number, h: number): [number, number] | null {
   const minGap = w * PIN_MIN_GAP;
+  // The country label sits to the right of the marker; keep pins out of that band.
+  const labelBand = h * PIN_LABEL_BAND;
+  const onLabel = (x: number, y: number) => x > point[0] && Math.abs(y - point[1]) < labelBand;
   if (!shape) {
-    const angle = hashUnit(id) * Math.PI * 2;
+    // Absurdistan: somewhere in the lower-left quarter of its ellipse, clear of the label.
+    const angle = (0.5 + 0.5 * hashUnit(id)) * Math.PI;
     return [point[0] + Math.cos(angle) * w * 0.05, point[1] + Math.sin(angle) * w * 0.04];
   }
   const [[x0, y0], [x1, y1]] = geoPath(projection).bounds(mainlandFeature(shape));
   for (let i = 0; i < 24; i++) {
     const x = x0 + (0.1 + 0.8 * hashUnit(`${id}:x${i}`)) * (x1 - x0);
     const y = y0 + (0.1 + 0.8 * hashUnit(`${id}:y${i}`)) * (y1 - y0);
-    if (Math.hypot(x - point[0], y - point[1]) < minGap) continue;
+    if (Math.hypot(x - point[0], y - point[1]) < minGap || onLabel(x, y)) continue;
     const lonLat = projection.invert?.([x, y]);
     if (lonLat && geoContains(shape, lonLat)) return [x, y];
   }
@@ -130,8 +150,12 @@ function clampView(v: View, w: number, h: number): View {
  * bounds; double-tap re-centres. Presentation only — no game state is read beyond the props.
  */
 export function CountryMap({ countryId, label, sublabel, eventPin }: Props) {
-  const { width: w, height: h } = useViewport();
-  const frame = useMemo(() => buildFrame(countryId, w, h), [countryId, w, h]);
+  const viewport = useViewport();
+  const { width: w, height: h } = viewport;
+  // Desktop design-pixel size (null on phones) — marker, label and pin sizes follow the desktop
+  // handoff there (20px dot, 120px rings, 34px pin…), the mobile one otherwise.
+  const dp = desktopScale(viewport);
+  const frame = useMemo(() => buildFrame(countryId, w, h, dp !== null), [countryId, w, h, dp]);
   const [view, setView] = useState<View>(HOME);
   const pinId = eventPin?.id ?? null;
   const inside = useMemo(() => (pinId ? frame.pinFor(pinId) : null), [frame, pinId]);
@@ -169,10 +193,17 @@ export function CountryMap({ countryId, label, sublabel, eventPin }: Props) {
     pointers.current.delete(e.pointerId);
     restartGesture(view);
   }
-  function onWheel(e: ReactWheelEvent<HTMLDivElement>) {
-    const k = Math.min(MAX_PAN_ZOOM, Math.max(1, view.k * Math.exp(-e.deltaY * 0.002)));
+  /** Zoom by `factor` keeping the screen point (px, py) fixed. */
+  function zoomAround(factor: number, px: number, py: number) {
+    const k = Math.min(MAX_PAN_ZOOM, Math.max(1, view.k * factor));
     const ratio = k / view.k;
-    setView(clampView({ k, x: e.clientX - (e.clientX - view.x) * ratio, y: e.clientY - (e.clientY - view.y) * ratio }, w, h));
+    setView(clampView({ k, x: px - (px - view.x) * ratio, y: py - (py - view.y) * ratio }, w, h));
+  }
+  // Wheel: ×1.15 per notch (2^0.2 per 100px of delta; line-mode wheels scaled like d3-zoom),
+  // continuous for trackpads; zooms toward the cursor.
+  function onWheel(e: ReactWheelEvent<HTMLDivElement>) {
+    const delta = e.deltaY * (e.deltaMode === 1 ? 0.05 : e.deltaMode ? 1 : 0.002);
+    zoomAround(2 ** -delta, e.clientX, e.clientY);
   }
 
   // Screen position of the country point under the current pan/zoom.
@@ -194,8 +225,14 @@ export function CountryMap({ countryId, label, sublabel, eventPin }: Props) {
     };
   }
 
-  // Absurdistan's ellipse: the mock's 100×76pt on the 640pt canvas.
+  // Absurdistan's ellipse: the mock's 100×76pt on the 640pt canvas (300×228 on desktop).
   const ellipse = { rx: w * 0.078, ry: w * 0.059 };
+  // Marker / label / pin sizes in px — the mobile pt values, or desktop design px × dp.
+  const m = dp
+    ? { ring: 120 * dp, dot: 20 * dp, veilRing: 8 * dp, labelX: 40 * dp, labelY: 44 * dp, pin: 34 * dp, pinDot: 8 * dp, stroke: 2, dash: '6 6', pillMax: 480 * dp }
+    : { ring: 40, dot: 8, veilRing: 3, labelX: 18, labelY: 22, pin: 14, pinDot: 3, stroke: 1, dash: '3 3', pillMax: 180 };
+
+  const pinFlip = pin ? pin.x < sx || pin.x > w - m.pillMax - 20 : null;
 
   return (
     <div
@@ -219,8 +256,8 @@ export function CountryMap({ countryId, label, sublabel, eventPin }: Props) {
                 fill="var(--selected)"
                 stroke="var(--accent)"
                 strokeOpacity={0.7}
-                strokeWidth={1}
-                strokeDasharray="3 3"
+                strokeWidth={m.stroke}
+                strokeDasharray={m.dash}
                 vectorEffect="non-scaling-stroke"
               />
             ) : (
@@ -232,8 +269,8 @@ export function CountryMap({ countryId, label, sublabel, eventPin }: Props) {
                 fill="var(--selected)"
                 stroke="var(--accent)"
                 strokeOpacity={0.7}
-                strokeWidth={1}
-                strokeDasharray="3 3"
+                strokeWidth={m.stroke}
+                strokeDasharray={m.dash}
                 vectorEffect="non-scaling-stroke"
               />
             )}
@@ -259,33 +296,48 @@ export function CountryMap({ countryId, label, sublabel, eventPin }: Props) {
 
       {/* Country marker: 8pt accent dot with a veil ring and two pulsing rings, label to the right. */}
       <div className="pointer-events-none absolute text-(--accent)" style={{ left: sx, top: sy }} aria-hidden>
-        <span className="absolute -left-5 -top-5 h-10 w-10">
+        <span className="absolute" style={{ left: -m.ring / 2, top: -m.ring / 2, width: m.ring, height: m.ring }}>
           <span className="ring-pulse" />
           <span className="ring-pulse" style={{ animationDelay: '1.3s' }} />
         </span>
-        <span className="marker-dot absolute -left-1 -top-1 h-2 w-2 rounded-full bg-(--accent)" style={{ boxShadow: `0 0 0 3px ${veil(0.9)}` }} />
+        <span
+          className="marker-dot absolute rounded-full bg-(--accent)"
+          style={{ left: -m.dot / 2, top: -m.dot / 2, width: m.dot, height: m.dot, boxShadow: `0 0 0 ${m.veilRing}px ${veil(0.9)}` }}
+        />
       </div>
-      <div className="pointer-events-none absolute flex max-w-[180px] flex-col gap-0.5" style={{ left: sx + 18, top: sy - 22 }}>
-        <span className="font-serif text-label leading-none text-(--text)">{label}</span>
-        <span className="text-caption leading-none text-(--muted)">{sublabel}</span>
+      <div
+        className="pointer-events-none absolute flex max-w-[180px] flex-col gap-0.5 desktop:max-w-dp-480 desktop:gap-dp-6"
+        style={{ left: sx + m.labelX, top: sy - m.labelY }}
+      >
+        <span className="font-serif text-label leading-none text-(--text) desktop:text-dp-38">{label}</span>
+        <span className="text-caption leading-none text-(--muted) desktop:text-dp-17">{sublabel}</span>
       </div>
 
-      {eventPin && pin && (
+      {eventPin && pin && pinFlip !== null && (
         <button
           type="button"
-          // Near the right edge the pill flips to the left of the dot so it never runs off-screen.
-          className={`press absolute flex items-center gap-sp-2 ${pin.x > w - 200 ? 'flex-row-reverse' : ''}`}
-          style={pin.x > w - 200 ? { right: w - pin.x - 7, top: pin.y - 7 } : { left: pin.x - 7, top: pin.y - 7 }}
+          // The pill points away from the marker (so it never covers the country label) and flips
+          // left near the right edge so it never runs off-screen.
+          className={`press absolute flex items-center gap-sp-2 ${pinFlip ? 'flex-row-reverse' : ''}`}
+          style={pinFlip ? { right: w - pin.x - m.pin / 2, top: pin.y - m.pin / 2 } : { left: pin.x - m.pin / 2, top: pin.y - m.pin / 2 }}
           onPointerDown={(e) => e.stopPropagation()}
           onClick={eventPin.onOpen}
         >
-          <span className="relative h-3.5 w-3.5 shrink-0 text-(--warning)" aria-hidden>
+          <span className="relative shrink-0 text-(--warning)" style={{ width: m.pin, height: m.pin }} aria-hidden>
             <span className="ring-pulse fast" />
-            <span className="absolute inset-[3px] rounded-full bg-(--warning)" />
+            <span className="absolute rounded-full bg-(--warning)" style={{ inset: m.pinDot }} />
           </span>
-          <span className="glass max-w-[180px] truncate rounded-chip px-sp-2 py-1 text-caption font-medium text-(--text)">{eventPin.label}</span>
+          <span className="glass max-w-[180px] truncate rounded-chip px-sp-2 py-1 text-caption font-medium text-(--text) desktop:max-w-dp-480 desktop:rounded-dp-16 desktop:px-dp-18 desktop:py-dp-11 desktop:text-dp-18">
+            {eventPin.label}
+          </span>
         </button>
       )}
+
+      {/* Desktop zoom control: «+» / «−» zoom around the view centre with the wheel's step. */}
+      {/* Pointer/double-click events stop here so the pan surface never captures a button press. */}
+      <div className="absolute bottom-dp-212 right-[var(--map-inset)]" onPointerDown={(e) => e.stopPropagation()} onDoubleClick={(e) => e.stopPropagation()}>
+        <ZoomControl level={frame.zoom * view.k} onZoomIn={() => zoomAround(ZOOM_STEP, w / 2, h / 2)} onZoomOut={() => zoomAround(1 / ZOOM_STEP, w / 2, h / 2)} />
+      </div>
     </div>
   );
 }

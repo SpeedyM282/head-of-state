@@ -45,15 +45,15 @@ export function CountryDossier({ countryId }: { countryId: string }) {
 
   return (
     <>
-      <h2 className="font-serif text-heading leading-none">{loc(country.name, lang)}</h2>
-      <p className="text-caption leading-normal text-(--muted)">{meta}</p>
-      <div className="mt-0.5 flex flex-col gap-sp-1">
+      <h2 className="font-serif text-heading leading-none desktop:text-dp-64">{loc(country.name, lang)}</h2>
+      <p className="text-caption leading-normal text-(--muted) desktop:text-dp-18 desktop:leading-[1.45]">{meta}</p>
+      <div className="mt-0.5 flex flex-col gap-sp-1 desktop:mt-dp-6 desktop:gap-dp-20">
         <MeterRow label={ui.map.dossier.economy} value={Math.round(country.economyLevel)} />
         <MeterRow label={ui.map.dossier.corruption} value={Math.round(country.corruptionLevel)} warning />
         <MeterRow label={ui.map.dossier.democracy} value={Math.round(country.democracyLevel)} />
         <MeterRow label={ui.map.dossier.development} value={Math.round(country.developmentLevel)} />
       </div>
-      <p className="flavor line-clamp-3 text-caption" title={loc(country.description, lang)}>
+      <p className="flavor line-clamp-3 text-caption desktop:text-dp-23" title={loc(country.description, lang)}>
         {loc(country.description, lang)}
       </p>
       <button type="button" className="btn btn-primary mt-sp-1 min-h-11 w-full text-label" onClick={() => startGame(country.id, pendingDifficulty)}>

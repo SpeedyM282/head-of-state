@@ -16,7 +16,8 @@ import { mainlandCentroid } from '../map/geo';
 import { loc } from '../../i18n';
 import { useLang, useUi } from '../../store/langStore';
 import { countries } from '../../data';
-import { classifyFormFactor, useViewport, type Viewport } from '../hooks/useViewport';
+import { classifyFormFactor, desktopScale, useViewport, type Viewport } from '../hooks/useViewport';
+import { ZoomControl } from './ZoomControl';
 import { WESTERN_EUROPE_ISO_NUMERIC_TO_ALPHA2 } from '../../data/countries/isoNumericWesternEurope';
 import { EASTERN_EUROPE_ISO_NUMERIC_TO_ALPHA2 } from '../../data/countries/isoNumericEasternEurope';
 import { NORTH_AMERICA_ISO_NUMERIC_TO_ALPHA2 } from '../../data/countries/isoNumericNorthAmerica';
@@ -555,6 +556,8 @@ interface Props {
   onEnterRegion: (region: RegionKey) => void;
   selectedCountryId: string | null;
   onSelectCountry: (id: string) => void;
+  /** Where the desktop zoom control sits inside the map (absolute positioning classes). */
+  zoomControlClassName?: string;
 }
 
 /**
@@ -569,7 +572,7 @@ interface Props {
  * (needs the live projection), so every size is divided by the current zoom `k` to stay a
  * constant on-screen size whatever the region zoom.
  */
-function SelectedMarker({ countryId }: { countryId: string }) {
+function SelectedMarker({ countryId, size }: { countryId: string; size: { dot: number; ring: number; unitsPerPx: number } }) {
   const { projection } = useMapContext();
   const { k } = useZoomPanContext();
   const shape = useMemo(() => countryFeature(countryId), [countryId]);
@@ -577,18 +580,23 @@ function SelectedMarker({ countryId }: { countryId: string }) {
   const point = projection(mainlandCentroid(shape));
   if (!point) return null;
   const [x, y] = point;
-  const s = 1 / (k || 1);
+  // Sizes are screen px; the SVG works in viewBox units under the region zoom k.
+  const s = size.unitsPerPx / (k || 1);
   return (
     <g transform={`translate(${x} ${y}) scale(${s})`} pointerEvents="none" aria-hidden>
-      <circle r={20} fill="none" stroke="var(--accent)" strokeOpacity={0.5} strokeWidth={1} />
-      <circle className="ping" r={20} fill="none" stroke="var(--accent)" strokeWidth={1} />
-      <circle className="ping ping-late" r={20} fill="none" stroke="var(--accent)" strokeWidth={1} />
-      <circle r={4} fill="var(--accent)" className="marker-dot" />
+      <circle r={size.ring} fill="none" stroke="var(--accent)" strokeOpacity={0.5} strokeWidth={1} vectorEffect="non-scaling-stroke" />
+      <circle className="ping" r={size.ring} fill="none" stroke="var(--accent)" strokeWidth={1} vectorEffect="non-scaling-stroke" />
+      <circle className="ping ping-late" r={size.ring} fill="none" stroke="var(--accent)" strokeWidth={1} vectorEffect="non-scaling-stroke" />
+      <circle r={size.dot} fill="var(--accent)" className="marker-dot" />
     </g>
   );
 }
 
-export function WorldMap({ activeRegion, onEnterRegion, selectedCountryId, onSelectCountry }: Props) {
+/** Zoom step for the «+» / «−» buttons — the same ×1.15 a wheel notch gives (d3-zoom's
+ * default wheel delta, 2^0.2). */
+const ZOOM_STEP = 1.15;
+
+export function WorldMap({ activeRegion, onEnterRegion, selectedCountryId, onSelectCountry, zoomControlClassName }: Props) {
   const lang = useLang((s) => s.lang);
   const ui = useUi();
   const byId = useMemo(() => new Map(countries.map((c) => [c.id, c])), []);
@@ -646,7 +654,32 @@ export function WorldMap({ activeRegion, onEnterRegion, selectedCountryId, onSel
     () => ({ rotate: [0, 0, 0] as [number, number, number], scale: bucket.worldScale }),
     [bucket.worldScale],
   );
-  const view = activeRegion ? bucket.regions[activeRegion] : WORLD_VIEW;
+  const baseView = activeRegion ? bucket.regions[activeRegion] : WORLD_VIEW;
+  // The player's own wheel/drag/button zoom on top of the region frame, keyed to the frame it
+  // was made in — entering/leaving a region (or a resize to another bucket) drops it, so the
+  // camera glides to the new frame as before.
+  const frameKey = `${activeRegion ?? 'world'}|${bucket.width}x${bucket.height}`;
+  const frameKeyRef = useRef(frameKey);
+  frameKeyRef.current = frameKey;
+  const [userView, setUserView] = useState<{ key: string; center: [number, number]; zoom: number } | null>(null);
+  const [liveZoom, setLiveZoom] = useState<{ key: string; zoom: number } | null>(null);
+  const view = userView && userView.key === frameKey ? userView : baseView;
+  const zoomLevel = liveZoom && liveZoom.key === frameKey ? liveZoom.zoom : view.zoom;
+  const handleMove = useCallback(({ zoom }: { zoom: number }) => setLiveZoom({ key: frameKeyRef.current, zoom }), []);
+  const handleMoveEnd = useCallback(
+    ({ coordinates, zoom }: { coordinates: [number, number]; zoom: number }) => setUserView({ key: frameKeyRef.current, center: coordinates, zoom }),
+    [],
+  );
+  const zoomBy = (factor: number) => {
+    const zoom = Math.min(MAX_ZOOM, Math.max(1, view.zoom * factor));
+    setUserView({ key: frameKey, center: view.center, zoom });
+    setLiveZoom({ key: frameKey, zoom });
+  };
+  // Marker sizes in screen px (mobile 8/40, desktop 24/120 design px), converted to viewBox
+  // units: `meet` fits the bucket box to the container, here the whole window.
+  const dp = desktopScale(viewport);
+  const pxPerUnit = Math.min(viewport.width / bucket.width, viewport.height / bucket.height) || 1;
+  const markerSize = { dot: dp ? 12 * dp : 4, ring: dp ? 60 * dp : 20, unitsPerPx: 1 / pxPerUnit };
   // See STYLE_SELECTABLE_NO_HOVER's comment: no lingering gold hover tint on touch pointers.
   const selectableStyle = viewport.pointerFine ? STYLE_SELECTABLE : STYLE_SELECTABLE_NO_HOVER;
 
@@ -666,6 +699,8 @@ export function WorldMap({ activeRegion, onEnterRegion, selectedCountryId, onSel
           zoom={view.zoom}
           minZoom={1}
           maxZoom={MAX_ZOOM}
+          onMove={handleMove}
+          onMoveEnd={handleMoveEnd}
           translateExtent={[
             [0, 0],
             [bucket.width, bucket.height],
@@ -701,13 +736,15 @@ export function WorldMap({ activeRegion, onEnterRegion, selectedCountryId, onSel
             }
           </Geographies>
 
-          {activeRegion !== null && selectedCountryId && <SelectedMarker countryId={selectedCountryId} />}
+          {activeRegion !== null && selectedCountryId && <SelectedMarker countryId={selectedCountryId} size={markerSize} />}
 
           {activeRegion === null && (
             <RegionOverlay labels={regionLabels} selectableStyle={selectableStyle} onEnterRegion={onEnterRegion} />
           )}
         </ZoomableGroup>
       </ComposableMap>
+
+      <ZoomControl level={zoomLevel} onZoomIn={() => zoomBy(ZOOM_STEP)} onZoomOut={() => zoomBy(1 / ZOOM_STEP)} className={`absolute ${zoomControlClassName ?? 'bottom-sp-4 right-sp-4'}`} />
 
       <div
         ref={tooltipRef}

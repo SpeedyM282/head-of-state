@@ -36,6 +36,9 @@ const T = {
   calmCorruption: 40,
   vectorDemocrat: 10,
   vectorIron: 90,
+  /** Stat/vector medals only count from this month on — otherwise a country that merely
+   * STARTS strong (easy Absurdistan: every stat 60+, corruption 20) would earn them on day one. */
+  settleMonths: 12,
 } as const;
 
 const owned = (ctx: MedalContext): Reform[] =>
@@ -47,7 +50,7 @@ const inPower = (ctx: MedalContext) => ctx.state.outcome === null;
 const wonElectionIn = (ctx: MedalContext, zone: ReturnType<typeof vectorZone>) =>
   ctx.state.awaitingInauguration && vectorZone(ctx.state.vector) === zone;
 
-export const MEDALS: MedalDef[] = [
+const BASE_MEDALS: MedalDef[] = [
   {
     id: 'first-decree',
     name: { en: 'First Decree', ru: 'Первый указ', uz: 'Birinchi farmon' },
@@ -200,6 +203,36 @@ export const MEDALS: MedalDef[] = [
     check: (ctx) => new Set(ctx.defeatsSeen).size >= 4,
   },
 ];
+
+/** Medals about a stat or vector level: they reward governing, not the starting position, so
+ * they only count from month `T.settleMonths` on, and their condition text says so. */
+const SETTLED_IDS: ReadonlySet<string> = new Set([
+  'invisible-hand',
+  'full-treasury',
+  'peoples-favourite',
+  'elites-content',
+  'clean-hands',
+  'all-sorted',
+  'calm-waters',
+  'democrat-to-the-bone',
+  'iron-fist',
+]);
+
+const AFTER_FIRST_YEAR: LocalizedText = { en: 'after the first year', ru: 'после первого года', uz: 'birinchi yildan keyin' };
+
+function afterFirstYear(text: LocalizedText): LocalizedText {
+  return {
+    en: `${text.en}, ${AFTER_FIRST_YEAR.en}`,
+    ru: `${text.ru}, ${AFTER_FIRST_YEAR.ru}`,
+    uz: `${text.uz}, ${AFTER_FIRST_YEAR.uz}`,
+  };
+}
+
+export const MEDALS: MedalDef[] = BASE_MEDALS.map((m) =>
+  SETTLED_IDS.has(m.id)
+    ? { ...m, condition: afterFirstYear(m.condition), check: (ctx) => ctx.state.turn >= T.settleMonths && m.check(ctx) }
+    : m,
+);
 
 /** Ids of medals whose check passes now but that aren't in `earned` yet, in MEDALS order.
  * Pure — the store decides what to persist. */

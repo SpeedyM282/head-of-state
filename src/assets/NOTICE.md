@@ -34,3 +34,10 @@ latin-ext / cyrillic / cyrillic-ext subsets, as served by Google Fonts.
 - Both licensed under the **SIL Open Font License 1.1** (https://openfontlicense.org).
 - **Vendored** so the UI fonts load offline in the Capacitor build. `fonts.css` maps each
   subset by `unicode-range`, so the browser only downloads the subsets a page needs.
+
+# src/assets/medals/
+
+Medal artwork (32 SVGs: 8 medals × light/dark × earned/locked, 100×150 viewBox) from the
+«Глава государства» medals design handoff (`design_handoff_medals`), vendored unchanged.
+`ui/components/MedalArt.tsx` maps our medal ids to the artwork ids. Medals without artwork
+keep the plain ring-and-disc circle.

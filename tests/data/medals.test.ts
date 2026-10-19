@@ -6,8 +6,9 @@ import { MEDALS, newlyEarned, type MedalContext } from '../../src/data/medals';
 
 const content = buildContent('absurdistan', 'normal');
 const base = initGame(content, 1);
+// Month 12 by default — the stat/vector medals only count from then on (see the gate test below).
 const ctx = (state: Partial<GameState> = {}, defeatsSeen: MedalContext['defeatsSeen'] = []): MedalContext => ({
-  state: { ...base, ...state },
+  state: { ...base, turn: 12, ...state },
   content,
   defeatsSeen,
 });
@@ -30,7 +31,22 @@ describe('MEDALS: shape', () => {
   });
 
   it('a brand-new game earns nothing', () => {
-    expect(newlyEarned([], ctx())).toEqual([]);
+    expect(newlyEarned([], ctx({ turn: 0 }))).toEqual([]);
+  });
+
+  it('stat and vector medals only count from month 12, and say so', () => {
+    const strongStart = { stats: { economy: 90, treasury: 95, approval: 90, eliteLoyalty: 95, stability: 90, development: 90, corruption: 5 }, vector: 5 };
+    for (const id of ['invisible-hand', 'full-treasury', 'peoples-favourite', 'elites-content', 'clean-hands', 'calm-waters', 'democrat-to-the-bone']) {
+      expect(medal(id).check(ctx({ ...strongStart, turn: 11 }))).toBe(false);
+      expect(medal(id).check(ctx({ ...strongStart, turn: 12 }))).toBe(true);
+      expect(medal(id).condition.ru).toContain('после первого года');
+      expect(medal(id).condition.en).toContain('after the first year');
+      expect(medal(id).condition.uz).toContain('birinchi yildan keyin');
+    }
+    expect(medal('iron-fist').check(ctx({ vector: 95, turn: 11 }))).toBe(false);
+    expect(medal('all-sorted').check(ctx({ stats: { ...base.stats, corruption: 90 }, turn: 11 }))).toBe(false);
+    // Ungated medals keep their own conditions.
+    expect(medal('first-decree').condition.ru).not.toContain('после первого года');
   });
 });
 
@@ -108,8 +124,8 @@ describe('MEDALS: conditions', () => {
 
 describe('newlyEarned', () => {
   it('skips already-earned medals and keeps MEDALS order', () => {
-    const state = { stats: { ...base.stats, economy: 90, treasury: 95 } };
-    expect(newlyEarned([], ctx(state))).toEqual(['invisible-hand', 'full-treasury']);
-    expect(newlyEarned(['invisible-hand'], ctx(state))).toEqual(['full-treasury']);
+    const state = { stats: { ...base.stats, economy: 90, treasury: 95 }, ownedReforms: [content.reforms[0].id] };
+    expect(newlyEarned([], ctx(state))).toEqual(['first-decree', 'invisible-hand', 'full-treasury']);
+    expect(newlyEarned(['first-decree', 'invisible-hand'], ctx(state))).toEqual(['full-treasury']);
   });
 });

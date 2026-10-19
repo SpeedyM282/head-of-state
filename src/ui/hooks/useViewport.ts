@@ -57,7 +57,18 @@ export type FormFactor = 'phoneLandscape' | 'tablet' | 'desktop';
 /** Mirrors the `tablet:`/`desktop:` custom variants in index.css exactly, so WorldMap's frame-
  * bucket choice always lines up with which CSS layout is actually on screen. */
 export function classifyFormFactor(vp: Viewport): FormFactor {
-  if (vp.width >= 1280 && vp.pointerFine) return 'desktop';
+  if (vp.width >= 1024 && vp.pointerFine) return 'desktop';
   if (vp.width >= 768 && vp.height >= 500) return 'tablet';
   return 'phoneLandscape';
+}
+
+/** Desktop handoff canvas (see index.css → Desktop scale). */
+const DESIGN_W = 1920;
+const DESIGN_H = 1080;
+
+/** On the desktop layout, the CSS `--dp` value in px (one design pixel of the 1920×1080
+ * canvas); null on phone/tablet. For the few sizes JS computes itself (map markers, the
+ * event pin) — everything CSS-sized uses `--dp` directly. */
+export function desktopScale(vp: Viewport): number | null {
+  return classifyFormFactor(vp) === 'desktop' ? Math.min(vp.width / DESIGN_W, vp.height / DESIGN_H) : null;
 }

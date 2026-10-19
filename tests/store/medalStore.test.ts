@@ -36,23 +36,23 @@ afterEach(() => {
 
 describe('medalStore.evaluate', () => {
   it('earns, persists and marks new medals unseen', () => {
-    useMedalStore.getState().evaluate({ ...base, stats: { ...base.stats, economy: 90 } }, content);
+    useMedalStore.getState().evaluate({ ...base, constitutionAmended: true }, content);
     const s = useMedalStore.getState();
-    expect(s.earned).toEqual(['invisible-hand']);
-    expect(s.unseen).toEqual(['invisible-hand']);
-    expect(s.earnedThisGame).toEqual(['invisible-hand']);
-    expect(loadMedals().earned).toEqual(['invisible-hand']);
+    expect(s.earned).toEqual(['constitutional-genius']);
+    expect(s.unseen).toEqual(['constitutional-genius']);
+    expect(s.earnedThisGame).toEqual(['constitutional-genius']);
+    expect(loadMedals().earned).toEqual(['constitutional-genius']);
   });
 
   it('never re-earns, and resets the per-game list on a new seed', () => {
-    const rich = { ...base, stats: { ...base.stats, economy: 90 } };
+    const rich = { ...base, constitutionAmended: true };
     useMedalStore.getState().evaluate(rich, content);
     useMedalStore.getState().evaluate(rich, content);
-    expect(useMedalStore.getState().earned).toEqual(['invisible-hand']);
+    expect(useMedalStore.getState().earned).toEqual(['constitutional-genius']);
 
     useMedalStore.getState().evaluate({ ...rich, seed: 99 }, content);
     expect(useMedalStore.getState().earnedThisGame).toEqual([]);
-    expect(useMedalStore.getState().earned).toEqual(['invisible-hand']);
+    expect(useMedalStore.getState().earned).toEqual(['constitutional-genius']);
   });
 
   it('records each defeat kind once, across games', () => {
@@ -72,9 +72,9 @@ describe('medalStore.evaluate', () => {
 
 describe('medalStore.markAllSeen', () => {
   it('clears the unseen list and persists it', () => {
-    useMedalStore.getState().evaluate({ ...base, stats: { ...base.stats, economy: 90 } }, content);
+    useMedalStore.getState().evaluate({ ...base, constitutionAmended: true }, content);
     useMedalStore.getState().markAllSeen();
     expect(useMedalStore.getState().unseen).toEqual([]);
-    expect(loadMedals()).toEqual({ earned: ['invisible-hand'], unseen: [], defeatsSeen: [] });
+    expect(loadMedals()).toEqual({ earned: ['constitutional-genius'], unseen: [], defeatsSeen: [] });
   });
 });

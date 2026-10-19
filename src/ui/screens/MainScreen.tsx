@@ -93,11 +93,11 @@ export function MainScreen() {
       </Suspense>
 
       <div
-        className="pointer-events-none absolute inset-0 flex flex-col gap-sp-2 pb-1 pt-sp-3"
-        style={{ paddingLeft: 'max(var(--spacing-sp-3), env(safe-area-inset-left))', paddingRight: 'max(var(--spacing-sp-3), env(safe-area-inset-right))' }}
+        className="pointer-events-none absolute inset-0 flex flex-col gap-sp-2 pb-1 pt-sp-3 desktop:gap-dp-20 desktop:pb-dp-24 desktop:pt-dp-32"
+        style={{ paddingLeft: 'max(var(--map-inset), env(safe-area-inset-left))', paddingRight: 'max(var(--map-inset), env(safe-area-inset-right))' }}
       >
         {/* Header: country — date · term progress · until election · influence. */}
-        <header data-tutorial="main-header" className="glass pointer-events-auto flex min-h-9 shrink-0 items-center gap-sp-3 rounded-row pl-1 pr-sp-3">
+        <header data-tutorial="main-header" className="glass pointer-events-auto flex min-h-9 shrink-0 items-center gap-sp-3 rounded-row pl-1 pr-sp-3 desktop:mb-dp-8 desktop:h-dp-68 desktop:gap-dp-40 desktop:rounded-dp-22 desktop:pl-dp-16 desktop:pr-dp-32">
           <button
             type="button"
             onClick={toMenu}
@@ -107,26 +107,26 @@ export function MainScreen() {
           >
             <span aria-hidden>←</span>
           </button>
-          <span className="min-w-0 truncate text-caption font-medium">
+          <span className="min-w-0 truncate text-caption font-medium desktop:text-dp-21">
             {countryName} <span className="font-normal text-(--muted)">— {month} {year}</span>
           </span>
-          <span className="ml-auto flex shrink-0 items-center gap-sp-2 whitespace-nowrap text-caption text-(--muted)">
+          <span className="ml-auto flex shrink-0 items-center gap-sp-2 whitespace-nowrap text-caption text-(--muted) desktop:gap-dp-16 desktop:text-dp-19">
             {ui.main.term} {toRoman(state.term)} · {monthInTerm} {ui.main.of} {termLength}
-            <span className="h-0.5 w-[70px] overflow-hidden rounded-xs bg-(--line)">
+            <span className="h-0.5 w-[70px] overflow-hidden rounded-xs bg-(--line) desktop:h-dp-4 desktop:w-dp-180">
               <span className="meter-fill block h-full bg-(--accent)" style={{ width: `${(monthInTerm / termLength) * 100}%` }} />
             </span>
           </span>
-          <span className="shrink-0 whitespace-nowrap text-caption text-(--muted)">
+          <span className="shrink-0 whitespace-nowrap text-caption text-(--muted) desktop:text-dp-19">
             {ui.main.untilElection} <span className="num text-num text-(--text)">{monthsUntilElection}</span>
           </span>
-          <span className="shrink-0 whitespace-nowrap text-caption text-(--muted)">
+          <span className="shrink-0 whitespace-nowrap text-caption text-(--muted) desktop:text-dp-19">
             {ui.main.influence} <span className="num text-num text-(--text)">{Math.floor(state.influence)}</span>
           </span>
         </header>
 
-        <div className="flex min-h-0 flex-1 items-start justify-between gap-sp-3">
+        <div className="flex min-h-0 flex-1 items-start justify-between gap-sp-3 desktop:mt-dp-8">
           {/* Stats panel. */}
-          <section data-tutorial="stats-panel" className="glass pointer-events-auto flex max-h-full w-[148px] flex-col gap-1 overflow-y-auto rounded-card px-sp-3 py-sp-2 tablet:w-[180px]">
+          <section data-tutorial="stats-panel" className="glass pointer-events-auto flex max-h-full w-[148px] flex-col gap-1 overflow-y-auto rounded-card px-sp-3 py-sp-2 tablet:w-[180px] desktop:w-dp-380 desktop:gap-dp-18 desktop:rounded-dp-26 desktop:px-dp-32 desktop:py-dp-28">
             <p className="eyebrow">{ui.main.statsKicker}</p>
             {STAT_ORDER.map((k) => (
               <MeterRow
@@ -146,16 +146,16 @@ export function MainScreen() {
         </div>
 
         {/* Bottom bar: latest medal, clock caption, speed controls, «Реформы →». */}
-        <div className="glass pointer-events-auto flex min-h-12 shrink-0 items-center gap-sp-3 rounded-tile pl-sp-3 pr-sp-2">
+        <div className="glass pointer-events-auto flex min-h-12 shrink-0 items-center gap-sp-3 rounded-tile pl-sp-3 pr-sp-2 desktop:h-dp-92 desktop:gap-dp-14 desktop:rounded-dp-24 desktop:pl-dp-32 desktop:pr-dp-16">
           {latestMedal && (
-            <span className="flex min-w-0 items-center gap-1.5 text-caption text-(--muted)">
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-(--accent)" aria-hidden />
+            <span className="flex min-w-0 items-center gap-1.5 text-caption text-(--muted) desktop:gap-dp-14 desktop:text-dp-19 desktop:font-medium desktop:text-(--text)">
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-(--accent) desktop:size-dp-12" aria-hidden />
               <span className="truncate">
                 {ui.medals.latest} · «{loc(latestMedal.name, lang)}»
               </span>
             </span>
           )}
-          <span className="ml-auto whitespace-nowrap text-caption text-(--muted)">
+          <span className="ml-auto whitespace-nowrap text-caption text-(--muted) desktop:mr-dp-10 desktop:text-dp-18">
             {speed === 'paused' ? (
               ui.main.timePaused
             ) : (
@@ -170,7 +170,7 @@ export function MainScreen() {
           <div data-tutorial="clock-controls">
             <SpeedControls />
           </div>
-          <button className="btn btn-primary min-h-9 shrink-0 rounded-[9px] text-label" onClick={openReforms} data-tutorial="reforms-button">
+          <button className="btn btn-primary min-h-9 shrink-0 rounded-[9px] text-label desktop:rounded-dp-16" onClick={openReforms} data-tutorial="reforms-button">
             {ui.main.reforms} <span aria-hidden>→</span>
           </button>
         </div>
@@ -206,10 +206,10 @@ function Agenda({
         ? a.election
         : a.calm;
   return (
-    <section className="glass pointer-events-auto flex w-[168px] flex-col gap-1 rounded-tile px-sp-3 py-sp-2 tablet:w-[200px]">
+    <section className="glass pointer-events-auto flex w-[168px] flex-col gap-1 rounded-tile px-sp-3 py-sp-2 tablet:w-[200px] desktop:w-dp-420 desktop:gap-dp-12 desktop:rounded-dp-24 desktop:px-dp-30 desktop:py-dp-26">
       <p className="eyebrow">{a.kicker}</p>
-      <p className="font-serif text-label leading-tight">{title}</p>
-      <p className="flavor text-caption">{flavor}</p>
+      <p className="font-serif text-label leading-tight desktop:text-dp-30">{title}</p>
+      <p className="flavor text-caption desktop:text-dp-21">{flavor}</p>
     </section>
   );
 }
@@ -232,10 +232,10 @@ function Ticker({ ui, lang, state, content }: { ui: Ui; lang: Lang; state: GameS
   const run = [...decrees, ...events, ...rotated].join(' · ') + ' · ';
 
   return (
-    <div className="flex h-6 shrink-0 items-center gap-sp-3 px-sp-3">
+    <div className="flex h-6 shrink-0 items-center gap-sp-3 px-sp-3 desktop:h-dp-44 desktop:gap-dp-24 desktop:px-dp-40">
       <span className="eyebrow shrink-0">{ui.main.news.kicker}</span>
       <div className="min-w-0 flex-1 overflow-hidden">
-        <span className="marquee flavor text-caption">
+        <span className="marquee flavor text-caption desktop:text-dp-22">
           {run}
           {' '}
           {run}

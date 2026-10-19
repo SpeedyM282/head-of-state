@@ -11,9 +11,9 @@
    Both are plain min-width/min-height media features (no `not`/exclusion), so at genuinely
    desktop sizes BOTH variants match; `desktop` is declared after `tablet` so its rules win the
    cascade there — the same "later-registered breakpoint wins on overlap" model Tailwind's own
-   sm/md/lg/xl already use. A wide (>=1280px) but coarse-pointer tablet only matches `tablet`. */
+   sm/md/lg/xl already use. A wide (>=1024px) but coarse-pointer tablet only matches `tablet` — desktop layout needs a mouse. */
 @custom-variant tablet (@media (min-width: 768px) and (min-height: 500px));
-@custom-variant desktop (@media (min-width: 1280px) and (pointer: fine));
+@custom-variant desktop (@media (min-width: 1024px) and (pointer: fine));
 /* Very short landscape phones/emulators — below this height, the event modal (its title +
    body text sized for the 640×360 baseline) needs one type-role step down to leave room for
    the option buttons without the whole dialog fighting its own max-h-[90dvh] scroll. */
@@ -69,6 +69,76 @@
   --radius-chip: 8px;
 }
 
+/* ─── Desktop scale («Кабинет» desktop handoff) ───
+   On a desktop window (≥1024px wide with a mouse — the `desktop:` variant) the layout is drawn
+   on a 1920×1080 canvas and scaled uniformly: one design pixel is
+     --dp = min(100vw / 1920, 100dvh / 1080)
+   (≈0.53px at 1024 wide, 1px at 1920×1080). Every role token is redefined in --dp here, and so
+   is Tailwind's base --spacing (one spacing step = 6dp), so the existing role classes and
+   spacing utilities scale with the window without per-component work. Sizes the handoff gives
+   that no role covers use the `*-dp-N` utilities below (e.g. `desktop:text-dp-150`). The
+   mapping is by role, from the handoff's desktop type table: display = event title 60,
+   heading = top bar / reform / coach titles 44–52, body = 21, label = rows/buttons 21–23,
+   caption = meta 15–19, num = stat values 28–30, kicker = 14. */
+@media (min-width: 1024px) and (pointer: fine) {
+  :root {
+    --dp: min(calc(100vw / 1920), calc(100dvh / 1080));
+    --spacing: calc(var(--dp) * 6);
+
+    --text-display: calc(var(--dp) * 60);
+    --text-heading: calc(var(--dp) * 48);
+    --text-body: calc(var(--dp) * 21);
+    --text-label: calc(var(--dp) * 21);
+    --text-caption: calc(var(--dp) * 17);
+    --text-num: calc(var(--dp) * 28);
+    --text-micro: calc(var(--dp) * 13);
+    --text-micro-lg: calc(var(--dp) * 15);
+    --text-kicker: calc(var(--dp) * 14);
+
+    --spacing-sp-1: calc(var(--dp) * 8);
+    --spacing-sp-2: calc(var(--dp) * 16);
+    --spacing-sp-3: calc(var(--dp) * 28);
+    --spacing-sp-4: calc(var(--dp) * 40);
+    --spacing-sp-5: calc(var(--dp) * 80);
+    --spacing-sp-6: calc(var(--dp) * 120);
+
+    --radius-dialog: calc(var(--dp) * 32);
+    --radius-card: calc(var(--dp) * 26);
+    --radius-tile: calc(var(--dp) * 22);
+    --radius-row: calc(var(--dp) * 20);
+    --radius-btn: calc(var(--dp) * 16);
+    --radius-chip: calc(var(--dp) * 14);
+
+    --glass-blur: 14px;
+  }
+}
+
+/* Exact desktop sizes from the handoff, in design pixels — `desktop:w-dp-600` = 600dp. Only for
+   values no role token covers; prefer the roles above. */
+@utility w-dp-* { width: calc(--value(integer) * var(--dp)); }
+@utility h-dp-* { height: calc(--value(integer) * var(--dp)); }
+@utility min-h-dp-* { min-height: calc(--value(integer) * var(--dp)); }
+@utility max-w-dp-* { max-width: calc(--value(integer) * var(--dp)); }
+@utility text-dp-* { font-size: calc(--value(integer) * var(--dp)); }
+@utility gap-dp-* { gap: calc(--value(integer) * var(--dp)); }
+@utility gap-x-dp-* { column-gap: calc(--value(integer) * var(--dp)); }
+@utility gap-y-dp-* { row-gap: calc(--value(integer) * var(--dp)); }
+@utility left-dp-* { left: calc(--value(integer) * var(--dp)); }
+@utility right-dp-* { right: calc(--value(integer) * var(--dp)); }
+@utility top-dp-* { top: calc(--value(integer) * var(--dp)); }
+@utility bottom-dp-* { bottom: calc(--value(integer) * var(--dp)); }
+@utility size-dp-* { width: calc(--value(integer) * var(--dp)); height: calc(--value(integer) * var(--dp)); }
+@utility p-dp-* { padding: calc(--value(integer) * var(--dp)); }
+@utility px-dp-* { padding-inline: calc(--value(integer) * var(--dp)); }
+@utility py-dp-* { padding-block: calc(--value(integer) * var(--dp)); }
+@utility pt-dp-* { padding-top: calc(--value(integer) * var(--dp)); }
+@utility pb-dp-* { padding-bottom: calc(--value(integer) * var(--dp)); }
+@utility pl-dp-* { padding-left: calc(--value(integer) * var(--dp)); }
+@utility mt-dp-* { margin-top: calc(--value(integer) * var(--dp)); }
+@utility mb-dp-* { margin-bottom: calc(--value(integer) * var(--dp)); }
+@utility mr-dp-* { margin-right: calc(--value(integer) * var(--dp)); }
+@utility rounded-dp-* { border-radius: calc(--value(integer) * var(--dp)); }
+
 /* ─── Design tokens: «Кабинет» ───
    Calm, minimal cabinet: warm paper background, white (light) / slate (dark) surfaces, one
    accent (ink blue by day, lamp amber by night) and a separate warning red so corruption and
@@ -97,6 +167,16 @@
   --glow: rgba(214, 160, 70, 0.16);
   /* Map veil (dims the map around the player's country); alpha is applied per use. */
   --veil-rgb: 246, 243, 236;
+  /* Motion distance unit (pop rise, halo spread) and the ticker cycle — doubled/slowed on
+     desktop, see the desktop block at the end of the file. */
+  --motion-u: 1px;
+  --ticker-cycle: 44s;
+  /* Vector tape tick spacing (11pt mobile / 24 desktop). */
+  --tick-gap: 11px;
+  /* Tutorial spotlight ring width (2pt mobile / 3 desktop). */
+  --spot-ring: 2px;
+  /* Inset of the floating panels from the screen edge on the map screens (16pt mobile). */
+  --map-inset: var(--spacing-sp-3);
   /* Floating glass panels over the map. Light: translucent white + soft shadow, no border. */
   --glass: rgba(255, 255, 255, 0.9);
   --glass-border: transparent;
@@ -222,9 +302,9 @@ svg path[role='button']:focus-visible {
 /* Kicker / section label: Golos 500, uppercase, wide tracking, muted. */
 .eyebrow {
   font-family: var(--font-sans);
-  font-size: var(--text-caption);
+  font-size: var(--text-kicker, var(--text-caption));
   font-weight: 500;
-  letter-spacing: 0.16em;
+  letter-spacing: var(--kicker-tracking, 0.16em);
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -262,8 +342,8 @@ svg path[role='button']:focus-visible {
   background: var(--glass);
   border: 1px solid var(--glass-border);
   box-shadow: var(--glass-shadow);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(var(--glass-blur, 10px));
+  backdrop-filter: blur(var(--glass-blur, 10px));
 }
 
 .scrim {
@@ -480,6 +560,28 @@ svg path[role='button']:focus-visible {
   --warning: #d77a6a;
 }
 
+/* Theme-specific artwork (medal SVGs come in a light and a dark file): both are rendered, CSS
+   shows the one for the active theme. Mirrors the [data-theme] / first-paint rules above. */
+.theme-dark-only { display: none; }
+:root[data-theme='dark'] .theme-dark-only { display: block; }
+:root[data-theme='dark'] .theme-light-only { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .theme-dark-only { display: block; }
+  :root:not([data-theme]) .theme-light-only { display: none; }
+}
+
+/* Newly earned medal artwork halo (medals handoff): a ring around the badge, centred at 69% of
+   the medal's height with a radius of 40% of its width — on the 2:3 artwork that is a box 80%
+   wide / 53.3% tall starting at 42.3% from the top. */
+.medal-art-halo {
+  inset: auto;
+  left: 10%;
+  top: 42.33%;
+  width: 80%;
+  height: 53.33%;
+  border-radius: 9999px;
+}
+
 /* Theme picker radio's selected dot beats (scale 1 → 1.4). */
 .beat { animation: hs-beat 2.4s ease-in-out infinite; }
 @keyframes hs-beat {
@@ -579,11 +681,11 @@ svg path[role='button']:focus-visible {
   animation: hs-pop 3.6s ease-out both;
 }
 @keyframes hs-pop {
-  0% { opacity: 0; transform: translateY(8px) scale(0.6); }
+  0% { opacity: 0; transform: translateY(calc(var(--motion-u) * 8)) scale(0.6); }
   10% { opacity: 1; transform: translateY(0) scale(1.25); }
   18% { transform: translateY(0) scale(1); }
-  65% { opacity: 1; transform: translateY(-8px); }
-  85%, 100% { opacity: 0; transform: translateY(-16px); }
+  65% { opacity: 1; transform: translateY(calc(var(--motion-u) * -8)); }
+  85%, 100% { opacity: 0; transform: translateY(calc(var(--motion-u) * -16)); }
 }
 /* Bars ease to their new value in ~0.35s. */
 .meter-fill { transition: width 350ms ease-out; }
@@ -599,7 +701,7 @@ svg path[role='button']:focus-visible {
 }
 @keyframes hs-halo {
   0% { box-shadow: 0 0 0 0 currentColor; opacity: 0.55; }
-  100% { box-shadow: 0 0 0 7px currentColor; opacity: 0; }
+  100% { box-shadow: 0 0 0 calc(var(--motion-u) * 7) currentColor; opacity: 0; }
 }
 
 /* A small accent dot flowing down a reform-chain connector, from the owned level to the
@@ -615,9 +717,9 @@ svg path[role='button']:focus-visible {
   animation: hs-flow 1.8s ease-in infinite;
 }
 @keyframes hs-flow {
-  0% { transform: translateY(-4px); opacity: 0; }
+  0% { transform: translateY(calc(var(--motion-u) * -4)); opacity: 0; }
   25% { opacity: 1; }
-  100% { transform: translateY(10px); opacity: 0; }
+  100% { transform: translateY(calc(var(--motion-u) * 10)); opacity: 0; }
 }
 
 /* Vector pointer: slides from its last position to the new one when the value changes. */
@@ -634,7 +736,7 @@ svg path[role='button']:focus-visible {
 .marquee {
   display: inline-block;
   white-space: nowrap;
-  animation: hs-marq 44s linear infinite;
+  animation: hs-marq var(--ticker-cycle) linear infinite;
 }
 @keyframes hs-marq {
   from { transform: translateX(0); }
@@ -672,9 +774,34 @@ svg path[role='button']:focus-visible {
     padding-right: calc(1.5rem + env(safe-area-inset-right, 0px));
   }
 }
-@media (min-width: 1280px) and (pointer: fine) {
+@media (min-width: 1024px) and (pointer: fine) {
+  /* Desktop screens own their margins (80/120dp) — the shell adds none. */
   .safe-area-x {
-    padding-left: calc(2rem + env(safe-area-inset-left, 0px));
-    padding-right: calc(2rem + env(safe-area-inset-right, 0px));
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
   }
+}
+
+/* Desktop sizes for the shared components (handoff → Shared components, desktop). Kept at the
+   END of the file: these are unlayered rules overriding the unlayered base rules above, so they
+   must come after them in source order. */
+@media (min-width: 1024px) and (pointer: fine) {
+  :root {
+    --kicker-tracking: 0.18em;
+    /* Halos spread 14, pops rise 32 (handoff → Motion, desktop). */
+    --motion-u: calc(var(--dp) * 2);
+    --ticker-cycle: 60s;
+    --tick-gap: calc(var(--dp) * 24);
+    --spot-ring: 3px;
+    --map-inset: calc(var(--dp) * 40);
+  }
+  .btn { min-height: calc(var(--dp) * 60); padding: 0 calc(var(--dp) * 32); }
+  .option-row { padding: calc(var(--dp) * 22) calc(var(--dp) * 26); }
+  .choice-row { min-height: calc(var(--dp) * 72); padding: 0 calc(var(--dp) * 26); font-size: calc(var(--dp) * 22); border-radius: calc(var(--dp) * 18); }
+  .stamp { border-width: 1.5px; padding: 0.55em 1em; }
+  /* Game-over stamp: Golos 22, .18em, 3px border, radius 12, padding 12×22. */
+  .stamp-lg { border-width: 3px; border-radius: calc(var(--dp) * 12); padding: calc(var(--dp) * 12) calc(var(--dp) * 22); font-size: calc(var(--dp) * 22); letter-spacing: 0.18em; }
+  .lamp-glow { background: radial-gradient(circle at 86% 8%, var(--glow), transparent 36%); }
+  /* Reform-chain flow dot: 10px, travelling the 24px connector. */
+  .flow-dot { width: calc(var(--dp) * 10); height: calc(var(--dp) * 10); left: calc(var(--dp) * -4); }
 }

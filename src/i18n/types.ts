@@ -98,6 +98,13 @@ export interface Ui {
      * overview of the region (member count, summed population/area, averaged levels) instead
      * of one country's dossier. Reuses `dossier`'s population/area/economy/corruption/
      * democracy/development labels for its own rows — same concepts, aggregated. */
+    /** Desktop zoom control: two-line hint («Колесо мыши —
+масштаб карты») and button labels. */
+    zoomHint: string;
+    zoomIn: string;
+    zoomOut: string;
+    /** Desktop search pill placeholder, «Поиск страны». */
+    searchPill: string;
     /** Country card kicker, «Выбор страны». */
     kicker: string;
     /** Bottom-right hint, «Выберите страну на карте или из списка». */
