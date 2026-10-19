@@ -37,7 +37,18 @@ latin-ext / cyrillic / cyrillic-ext subsets, as served by Google Fonts.
 
 # src/assets/medals/
 
-Medal artwork (32 SVGs: 8 medals × light/dark × earned/locked, 100×150 viewBox) from the
-«Глава государства» medals design handoff (`design_handoff_medals`), vendored unchanged.
-`ui/components/MedalArt.tsx` maps our medal ids to the artwork ids. Medals without artwork
-keep the plain ring-and-disc circle.
+Medal artwork (96 SVGs: 24 medals × light/dark × earned/locked, 100×150 viewBox) from the
+«Глава государства» medals design handoffs — `design_handoff_medals` (medals 1–8) and
+`design_handoff_medals_new` (9–24) — vendored unchanged. `ui/components/MedalArt.tsx` maps the
+first handoff's artwork ids to ours; the second handoff already uses our ids.
+
+# public/ icons and resources/logo/
+
+Game logo («1a Печать», a wordless state seal) from the «Глава государства» logo design handoff
+(`design_handoff_logo`), vendored unchanged. `public/` holds the web set referenced by
+`index.html` and `public/manifest.webmanifest` (SVG favicon + 16/32/48 PNG fallbacks,
+apple-touch-icon 180, manifest icons 192/512, og:image 1200×630). `resources/logo/` holds the
+masters for the native build (Capacitor, stage 4): `symbol.svg`/`symbol-1024.png` (transparent
+mark, min 48 px — use the favicon below that), `app-icon-1024.*` (full-bleed square; don't
+pre-round), `android-foreground-432.svg` (adaptive-icon foreground; background `#1B2C4D`,
+drop the filter shadow if it doesn't convert to a vector drawable).
