@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   clearSave,
+  initPersistence,
   loadGame,
   loadLang,
   loadMedals,
@@ -9,6 +10,7 @@ import {
   saveGame,
   saveLang,
   saveTutorial,
+  type AsyncKeyValueStore,
   type SaveData,
 } from '../../src/store/persistence';
 import { buildContent } from '../../src/data';
@@ -165,5 +167,70 @@ describe('persistence: medals (meta-progression, independent of the game save)',
   it('falls back to defaults on unparseable JSON', () => {
     localStorage.setItem('prezident.medals.v1', '{oops');
     expect(loadMedals()).toEqual({ earned: [], unseen: [], defeatsSeen: [] });
+  });
+});
+
+/** Stand-in for @capacitor/preferences: async, and records writes so tests can await them. */
+class FakeAsyncStore implements AsyncKeyValueStore {
+  data = new Map<string, string>();
+  failReads = false;
+  async get(key: string): Promise<string | null> {
+    if (this.failReads) throw new Error('read failed');
+    return this.data.get(key) ?? null;
+  }
+  async set(key: string, value: string): Promise<void> {
+    this.data.set(key, value);
+  }
+  async remove(key: string): Promise<void> {
+    this.data.delete(key);
+  }
+}
+
+describe('persistence: native async store (Capacitor Preferences path)', () => {
+  afterEach(async () => {
+    await initPersistence(null);
+  });
+
+  it('hydrates every key before the first sync load', async () => {
+    const store = new FakeAsyncStore();
+    store.data.set('prezident.lang.v1', 'uz');
+    store.data.set('prezident.save.v3', JSON.stringify(makeSave('no')));
+    await initPersistence(store);
+    expect(loadLang()).toBe('uz');
+    expect(loadGame()?.countryId).toBe('no');
+  });
+
+  it('writes go to the async store, not localStorage, and reads see them at once', async () => {
+    const store = new FakeAsyncStore();
+    await initPersistence(store);
+    saveLang('ru');
+    expect(loadLang()).toBe('ru');
+    await Promise.resolve();
+    expect(store.data.get('prezident.lang.v1')).toBe('ru');
+    expect(memoryStorage.keys()).toEqual([]);
+  });
+
+  it('clearSave removes the save from both the cache and the async store', async () => {
+    const store = new FakeAsyncStore();
+    await initPersistence(store);
+    saveGame(makeSave('absurdistan'));
+    clearSave();
+    expect(loadGame()).toBeNull();
+    await Promise.resolve();
+    expect(store.data.has('prezident.save.v3')).toBe(false);
+  });
+
+  it('an unreadable store starts from defaults instead of failing boot', async () => {
+    const store = new FakeAsyncStore();
+    store.failReads = true;
+    await initPersistence(store);
+    expect(loadLang()).toBe(DEFAULT_LANG);
+    expect(loadGame()).toBeNull();
+  });
+
+  it('initPersistence(null) falls back to localStorage', async () => {
+    await initPersistence(null);
+    saveLang('ru');
+    expect(memoryStorage.keys()).toEqual(['prezident.lang.v1']);
   });
 });

@@ -6,7 +6,7 @@
 
 ## Стек
 
-React 18 · TypeScript (strict) · Vite · Zustand · Tailwind v4 · Vitest · Capacitor (этап 4)
+React 19 · TypeScript (strict) · Vite · Zustand · Tailwind v4 · Vitest · Capacitor 8 (Android)
 
 ## Команды
 
@@ -16,12 +16,14 @@ pnpm dev           # дев-сервер
 pnpm test          # тесты, включая автоигрока (смотри статистику в выводе)
 pnpm typecheck     # проверка типов
 pnpm build         # прод-сборка
+pnpm cap:sync      # прод-сборка + копирование в android/ (Capacitor)
+pnpm exec cap open android   # открыть нативный проект в Android Studio (нужны JDK + Android SDK)
 ```
 
 ## Статус
 
 - [x] Этап 1 — симуляционное ядро (`src/core/`): tick, события, вектор, 4 поражения, детерминизм
-- [x] Этап 2 (частично) — контент: 15 реформ, 22 события (цель ~30, см. TODO в `src/data/events/`)
-- [x] Этап 3 — UI: меню, главный экран, реформы, события, конец игры
-- [ ] Этап 4 — Capacitor + Android-сборка (persistence уже изолирован в `src/store/persistence.ts`)
+- [x] Этап 2 — контент: 27 реформ, 51 событие, 169 стран + Абсурдистан, обучение, 24 медали
+- [x] Этап 3 — UI: меню, карта, главный экран, реформы, события, конец игры, настройки, медали
+- [ ] Этап 4 — Capacitor + Android: проект `android/` сгенерирован, сохранения через `@capacitor/preferences`, телефоны залочены в landscape, статус-бар скрыт, кнопка «Назад» работает, иконки/сплэш из логотипа. Осталось: собрать и проверить APK на устройстве (на машине нужны JDK + Android SDK)
 - [ ] Этап 5 — плейтест и баланс (`src/data/balance.ts`)

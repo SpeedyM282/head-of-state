@@ -55,6 +55,7 @@ export function MainScreen() {
         e.preventDefault();
         setSpeed(speed === 'paused' ? 'normal' : 'paused');
       } else if (e.key === 'Escape' && reformsOpen) {
+        e.preventDefault();
         closeReforms();
       }
     }

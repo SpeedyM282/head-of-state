@@ -47,9 +47,12 @@ export function useViewport(): Viewport {
   return viewport;
 }
 
+/** Below this short-side width (CSS px) the device counts as a phone: landscape-only. */
+export const PHONE_MAX_WIDTH = 768;
+
 /** Phone-sized and portrait — exactly OrientationGate's trigger condition (see GDD/ARCHITECTURE). */
 export function isPhonePortrait(vp: Viewport): boolean {
-  return vp.width < 768 && vp.height > vp.width;
+  return vp.width < PHONE_MAX_WIDTH && vp.height > vp.width;
 }
 
 export type FormFactor = 'phoneLandscape' | 'tablet' | 'desktop';

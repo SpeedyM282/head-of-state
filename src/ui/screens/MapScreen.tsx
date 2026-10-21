@@ -46,6 +46,7 @@ export function MapScreen() {
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key !== 'Escape') return;
+      e.preventDefault();
       if (listOpen) setListOpen(false);
       else if (selectedCountryId && activeRegion) setSelectedCountryId(null);
       else goBack();

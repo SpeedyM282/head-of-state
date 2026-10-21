@@ -27,7 +27,9 @@ export function MedalsScreen() {
   // Esc mirrors the back button.
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') toMenu();
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      toMenu();
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);

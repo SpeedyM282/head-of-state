@@ -23,7 +23,7 @@ Player picks a country on a single whole-world map before the game starts — th
 - UI components contain zero game logic — no stat math in JSX or hooks; they render store state and dispatch store actions.
 - Tailwind for styling; no UI kit libraries (no Ant Design/MUI). Custom components only.
 - New UI uses the fluid type/spacing token roles (`text-display/heading/body/label/caption/num`, `p-sp-*`/`gap-sp-*`/`m-sp-*` etc., see ARCHITECTURE.md §7a) — no raw `text-xs/sm/lg/xl/2xl` or bare `p-2/gap-3/m-4`-style numeric literals for these roles. Map by the role's meaning, not by matching a current pixel size. Touch targets (`min-h-11`/`min-h-9`) and one-off sub-token layout fixes are exempt, but any exception needs an inline comment explaining why the token doesn't fit.
-- Do not add dependencies without asking. The intended full list: zustand, @capacitor/core, @capacitor/preferences. Dev: vitest, typescript, vite, tailwind.
+- Do not add dependencies without asking. The intended full list: zustand, @capacitor/core, @capacitor/preferences, @capacitor/screen-orientation, @capacitor/status-bar, @capacitor/app, @capacitor/android. Dev: vitest, typescript, vite, tailwind, @capacitor/cli.
 - Comments and code identifiers in English. User-facing text is localized: content (reforms/events/countries) carries `LocalizedText` (`{ en, ru, uz }`) inline in `data/`; fixed UI strings live in `src/i18n/{en,ru,uz}.ts`. Never add a bare string where a `LocalizedText` is expected — all three languages, always.
 
 ## Testing rules

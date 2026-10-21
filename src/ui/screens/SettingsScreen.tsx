@@ -52,7 +52,9 @@ export function SettingsScreen() {
   goBackRef.current = goBack;
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key === 'Escape') goBackRef.current();
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      goBackRef.current();
     }
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);

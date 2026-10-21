@@ -8,7 +8,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc -b --noEmit 2>/dev/null || tsc --noEmit -p tsconfig.app.json",
+    "typecheck": "tsc -b --noEmit",
+    "cap:sync": "pnpm build && cap sync android",
     "test:watch": "vitest"
   },
   "keywords": [],
@@ -16,6 +17,12 @@
   "license": "ISC",
   "type": "module",
   "dependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/app": "^8.1.2",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/preferences": "^8.0.1",
+    "@capacitor/screen-orientation": "^8.0.2",
+    "@capacitor/status-bar": "^8.0.4",
     "d3-geo": "^2.0.2",
     "prop-types": "^15.8.1",
     "react": "^19.2.8",
@@ -25,6 +32,7 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.3",
     "@tailwindcss/vite": "^4.3.3",
     "@types/d3-geo": "^3.1.1",
     "@types/geojson": "^7946.0.16",

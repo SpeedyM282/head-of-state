@@ -10,6 +10,7 @@ import { SettingsScreen } from './ui/screens/SettingsScreen';
 import { MedalsScreen } from './ui/screens/MedalsScreen';
 import { OrientationGate } from './ui/components/OrientationGate';
 import { TutorialOverlay } from './ui/tutorial/TutorialOverlay';
+import { useHardwareBack } from './ui/hooks/useHardwareBack';
 
 // react-simple-maps + the vendored TopoJSON are heavy; split them into their own
 // chunk so the menu/gameplay screens (the common path) load fast.
@@ -22,6 +23,7 @@ function MapScreenFallback() {
 
 export function App() {
   const phase = useGameStore((s) => s.phase);
+  useHardwareBack();
   return (
     <>
       {/* «Кабинет» corner lamp glow — every full screen except country select, where the map

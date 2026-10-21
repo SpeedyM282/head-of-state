@@ -74,6 +74,7 @@ export function TutorialOverlay() {
     if (!active && !activeTip) return;
     function onKeyDown(e: KeyboardEvent) {
       if (e.key !== 'Escape') return;
+      e.preventDefault();
       e.stopPropagation();
       dismissRef.current();
     }

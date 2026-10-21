@@ -1,9 +1,14 @@
+import { Capacitor } from '@capacitor/core';
+import { Preferences } from '@capacitor/preferences';
 import type { DefeatKind, Difficulty, GameState, Lang } from '../core/types';
 import { DEFAULT_LANG, LANGS } from '../i18n';
 import type { Theme } from './themeStore';
 
-// MVP persistence: localStorage adapter.
-// TODO(stage 4): swap the storage backend to @capacitor/preferences — only this file changes.
+// Storage backend: localStorage on the web; @capacitor/preferences on native (WebView
+// localStorage isn't guaranteed to survive — Capacitor advises against it for app data). Preferences is async
+// while every load*/save* below is sync (stores read their initial state at module load), so
+// on native initPersistence() hydrates an in-memory cache before the app mounts and writes go
+// through to Preferences in the background.
 
 // v2: GameState gained term/constitutionAmended/awaitingInauguration/scheduledEffects.
 // v3: GameState gained stepDownPending (mandatory per-term run/step-down choice).
@@ -16,6 +21,7 @@ const LANG_KEY = 'prezident.lang.v1';
 const TUTORIAL_KEY = 'prezident.tutorial.v1';
 const THEME_KEY = 'prezident.theme.v1';
 const MEDALS_KEY = 'prezident.medals.v1';
+const ALL_KEYS = [KEY, LANG_KEY, TUTORIAL_KEY, THEME_KEY, MEDALS_KEY];
 const DEFEAT_KINDS: readonly DefeatKind[] = ['coup', 'revolution', 'default', 'elections'];
 const THEMES: readonly Theme[] = ['light', 'dark', 'system'];
 
@@ -47,9 +53,73 @@ const DEFAULT_MEDALS: MedalsData = { earned: [], unseen: [], defeatsSeen: [] };
 
 const DEFAULT_TUTORIAL: TutorialData = { completed: false, seenTips: [] };
 
+/** The async key-value store a native platform provides (Preferences' shape, minus wrappers). */
+export interface AsyncKeyValueStore {
+  get(key: string): Promise<string | null>;
+  set(key: string, value: string): Promise<void>;
+  remove(key: string): Promise<void>;
+}
+
+interface KeyValueBackend {
+  get(key: string): string | null;
+  set(key: string, value: string): void;
+  remove(key: string): void;
+}
+
+const localStorageBackend: KeyValueBackend = {
+  get: (key) => localStorage.getItem(key),
+  set: (key, value) => localStorage.setItem(key, value),
+  remove: (key) => localStorage.removeItem(key),
+};
+
+let backend: KeyValueBackend = localStorageBackend;
+
+function nativeStore(): AsyncKeyValueStore | null {
+  if (!Capacitor.isNativePlatform()) return null;
+  return {
+    get: async (key) => (await Preferences.get({ key })).value,
+    set: (key, value) => Preferences.set({ key, value }),
+    remove: (key) => Preferences.remove({ key }),
+  };
+}
+
+/**
+ * Must resolve before any store module is imported (main.tsx awaits it, then imports App).
+ * With no async store (web, tests) the backend is plain localStorage. A failed write to the
+ * async store is dropped silently — same policy as a full localStorage below.
+ */
+export async function initPersistence(store: AsyncKeyValueStore | null = nativeStore()): Promise<void> {
+  if (!store) {
+    backend = localStorageBackend;
+    return;
+  }
+  const cache = new Map<string, string>();
+  await Promise.all(
+    ALL_KEYS.map(async (key) => {
+      try {
+        const value = await store.get(key);
+        if (value !== null) cache.set(key, value);
+      } catch {
+        // Unreadable key — treated as absent, like a corrupt save.
+      }
+    }),
+  );
+  backend = {
+    get: (key) => cache.get(key) ?? null,
+    set: (key, value) => {
+      cache.set(key, value);
+      store.set(key, value).catch(() => {});
+    },
+    remove: (key) => {
+      cache.delete(key);
+      store.remove(key).catch(() => {});
+    },
+  };
+}
+
 export function saveGame(data: SaveData): void {
   try {
-    localStorage.setItem(KEY, JSON.stringify(data));
+    backend.set(KEY, JSON.stringify(data));
   } catch {
     // Storage full or unavailable — the game continues without saving.
   }
@@ -57,7 +127,7 @@ export function saveGame(data: SaveData): void {
 
 export function loadGame(): SaveData | null {
   try {
-    const raw = localStorage.getItem(KEY);
+    const raw = backend.get(KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as SaveData;
     const countryId = parsed.countryId ?? parsed.state?.countryId ?? 'absurdistan';
@@ -69,7 +139,7 @@ export function loadGame(): SaveData | null {
 
 export function clearSave(): void {
   try {
-    localStorage.removeItem(KEY);
+    backend.remove(KEY);
   } catch {
     // ignore
   }
@@ -77,7 +147,7 @@ export function clearSave(): void {
 
 export function loadLang(): Lang {
   try {
-    const raw = localStorage.getItem(LANG_KEY);
+    const raw = backend.get(LANG_KEY);
     return raw && (LANGS as string[]).includes(raw) ? (raw as Lang) : DEFAULT_LANG;
   } catch {
     return DEFAULT_LANG;
@@ -86,7 +156,7 @@ export function loadLang(): Lang {
 
 export function saveLang(lang: Lang): void {
   try {
-    localStorage.setItem(LANG_KEY, lang);
+    backend.set(LANG_KEY, lang);
   } catch {
     // ignore
   }
@@ -94,7 +164,7 @@ export function saveLang(lang: Lang): void {
 
 export function loadTheme(): Theme {
   try {
-    const raw = localStorage.getItem(THEME_KEY);
+    const raw = backend.get(THEME_KEY);
     return raw && THEMES.includes(raw as Theme) ? (raw as Theme) : 'system';
   } catch {
     return 'system';
@@ -103,7 +173,7 @@ export function loadTheme(): Theme {
 
 export function saveTheme(theme: Theme): void {
   try {
-    localStorage.setItem(THEME_KEY, theme);
+    backend.set(THEME_KEY, theme);
   } catch {
     // ignore
   }
@@ -111,7 +181,7 @@ export function saveTheme(theme: Theme): void {
 
 export function loadTutorial(): TutorialData {
   try {
-    const raw = localStorage.getItem(TUTORIAL_KEY);
+    const raw = backend.get(TUTORIAL_KEY);
     if (!raw) return DEFAULT_TUTORIAL;
     const parsed = JSON.parse(raw) as Partial<TutorialData>;
     return {
@@ -125,7 +195,7 @@ export function loadTutorial(): TutorialData {
 
 export function saveTutorial(data: TutorialData): void {
   try {
-    localStorage.setItem(TUTORIAL_KEY, JSON.stringify(data));
+    backend.set(TUTORIAL_KEY, JSON.stringify(data));
   } catch {
     // Storage full or unavailable — tutorial state just won't persist across reloads.
   }
@@ -137,7 +207,7 @@ function stringList(v: unknown): string[] {
 
 export function loadMedals(): MedalsData {
   try {
-    const raw = localStorage.getItem(MEDALS_KEY);
+    const raw = backend.get(MEDALS_KEY);
     if (!raw) return DEFAULT_MEDALS;
     const parsed = JSON.parse(raw) as Partial<Record<keyof MedalsData, unknown>>;
     return {
@@ -152,7 +222,7 @@ export function loadMedals(): MedalsData {
 
 export function saveMedals(data: MedalsData): void {
   try {
-    localStorage.setItem(MEDALS_KEY, JSON.stringify(data));
+    backend.set(MEDALS_KEY, JSON.stringify(data));
   } catch {
     // Storage full or unavailable — medals just won't persist across reloads.
   }

@@ -24,8 +24,8 @@ function RotateDeviceIcon() {
 }
 
 /**
- * Web fallback for phone orientation lock (Capacitor's @capacitor/screen-orientation isn't
- * wired in yet — see ARCHITECTURE.md's stage-4 TODO). Mounted once at the app root so it can
+ * Web fallback for phone orientation lock (native phones are locked to landscape by
+ * ui/nativeShell.ts; this still covers the web build and a failed native lock). Mounted once at the app root so it can
  * cover any screen/phase; hides the whole app and auto-pauses the game clock (manual-pause-wins
  * rules unaffected — this is just another auto-pause reason, same mechanism as an event or the
  * open reforms panel) whenever a phone is held portrait. Tablets are exempt (isPhonePortrait

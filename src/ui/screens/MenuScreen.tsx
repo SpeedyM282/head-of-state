@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { loc } from '../../i18n';
 import { getCountryById } from '../../data/countries';
 import { useLang, useUi } from '../../store/langStore';
@@ -18,6 +18,19 @@ export function MenuScreen() {
   const ui = useUi();
   const lang = useLang((s) => s.lang);
   const [showTutorialPrompt, setShowTutorialPrompt] = useState(false);
+
+  // Esc (and Android back, see useHardwareBack) dismisses the tutorial prompt without
+  // answering it — the next «Новая игра» asks again.
+  useEffect(() => {
+    if (!showTutorialPrompt) return;
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key !== 'Escape') return;
+      e.preventDefault();
+      setShowTutorialPrompt(false);
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [showTutorialPrompt]);
 
   // First-ever "Новая игра": offer the guided opening before the player picks a country. Once
   // the tutorial has been completed (or explicitly skipped once), this goes to the difficulty
